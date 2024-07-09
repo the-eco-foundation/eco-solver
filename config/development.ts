@@ -3,5 +3,5 @@ export default {
     region: 'us-east-2',
     secretID: 'eco-solver-secrets',
   },
-  test: 'hi'
+  test: 'hi',
 }
