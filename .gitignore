@@ -64,3 +64,4 @@ dump.rdb
 #Configs
 config/*
 !config/development.ts
+!config/test.ts
