@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager'
 import { EcoConfigService } from './eco-configs/eco-config.service'
 
 @Injectable()
