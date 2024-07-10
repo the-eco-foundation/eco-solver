@@ -52,7 +52,7 @@ export class EcoConfigService implements OnModuleInit {
   }
 
   // Returns the eth configs
-  getEth(): EcoConfigType['eth'] { 
+  getEth(): EcoConfigType['eth'] {
     return this.ecoConfig.get('eth')
   }
 
