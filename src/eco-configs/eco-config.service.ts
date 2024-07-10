@@ -22,6 +22,14 @@ export class EcoConfigService implements OnModuleInit {
     this.initConfigs()
   }
 
+  /**
+   * Returns the static configs  for the app, from the 'config' package
+   * @returns the configs
+   */
+  static getStaticConfig(): EcoConfigType {
+    return config as unknown as EcoConfigType
+  }
+
   // Initialize the configs
   initConfigs() {
     this.logger.debug(
@@ -42,6 +50,11 @@ export class EcoConfigService implements OnModuleInit {
   // Returns the eth configs
   getEth(): EcoConfigType['eth'] {
     return this.ecoConfig.get('eth')
+  }
+
+  // Returns the external APIs config
+  getExternalAPIs(): EcoConfigType['externalAPIs'] {
+    return this.ecoConfig.get('externalAPIs')
   }
 
   // Returns the server configs
