@@ -1,6 +1,8 @@
 import { Network } from 'alchemy-sdk'
 import { ethers } from 'ethers'
+import { ClusterNode } from 'ioredis'
 import { Params as PinoParams } from 'nestjs-pino'
+import * as Redis from 'ioredis'
 
 // The config type that we store in json
 export type EcoConfigType = {
@@ -10,11 +12,7 @@ export type EcoConfigType = {
   externalAPIs: {
     sentryDNS: string
   }
-  redis: {
-    host: string
-    port: number
-    password: string
-  }
+  redis: RedisConfig
   eth: {
     privateKey: string
     alchemy: AlchemyConfigType
@@ -34,6 +32,17 @@ export type EcoConfigType = {
 }
 
 export type EcoConfigKeys = keyof EcoConfigType
+
+/**
+ * The config type for the redis section
+ */
+export type RedisConfig = {
+  connection: ClusterNode | ClusterNode[]
+  options: {
+    single: Redis.RedisOptions
+    cluster: Redis.ClusterOptions
+  }
+}
 
 /**
  * The config type for the aws credentials
