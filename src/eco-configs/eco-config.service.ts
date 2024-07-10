@@ -57,6 +57,11 @@ export class EcoConfigService implements OnModuleInit {
     return this.ecoConfig.get('externalAPIs')
   }
 
+  // Returns the redis configs
+  getRedis(): EcoConfigType['redis'] {
+    return this.ecoConfig.get('redis')
+  }
+
   // Returns the server configs
   getServer(): EcoConfigType['server'] {
     return this.ecoConfig.get('server')
