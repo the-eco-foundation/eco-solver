@@ -47,6 +47,10 @@ export class EcoConfigService implements OnModuleInit {
     return this.ecoConfig.get<T>(key)
   }
 
+  getDatabaseConfig(): EcoConfigType['database'] {
+    return this.ecoConfig.get('database')
+  }
+
   // Returns the eth configs
   getEth(): EcoConfigType['eth'] {
     return this.ecoConfig.get('eth')
@@ -55,6 +59,17 @@ export class EcoConfigService implements OnModuleInit {
   // Returns the external APIs config
   getExternalAPIs(): EcoConfigType['externalAPIs'] {
     return this.ecoConfig.get('externalAPIs')
+  }
+
+  getLoggerConfig(): EcoConfigType['logger'] {
+    return this.ecoConfig.get('logger')
+  }
+
+  getMongooseUri() {
+    const config = this.getDatabaseConfig()
+    return config.auth.enabled
+      ? `${config.uriPrefix}${config.auth.username}:${config.auth.password}@${config.uri}/${config.dbName}`
+      : `${config.uriPrefix}${config.uri}/${config.dbName}`
   }
 
   // Returns the redis configs
