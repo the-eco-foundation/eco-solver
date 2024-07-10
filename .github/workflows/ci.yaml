@@ -18,6 +18,18 @@ jobs:
     environment: development
     steps:
       - uses: actions/checkout@v4
+      - name: Build Project
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+      - run: yarn install
+      - run: yarn build
+  sentry:
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Create Sentry release
@@ -26,13 +38,9 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-      - name: Build Project
-        uses: actions/setup-node@v4
+          # SENTRY_URL: https://sentry.io/
         with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
-      - run: yarn install
-      - run: yarn build
+          environment: production
   test:
     runs-on: ubuntu-latest
     steps:
