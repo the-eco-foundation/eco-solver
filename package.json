@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && yarn sentry:sourcemaps",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -23,7 +23,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typechain": "typechain --target ethers-v6 --out-dir src/typing/contracts src/assets/abis/*.json",
-    "postinstall": "yarn typechain"
+    "postinstall": "yarn typechain",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org eco-qp --project ecoism-server ./dist && sentry-cli sourcemaps upload --org eco-qp --project ecoism-server ./dist"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.592.0",
@@ -31,11 +32,17 @@
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
+    "@sentry/cli": "^2.32.1",
+    "@sentry/nestjs": "^8.16.0",
+    "@sentry/node": "^8.16.0",
+    "@sentry/profiling-node": "^8.16.0",
+    "@sentry/tracing": "^7.114.0",
     "alchemy-sdk": "^3.3.1",
     "config": "^3.3.11",
     "ethers": "^6.13.0",
     "lodash": "^4.17.21",
     "nestjs-pino": "^4.1.0",
+    "pino-http": "^10.2.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "typechain": "^8.3.2"

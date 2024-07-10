@@ -7,6 +7,9 @@ export type EcoConfigType = {
   server: {
     url: string
   }
+  externalAPIs: {
+    sentryDNS: string
+  }
   redis: {
     host: string
     port: number
