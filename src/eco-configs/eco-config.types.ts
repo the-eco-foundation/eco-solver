@@ -1,8 +1,8 @@
 import { Network } from 'alchemy-sdk'
-import { ethers } from 'ethers'
 import { ClusterNode } from 'ioredis'
 import { Params as PinoParams } from 'nestjs-pino'
 import * as Redis from 'ioredis'
+import { ethers } from 'ethers'
 
 // The config type that we store in json
 export type EcoConfigType = {
@@ -25,6 +25,8 @@ export type EcoConfigType = {
     dbName: string
     enableJournaling: boolean
   }
+  provers: Prover[]
+  solvers: Solver[]
   logger: {
     usePino: boolean
     pinoConfig: PinoParams
@@ -83,19 +85,20 @@ export type AlchemyNetworkConfigType = {
 }
 
 /**
- * The config type for a single bridge chain.
+ * The config type for a single prover source configuration
  */
-export class BridgeChain {
+export class Prover {
+  // The network that the prover is on
   network: Network
-  disbursementContractAddress: string
+  // The address that the prover source contract is deployed at, we read events from this contract to fulfill
+  sourceAddress: string
+  // The addresses of the tokens that we support as rewards
   tokenAddresses: string[]
-  minBalance: bigint
 
-  constructor(bridgeChain: BridgeChain) {
-    this.network = bridgeChain.network
-    this.disbursementContractAddress = bridgeChain.disbursementContractAddress
-    this.tokenAddresses = bridgeChain.tokenAddresses.map((address) => ethers.getAddress(address))
-    this.minBalance = bridgeChain.minBalance
+  constructor(prover: Prover) {
+    this.network = prover.network
+    this.sourceAddress = prover.sourceAddress
+    this.tokenAddresses = prover.tokenAddresses.map((address) => ethers.getAddress(address))
   }
 
   supportsToken(address: string): boolean {
@@ -104,41 +107,19 @@ export class BridgeChain {
 }
 
 /**
- * The class that represents the whole bridge network that the service supports.
- * The funds are deposited on any chain's disbursement contract can be disbursed on any other chain in the network
+ * The config type for a single solver configuration
  */
-export class BridgeNetwork {
-  private bridgeMap: Map<string, BridgeChain>
+export class Solver {
+  // The network that the solver is on
+  network: Network
+  // The address that the solver contract is deployed at
+  solverAddress: string
+  // The address of the token that the solver is using
+  tokenAddress: string
 
-  bridgeSources: BridgeChain[]
-
-  constructor(sources: BridgeChain[]) {
-    const chains = new Set<BridgeChain>()
-    for (const bridge of sources) {
-      chains.add(new BridgeChain(bridge))
-    }
-    this.bridgeSources = Array.from(chains)
-  }
-
-  getBridgeMap(): Map<string, BridgeChain> {
-    if (!this.bridgeMap) {
-      this.bridgeMap = new Map<Network, BridgeChain>()
-      this.bridgeSources.forEach((bridge) => {
-        this.bridgeMap.set(bridge.network, bridge)
-      })
-    }
-    return this.bridgeMap
-  }
-
-  getBridge(network: Network): BridgeChain {
-    return this.getBridgeMap().get(network)
-  }
-
-  getBridgeForAlchemy(network: Network): BridgeChain {
-    return this.getBridgeMap().get(this.getNetworkFromAlchemy(network))
-  }
-
-  getNetworkFromAlchemy(network: Network): Network {
-    return network
+  constructor(solver: Solver) {
+    this.network = solver.network
+    this.solverAddress = solver.solverAddress
+    this.tokenAddress = ethers.getAddress(solver.tokenAddress)
   }
 }
