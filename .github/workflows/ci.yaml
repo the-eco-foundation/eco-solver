@@ -25,22 +25,6 @@ jobs:
           cache: "npm"
       - run: yarn install
       - run: yarn build
-  sentry:
-    runs-on: ubuntu-latest
-    environment: development
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Create Sentry release
-        uses: getsentry/action-release@v1.7.0
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-          # SENTRY_URL: https://sentry.io/
-        with:
-          environment: production
   test:
     runs-on: ubuntu-latest
     steps:
