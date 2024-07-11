@@ -5,8 +5,8 @@ import { AlchemyService } from '../alchemy/alchemy.service'
  * Service class for solving an intent on chain
  */
 @Injectable()
-export class ProverService implements OnModuleInit {
-  private logger = new Logger(ProverService.name)
+export class SoucerIntentService implements OnModuleInit {
+  private logger = new Logger(SoucerIntentService.name)
 
   constructor(private readonly alchemyService: AlchemyService) {}
 
