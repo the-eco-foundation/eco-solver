@@ -6,6 +6,9 @@ import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { EcoError } from '../common/errors/eco-error'
 import { alchemyToEthers } from '../ethers/ether.helper'
 
+/** AlchemySettings with the `network` param omitted in order to avoid confusion. */
+export type AlchemyMultichainSettings = Omit<AlchemySettings, 'network'>
+
 /**
  * This is a wrapper around the Alchemy class that allows you to use the same
  * Alchemy object to make requests to multiple networks using different
@@ -18,8 +21,7 @@ import { alchemyToEthers } from '../ethers/ether.helper'
  */
 export class AlchemyMultichainClient {
   private logger = new Logger(AlchemyMultichainClient.name)
-  readonly settings: AlchemyMultichainSettings
-  readonly overrides: Partial<Record<Network, AlchemyMultichainSettings>>
+  readonly settings: Partial<Record<Network, AlchemyMultichainSettings>>
   /**
    * Lazy-loaded mapping of `Network` enum to `Alchemy` instance.
    *
@@ -38,12 +40,8 @@ export class AlchemyMultichainClient {
    * @param settings The settings to use for all networks.
    * @param overrides Optional settings to use for specific networks.
    */
-  constructor(
-    settings: AlchemyMultichainSettings,
-    overrides?: Partial<Record<Network, AlchemyMultichainSettings>>,
-  ) {
+  constructor(settings?: Partial<Record<Network, AlchemyMultichainSettings>>) {
     this.settings = settings
-    this.overrides = overrides
   }
 
   /**
@@ -112,11 +110,10 @@ export class AlchemyMultichainClient {
    * @returns
    */
   private getSettings(network: Network): AlchemySettings {
-    return this.overrides && this.overrides[network]
-      ? { ...this.overrides[network], network }
-      : { ...this.settings, network }
+    if (this.settings && this.settings[network]) {
+      return { ...this.settings[network], network }
+    } else {
+      throw EcoError.AlchemyUnsupportedNetworkError(network)
+    }
   }
 }
-
-/** AlchemySettings with the `network` param omitted in order to avoid confusion. */
-export type AlchemyMultichainSettings = Omit<AlchemySettings, 'network'>

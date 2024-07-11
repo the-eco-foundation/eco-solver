@@ -47,6 +47,11 @@ export class EcoConfigService implements OnModuleInit {
     return this.ecoConfig.get<T>(key)
   }
 
+  // Returns the alchemy configs
+  getAlchemy(): EcoConfigType['alchemy'] {
+    return this.ecoConfig.get('alchemy')
+  }
+
   getDatabaseConfig(): EcoConfigType['database'] {
     return this.ecoConfig.get('database')
   }

@@ -13,9 +13,9 @@ export type EcoConfigType = {
     sentryDNS: string
   }
   redis: RedisConfig
+  alchemy: AlchemyConfigType
   eth: {
     privateKey: string
-    alchemy: AlchemyConfigType
   }
   aws: AwsCredentials
   database: {
@@ -68,20 +68,8 @@ export type MongoAuthType = {
  * The whole config type for alchemy.
  */
 export type AlchemyConfigType = {
-  authToken: string
-  default: {
-    network: Network
-    apiKey: string
-  }
-  secondary: [AlchemyNetworkConfigType]
-}
-
-/**
- * The config type for a single alchemy network.
- */
-export type AlchemyNetworkConfigType = {
-  network: Network
   apiKey: string
+  networks: Network[]
 }
 
 /**

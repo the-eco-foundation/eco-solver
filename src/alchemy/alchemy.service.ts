@@ -24,19 +24,16 @@ export class AlchemyService implements OnModuleInit {
   constructor(private ecoConfigService: EcoConfigService) {}
 
   async onModuleInit() {
-    const alchemyConfigs = this.ecoConfigService.getEth().alchemy
-    this._supportedNetworks.push(alchemyConfigs.default.network)
-    const authToken = alchemyConfigs.authToken
-    const defaultConfig: AlchemyMultichainSettings = { ...alchemyConfigs.default, authToken }
-
-    const overrides: Partial<Record<Network, AlchemyMultichainSettings>> =
-      alchemyConfigs.secondary.reduce((acc, config) => {
-        acc[config.network] = { apiKey: config.apiKey, network: config.network, authToken }
-        this._supportedNetworks.push(config.network)
+    const alchemyConfigs = this.ecoConfigService.getAlchemy()
+    this._supportedNetworks = this._supportedNetworks.concat(alchemyConfigs.networks)
+    const apiKey = alchemyConfigs.apiKey
+    const configs: Partial<Record<Network, AlchemyMultichainSettings>> =
+      alchemyConfigs.networks.reduce((acc, network) => {
+        acc[network] = { apiKey: apiKey, network: network }
         return acc
       }, {})
 
-    this.alchemy = new AlchemyMultichainClient(defaultConfig, overrides)
+    this.alchemy = new AlchemyMultichainClient(configs)
   }
 
   get supportedNetworks(): ReadonlyArray<Network> {

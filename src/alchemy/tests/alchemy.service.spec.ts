@@ -28,22 +28,9 @@ describe('AlchemyService', () => {
   let alchemyMod: TestingModule
   const unsupportedNetwork = Network.ARB_GOERLI
   const baseNetwork = Network.BASE_SEPOLIA
-  const ac: AlchemyConfigType = {
-    authToken: 'authasdf',
-    default: {
-      network: baseNetwork,
-      apiKey: 'coolkey',
-    },
-    secondary: [
-      {
-        network: Network.OPT_SEPOLIA,
-        apiKey: 'aaa-op',
-      },
-    ],
-  }
-  const config = {
-    privateKey: '0x17226185c7a8e77f9258a1239e387b2ca9076ba8ab77a67dac7ed3ef9e936e26',
-    alchemy: ac,
+  const alchemyConfig: AlchemyConfigType = {
+    apiKey: 'coolkey',
+    networks: [baseNetwork, Network.OPT_SEPOLIA],
   }
 
   beforeEach(async () => {
@@ -59,7 +46,10 @@ describe('AlchemyService', () => {
       EcoConfigService,
     ) as DeepMocked<EcoConfigService>
 
-    ecoConfigService.getEth.mockReturnValue(config)
+    ecoConfigService.getAlchemy.mockReturnValue(alchemyConfig)
+    ecoConfigService.getEth.mockReturnValue({
+      privateKey: '0xe6058ea158ab94c87d828d0d936337e46b3ccee52d3469ba3d8505b58c8f5e4b',
+    })
   })
 
   afterEach(async () => {
@@ -71,6 +61,7 @@ describe('AlchemyService', () => {
   describe('when alchemy service initializing', () => {
     it('should initialize support for all the networks in the configuration', async () => {
       await alchemyMod.init()
+      console.log(alchemyService.supportedNetworks)
       expect(alchemyService.supportedNetworks).toEqual([baseNetwork, Network.OPT_SEPOLIA])
     })
   })
