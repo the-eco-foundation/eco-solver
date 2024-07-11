@@ -37,8 +37,7 @@ export default {
       },
     },
   },
-  externalAPIs: {
-  },
+  externalAPIs: {},
   logger: {
     usePino: true,
     pinoConfig: {

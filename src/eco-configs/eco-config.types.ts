@@ -9,8 +9,7 @@ export type EcoConfigType = {
   server: {
     url: string
   }
-  externalAPIs: {
-  }
+  externalAPIs: unknown
   redis: RedisConfig
   alchemy: AlchemyConfigType
   eth: {
