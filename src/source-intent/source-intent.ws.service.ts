@@ -3,6 +3,8 @@ import { AlchemyService } from '../alchemy/alchemy.service'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { getCreateIntentLogFilter } from '../ws/ws.helpers'
 import { AlchemyEventType } from 'alchemy-sdk'
+import { EventEmitter2 } from '@nestjs/event-emitter'
+import { EVENTS } from '../common/events/constants'
 
 /**
  * Service class for solving an intent on chain. When this service starts up,
@@ -16,6 +18,7 @@ export class SoucerIntentWsService implements OnModuleInit {
   constructor(
     private readonly alchemyService: AlchemyService,
     private readonly ecoConfigService: EcoConfigService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   onModuleInit() {
@@ -24,6 +27,7 @@ export class SoucerIntentWsService implements OnModuleInit {
         .getAlchemy(source.network)
         .ws.on(getCreateIntentLogFilter(source.sourceAddress) as AlchemyEventType, (event) => {
           this.logger.debug(`Received event: ${event}`)
+          this.eventEmitter.emit(EVENTS.SOURCE_INTENT_CREATED, event)
         })
     })
   }

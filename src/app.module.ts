@@ -8,12 +8,14 @@ import { EcoConfigService } from './eco-configs/eco-config.service'
 import { LoggerModule } from 'nestjs-pino'
 import { SolverModule } from './solver/solver.module'
 import { MongooseModule } from '@nestjs/mongoose'
+import { EventEmitterModule } from '@nestjs/event-emitter'
 
 @Module({
   imports: [
     AlchemyModule,
     ChainMonitorModule,
     EcoConfigModule,
+    EventEmitterModule.forRoot(),
     SolverModule,
     MongooseModule.forRootAsync({
       imports: [EcoConfigModule],
