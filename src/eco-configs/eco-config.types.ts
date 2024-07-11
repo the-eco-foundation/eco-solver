@@ -2,7 +2,6 @@ import { Network } from 'alchemy-sdk'
 import { ClusterNode } from 'ioredis'
 import { Params as PinoParams } from 'nestjs-pino'
 import * as Redis from 'ioredis'
-import { ethers } from 'ethers'
 
 // The config type that we store in json
 export type EcoConfigType = {
@@ -23,8 +22,10 @@ export type EcoConfigType = {
     dbName: string
     enableJournaling: boolean
   }
-  provers: Prover[]
-  solvers: Solver[]
+  contracts: {
+    sourceIntents: SourceIntent[]
+    solvers: Solver[]
+  }
   logger: {
     usePino: boolean
     pinoConfig: PinoParams
@@ -73,23 +74,23 @@ export type AlchemyConfigType = {
 /**
  * The config type for a single prover source configuration
  */
-export class Prover {
+export class SourceIntent {
   // The network that the prover is on
   network: Network
   // The address that the prover source contract is deployed at, we read events from this contract to fulfill
   sourceAddress: string
-  // The addresses of the tokens that we support as rewards
-  tokenAddresses: string[]
+  // // The addresses of the tokens that we support as rewards
+  // tokenAddresses: string[]
 
-  constructor(prover: Prover) {
-    this.network = prover.network
-    this.sourceAddress = prover.sourceAddress
-    this.tokenAddresses = prover.tokenAddresses.map((address) => ethers.getAddress(address))
-  }
+  // constructor(si: SourceIntent) {
+  //   this.network = si.network
+  //   this.sourceAddress = si.sourceAddress
+  //   this.tokenAddresses = si.tokenAddresses.map((address) => ethers.getAddress(address))
+  // }
 
-  supportsToken(address: string): boolean {
-    return this.tokenAddresses.includes(ethers.getAddress(address))
-  }
+  // supportsToken(address: string): boolean {
+  //   return this.tokenAddresses.includes(ethers.getAddress(address))
+  // }
 }
 
 /**
@@ -103,9 +104,9 @@ export class Solver {
   // The address of the token that the solver is using
   tokenAddress: string
 
-  constructor(solver: Solver) {
-    this.network = solver.network
-    this.solverAddress = solver.solverAddress
-    this.tokenAddress = ethers.getAddress(solver.tokenAddress)
-  }
+  // constructor(solver: Solver) {
+  //   this.network = solver.network
+  //   this.solverAddress = solver.solverAddress
+  //   this.tokenAddress = ethers.getAddress(solver.tokenAddress)
+  // }
 }

@@ -61,7 +61,6 @@ describe('AlchemyService', () => {
   describe('when alchemy service initializing', () => {
     it('should initialize support for all the networks in the configuration', async () => {
       await alchemyMod.init()
-      console.log(alchemyService.supportedNetworks)
       expect(alchemyService.supportedNetworks).toEqual([baseNetwork, Network.OPT_SEPOLIA])
     })
   })
