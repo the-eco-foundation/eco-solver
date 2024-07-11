@@ -66,6 +66,3 @@ config/*
 !config/default.ts
 !config/development.ts
 !config/test.ts
-
-# Sentry Config File
-.sentryclirc

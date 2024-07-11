@@ -38,8 +38,6 @@ export default {
     },
   },
   externalAPIs: {
-    sentryDNS:
-      'https://2bdbf18fde50475291703f27035fcbbd@o4505604587061248.ingest.us.sentry.io/4507573022556160',
   },
   logger: {
     usePino: true,

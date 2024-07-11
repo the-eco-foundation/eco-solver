@@ -10,7 +10,6 @@ export type EcoConfigType = {
     url: string
   }
   externalAPIs: {
-    sentryDNS: string
   }
   redis: RedisConfig
   alchemy: AlchemyConfigType
