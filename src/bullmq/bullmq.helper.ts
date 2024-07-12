@@ -1,9 +1,9 @@
 import { BullModule } from '@nestjs/bullmq'
 import { DynamicModule } from '@nestjs/common'
-import { EcoConfigModule } from '../../eco-configs/eco-config.module'
-import { EcoConfigService } from '../../eco-configs/eco-config.service'
-import { RedisConnectionUtils } from './redis-connection-utils'
-import { QueueInterface } from './constants'
+import { EcoConfigModule } from '../eco-configs/eco-config.module'
+import { EcoConfigService } from '../eco-configs/eco-config.service'
+import { RedisConnectionUtils } from '../common/redis/redis-connection-utils'
+import { QueueInterface } from '../common/redis/constants'
 
 /**
  * Initialize the BullMQ queue with the given token and eco configs

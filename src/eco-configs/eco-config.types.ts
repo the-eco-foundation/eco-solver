@@ -2,6 +2,7 @@ import { Network } from 'alchemy-sdk'
 import { ClusterNode } from 'ioredis'
 import { Params as PinoParams } from 'nestjs-pino'
 import * as Redis from 'ioredis'
+import { Settings } from 'redlock'
 
 // The config type that we store in json
 export type EcoConfigType = {
@@ -43,6 +44,7 @@ export type RedisConfig = {
     single: Redis.RedisOptions
     cluster: Redis.ClusterOptions
   }
+  redlockSettings?: Partial<Settings>
 }
 
 /**

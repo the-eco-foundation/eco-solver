@@ -5,6 +5,7 @@ import { EcoError } from '../errors/eco-error'
 import { EcoLogMessage } from '../logging/eco-log-message'
 import { QueueInterface } from './constants'
 import { RedisConfig } from '../../eco-configs/eco-config.types'
+import { RedlockRedisClient } from '../../nest-redlock/nest-redlock.service'
 
 export class RedisConnectionUtils {
   private static logger = new Logger(RedisConnectionUtils.name)
@@ -42,6 +43,20 @@ export class RedisConnectionUtils {
     }
   }
 
+  static getClientsForRedlock(redisConfig: RedisConfig): RedlockRedisClient[] {
+    const connection = redisConfig.connection
+    if (this.isClusterConnection(connection)) {
+      return [
+        new Redis.Cluster(
+          connection as Redis.ClusterNode[],
+          RedisConnectionUtils.getClusterOptions(redisConfig),
+        ),
+      ]
+    }
+
+    return [new Redis.Redis(connection as Redis.RedisOptions)]
+  }
+
   private static isClusterConnection(connection: Redis.ClusterNode | Redis.ClusterNode[]): boolean {
     return Array.isArray(connection)
   }
@@ -59,17 +74,20 @@ export class RedisConnectionUtils {
       }),
     )
 
-    const redisOptions = redisConfig.options.single
-
-    const clusterOptions: Redis.ClusterOptions = {
-      ...redisConfig.options.cluster,
-      redisOptions,
-    }
-
     return {
       name,
       prefix,
-      connection: new Redis.Cluster(connection, clusterOptions),
+      connection: new Redis.Cluster(
+        connection,
+        RedisConnectionUtils.getClusterOptions(redisConfig),
+      ),
     } as RegisterQueueOptions
+  }
+
+  private static getClusterOptions(redisConfig: RedisConfig): Redis.ClusterOptions {
+    return {
+      ...redisConfig.options.cluster,
+      redisOptions: redisConfig.options.single,
+    }
   }
 }

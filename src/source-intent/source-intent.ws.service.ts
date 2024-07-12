@@ -25,10 +25,17 @@ export class SoucerIntentWsService implements OnModuleInit {
     this.ecoConfigService.getContracts().sourceIntents.forEach((source) => {
       this.alchemyService
         .getAlchemy(source.network)
-        .ws.on(getCreateIntentLogFilter(source.sourceAddress) as AlchemyEventType, (event) => {
-          this.logger.debug(`Received event: ${event}`)
-          this.eventEmitter.emit(EVENTS.SOURCE_INTENT_CREATED, event)
-        })
+        .ws.on(
+          getCreateIntentLogFilter(source.sourceAddress) as AlchemyEventType,
+          this.emitEvent(EVENTS.SOURCE_INTENT_CREATED),
+        )
     })
+  }
+
+  private emitEvent(eventName: any) {
+    return (event: any) => {
+      this.logger.log(`Received event: ${event}`)
+      this.eventEmitter.emit(eventName, event)
+    }
   }
 }
