@@ -15,9 +15,14 @@ export class SoucerIntentService implements OnModuleInit {
   constructor(
     private readonly alchemyService: AlchemyService,
     private redlockService: RedlockService,
-  ) {}
+  ) { }
 
-  onModuleInit() {}
+  onModuleInit() { }
+
+  async fillIntent(data: any) {
+    this.logger.log(`Filling intent: ${data}`)
+
+  }
 
   @OnEvent(EVENTS.SOURCE_INTENT_CREATED)
   async handleSourceIntentCreatedEvent(payload: any) {
@@ -31,6 +36,7 @@ export class SoucerIntentService implements OnModuleInit {
       this.logger.error(e)
     }
   }
+
   delay(ms: number) {
     return new Promise((resolve) => {
       setTimeout(resolve, ms)

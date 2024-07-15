@@ -3,12 +3,13 @@ import { QUEUES } from '../../common/redis/constants'
 import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
 import { EcoLogMessage } from '../../common/logging/eco-log-message'
+import { SoucerIntentService } from '../../source-intent/source-intent.service'
 
 @Injectable()
 @Processor(QUEUES.SOLVE_INTENT.queue)
 export class SolveIntentProcessor extends WorkerHost {
   private logger = new Logger(SolveIntentProcessor.name)
-  constructor() {
+  constructor(private readonly sourceIntentService: SoucerIntentService) {
     super()
   }
 
@@ -23,8 +24,8 @@ export class SolveIntentProcessor extends WorkerHost {
     )
     switch (job.name) {
       case QUEUES.SOLVE_INTENT.jobs.token:
-      // const intentData = job.data
-      // return await this.ethersService.bridgeToken(intentData)
+      const intentData = job.data
+      return await this.sourceIntentService.fillIntent(intentData)
       default:
         this.logger.error(
           EcoLogMessage.fromDefault({
