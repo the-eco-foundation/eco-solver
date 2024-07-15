@@ -15,13 +15,12 @@ export class SoucerIntentService implements OnModuleInit {
   constructor(
     private readonly alchemyService: AlchemyService,
     private redlockService: RedlockService,
-  ) { }
+  ) {}
 
-  onModuleInit() { }
+  onModuleInit() {}
 
   async fillIntent(data: any) {
     this.logger.log(`Filling intent: ${data}`)
-
   }
 
   @OnEvent(EVENTS.SOURCE_INTENT_CREATED)

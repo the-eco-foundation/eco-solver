@@ -24,8 +24,8 @@ export class SolveIntentProcessor extends WorkerHost {
     )
     switch (job.name) {
       case QUEUES.SOLVE_INTENT.jobs.token:
-      const intentData = job.data
-      return await this.sourceIntentService.fillIntent(intentData)
+        const intentData = job.data
+        return await this.sourceIntentService.fillIntent(intentData)
       default:
         this.logger.error(
           EcoLogMessage.fromDefault({
