@@ -5,7 +5,7 @@ import { Job } from 'bullmq'
 import { EcoLogMessage } from '../../common/logging/eco-log-message'
 
 @Injectable()
-@Processor(QUEUES.SOLVE_INTENT.name)
+@Processor(QUEUES.SOLVE_INTENT.queue)
 export class SolveIntentProcessor extends WorkerHost {
   private logger = new Logger(SolveIntentProcessor.name)
   constructor() {

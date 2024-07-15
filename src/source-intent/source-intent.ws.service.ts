@@ -4,7 +4,10 @@ import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { getCreateIntentLogFilter } from '../ws/ws.helpers'
 import { AlchemyEventType } from 'alchemy-sdk'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { EVENTS } from '../common/events/constants'
+import { JobsOptions, Queue } from 'bullmq'
+import { QUEUES } from '../common/redis/constants'
+import { InjectQueue } from '@nestjs/bullmq'
+import { SourceIntentTx } from '../bullmq/processors/dtos/SourceIntentTx.dto'
 
 /**
  * Service class for solving an intent on chain. When this service starts up,
@@ -15,23 +18,36 @@ import { EVENTS } from '../common/events/constants'
 @Injectable()
 export class SoucerIntentWsService implements OnModuleInit {
   private logger = new Logger(SoucerIntentWsService.name)
+  private intentJobConfig: JobsOptions
+
   constructor(
+    @InjectQueue(QUEUES.SOLVE_INTENT.queue) private readonly solveIntentQueue: Queue,
     private readonly alchemyService: AlchemyService,
     private readonly ecoConfigService: EcoConfigService,
     private eventEmitter: EventEmitter2,
   ) {}
 
   onModuleInit() {
+    this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
+
     this.ecoConfigService.getContracts().sourceIntents.forEach((source) => {
-      this.alchemyService
-        .getAlchemy(source.network)
-        .ws.on(
-          getCreateIntentLogFilter(source.sourceAddress) as AlchemyEventType,
-          this.emitEvent(EVENTS.SOURCE_INTENT_CREATED),
-        )
+      this.alchemyService.getAlchemy(source.network).ws.on(
+        getCreateIntentLogFilter(source.sourceAddress) as AlchemyEventType,
+        // this.emitEvent(EVENTS.SOURCE_INTENT_CREATED),
+        this.addJob(),
+      )
     })
   }
 
+  private addJob() {
+    return async (event: any) => {
+      //add to processing queue
+      await this.solveIntentQueue.add(QUEUES.SOLVE_INTENT.jobs.token, event as SourceIntentTx, {
+        jobId: event.transactionHash,
+        ...this.intentJobConfig,
+      })
+    }
+  }
   private emitEvent(eventName: any) {
     return (event: any) => {
       this.logger.log(`Received event: ${event}`)

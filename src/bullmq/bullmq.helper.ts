@@ -12,7 +12,7 @@ import { QueueInterface } from '../common/redis/constants'
  */
 export function initBullMQ(queueInterface: QueueInterface): DynamicModule {
   return BullModule.registerQueueAsync({
-    name: queueInterface.name,
+    name: queueInterface.queue,
     imports: [EcoConfigModule],
     useFactory: async (configService: EcoConfigService) => {
       return RedisConnectionUtils.getQueueOptions(queueInterface, configService.getRedis())

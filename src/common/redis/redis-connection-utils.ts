@@ -13,7 +13,7 @@ export class RedisConnectionUtils {
   static getQueueOptions(queue: QueueInterface, redisConfig: RedisConfig): RegisterQueueOptions {
     try {
       const connection = redisConfig.connection
-      const { name, prefix } = queue
+      const { queue : name, prefix } = queue
 
       if (this.isClusterConnection(connection)) {
         return this.getQueueOptionsForCluster(

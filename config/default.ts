@@ -43,6 +43,12 @@ export default {
       retryDelay: 200,
       retryJitter: 200,
     },
+    jobs: {
+      intentJobConfig: {
+        removeOnComplete: 1000,
+        removeOnFail: 500,
+      },
+    },
   },
   externalAPIs: {},
   logger: {
