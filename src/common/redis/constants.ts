@@ -1,6 +1,6 @@
 export const QUEUES: Record<any, QueueInterface> = {
   SOLVE_INTENT: {
-    name: 'solve-intent',
+    queue: 'solve-intent',
     prefix: '{solver}',
     jobs: {
       token: 'solve-intent',
@@ -9,7 +9,7 @@ export const QUEUES: Record<any, QueueInterface> = {
 }
 
 export interface QueueInterface {
-  name: string
+  queue: string
   prefix: string
   jobs: {
     token: string

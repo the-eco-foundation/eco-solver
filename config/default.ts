@@ -19,6 +19,7 @@ export default {
   redis: {
     connection: {
       host: 'localhost',
+      port: 6379,
     },
     options: {
       single: {
@@ -34,6 +35,18 @@ export default {
         slotsRefreshTimeout: 10000,
         clusterRetryStrategy: (times: number): number => Math.min(times * 1000, 10000),
         dnsLookup: (address: string, callback: any) => callback(null, address, 6),
+      },
+    },
+    redlockSettings: {
+      driftFactor: 0.01,
+      retryCount: 3,
+      retryDelay: 200,
+      retryJitter: 200,
+    },
+    jobs: {
+      intentJobConfig: {
+        removeOnComplete: 1000,
+        removeOnFail: 500,
       },
     },
   },
