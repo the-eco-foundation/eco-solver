@@ -8,6 +8,7 @@ import { JobsOptions, Queue } from 'bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
 import { SourceIntentTx } from '../bullmq/processors/dtos/SourceIntentTx.dto'
+import { SourceIntentWS } from './dtos/SourceIntentWS'
 
 /**
  * Service class for solving an intent on chain. When this service starts up,
@@ -16,12 +17,12 @@ import { SourceIntentTx } from '../bullmq/processors/dtos/SourceIntentTx.dto'
  * eventbus.
  */
 @Injectable()
-export class SoucerIntentWsService implements OnModuleInit {
-  private logger = new Logger(SoucerIntentWsService.name)
+export class SourceIntentWsService implements OnModuleInit {
+  private logger = new Logger(SourceIntentWsService.name)
   private intentJobConfig: JobsOptions
 
   constructor(
-    @InjectQueue(QUEUES.SOLVE_INTENT.queue) private readonly solveIntentQueue: Queue,
+    @InjectQueue(QUEUES.CREATE_INTENT.queue) private readonly solveIntentQueue: Queue,
     private readonly alchemyService: AlchemyService,
     private readonly ecoConfigService: EcoConfigService,
     private eventEmitter: EventEmitter2,
@@ -38,14 +39,28 @@ export class SoucerIntentWsService implements OnModuleInit {
       )
     })
   }
-
-  private addJob() {
-    return async (event: any) => {
-      //add to processing queue
-      await this.solveIntentQueue.add(QUEUES.SOLVE_INTENT.jobs.token, event as SourceIntentTx, {
+  public async add(event: SourceIntentWS) {
+    //add to processing queue
+    await this.solveIntentQueue.add(
+      QUEUES.CREATE_INTENT.jobs.create_intent,
+      event as SourceIntentTx,
+      {
         jobId: event.transactionHash,
         ...this.intentJobConfig,
-      })
+      },
+    )
+  }
+  private addJob() {
+    return async (event: SourceIntentWS) => {
+      //add to processing queue
+      await this.solveIntentQueue.add(
+        QUEUES.CREATE_INTENT.jobs.create_intent,
+        event as SourceIntentTx,
+        {
+          jobId: event.transactionHash,
+          ...this.intentJobConfig,
+        },
+      )
     }
   }
   private emitEvent(eventName: any) {

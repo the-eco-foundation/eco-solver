@@ -9,8 +9,8 @@ import { Lock } from 'redlock'
  * Service class for solving an intent on chain
  */
 @Injectable()
-export class SoucerIntentService implements OnModuleInit {
-  private logger = new Logger(SoucerIntentService.name)
+export class SourceIntentService implements OnModuleInit {
+  private logger = new Logger(SourceIntentService.name)
 
   constructor(
     private readonly alchemyService: AlchemyService,
