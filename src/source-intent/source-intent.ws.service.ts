@@ -2,13 +2,13 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { AlchemyService } from '../alchemy/alchemy.service'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { getCreateIntentLogFilter } from '../ws/ws.helpers'
-import { AlchemyEventType } from 'alchemy-sdk'
-import { EventEmitter2 } from '@nestjs/event-emitter'
+import { AlchemyEventType, Network } from 'alchemy-sdk'
 import { JobsOptions, Queue } from 'bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
 import { SourceIntentTx } from '../bullmq/processors/dtos/SourceIntentTx.dto'
 import { SourceIntentWS } from './dtos/SourceIntentWS'
+import { EcoLogMessage } from '../common/logging/eco-log-message'
 
 /**
  * Service class for solving an intent on chain. When this service starts up,
@@ -25,33 +25,33 @@ export class SourceIntentWsService implements OnModuleInit {
     @InjectQueue(QUEUES.CREATE_INTENT.queue) private readonly solveIntentQueue: Queue,
     private readonly alchemyService: AlchemyService,
     private readonly ecoConfigService: EcoConfigService,
-    private eventEmitter: EventEmitter2,
   ) {}
 
   onModuleInit() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
 
     this.ecoConfigService.getContracts().sourceIntents.forEach((source) => {
-      this.alchemyService.getAlchemy(source.network).ws.on(
-        getCreateIntentLogFilter(source.sourceAddress) as AlchemyEventType,
-        // this.emitEvent(EVENTS.SOURCE_INTENT_CREATED),
-        this.addJob(),
-      )
+      this.alchemyService
+        .getAlchemy(source.network)
+        .ws.on(
+          getCreateIntentLogFilter(source.sourceAddress) as AlchemyEventType,
+          this.addJob(source.network),
+        )
     })
   }
-  public async add(event: SourceIntentWS) {
-    //add to processing queue
-    await this.solveIntentQueue.add(
-      QUEUES.CREATE_INTENT.jobs.create_intent,
-      event as SourceIntentTx,
-      {
-        jobId: event.transactionHash,
-        ...this.intentJobConfig,
-      },
-    )
-  }
-  private addJob() {
+
+  addJob(network: Network) {
     return async (event: SourceIntentWS) => {
+      //add network to the event since alchemy doesn`t
+      event.network = network
+      this.logger.debug(
+        EcoLogMessage.fromDefault({
+          message: `SourceIntentWsService: ws event`,
+          properties: {
+            event: event,
+          },
+        }),
+      )
       //add to processing queue
       await this.solveIntentQueue.add(
         QUEUES.CREATE_INTENT.jobs.create_intent,
@@ -61,12 +61,6 @@ export class SourceIntentWsService implements OnModuleInit {
           ...this.intentJobConfig,
         },
       )
-    }
-  }
-  private emitEvent(eventName: any) {
-    return (event: any) => {
-      this.logger.log(`Received event: ${event}`)
-      this.eventEmitter.emit(eventName, event)
     }
   }
 }

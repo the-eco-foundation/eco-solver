@@ -1,3 +1,5 @@
+import { Network } from 'alchemy-sdk'
+
 /**
  * {
   blockNumber: 14672041,
@@ -22,6 +24,7 @@ export interface SourceIntentWS {
   transactionIndex: number
   removed: boolean
   address: string
+  network: Network
   data: string
   topics: string[]
   transactionHash: string
