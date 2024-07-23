@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { ContractTransactionReceipt } from 'ethers'
+import { SourceIntentEventModel } from './source-intent-event.schema'
 import { SourceIntentDataModel } from './source-intent-data.schema'
 
 export type SourceIntentStatus = 'PENDING' | 'SOLVED' | 'EXPIRED'
@@ -7,7 +8,10 @@ export type SourceIntentStatus = 'PENDING' | 'SOLVED' | 'EXPIRED'
 @Schema()
 export class SourceIntentModel {
   @Prop()
-  intentData: SourceIntentDataModel
+  event: SourceIntentEventModel
+
+  @Prop()
+  intent: SourceIntentDataModel
 
   @Prop()
   receipt: ContractTransactionReceipt

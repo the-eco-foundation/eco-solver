@@ -6,6 +6,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { Model } from 'mongoose'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
+import { decodeCreateIntentLog } from '../ws/ws.helpers'
 
 /**
  * Service class for solving an intent on chain
@@ -22,9 +23,10 @@ export class SourceIntentService implements OnModuleInit {
 
   onModuleInit() {}
 
-  async createIntent(data: SourceIntentWS) {
-    this.logger.log(`Creating intent: ${data}`)
-    const lock = await this.redlockService.acquireLock([data.transactionHash], 5000)
+  async createIntent(intentWs: SourceIntentWS) {
+    const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics)
+    this.logger.log(`Creating intent: `)
+    const lock = await this.redlockService.acquireLock([intent.hash as string], 5000)
     //this instance didn`t get the lock, so just break out here
     if (!lock) {
       return
@@ -33,16 +35,16 @@ export class SourceIntentService implements OnModuleInit {
     try {
       //check db if the intent is already filled
       const model = await this.intentModel.findOne({
-        'intentData.transactionHash': data.transactionHash,
+        'intent.hash': intent.hash,
       })
       if (model) {
         // Record already exists, do nothing and return
         this.logger.debug(
           EcoLogMessage.fromDefault({
-            message: `Record for intent already exists ${data.transactionHash}`,
+            message: `Record for intent already exists ${intent.hash}`,
             properties: {
-              eventHash: data.transactionHash,
-              event: data,
+              intentHash: intent.hash,
+              intent: intent,
             },
           }),
         )
@@ -51,16 +53,17 @@ export class SourceIntentService implements OnModuleInit {
 
       //update db
       const record = await this.intentModel.create<SourceIntentModel>({
-        intentData: data,
+        event: intentWs,
+        intent: intent,
         receipt: null,
         status: 'PENDING',
       })
       this.logger.debug(
         EcoLogMessage.fromDefault({
-          message: `Recorded intent ${record.intentData.transactionHash}`,
+          message: `Recorded intent ${record.intent.hash}`,
           properties: {
-            eventHash: data.transactionHash,
-            event: record.intentData,
+            intentHash: intent.hash,
+            intent: record.intent,
           },
         }),
       )
