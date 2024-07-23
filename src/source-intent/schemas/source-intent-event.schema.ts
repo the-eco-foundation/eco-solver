@@ -1,15 +1,15 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose'
-import { SourceIntentWS } from '../dtos/SourceIntentWS'
+import { EventLogWS } from '../dtos/EventLogWS'
 import { Network } from 'alchemy-sdk'
 
 @Schema()
-export class SourceIntentEventModel implements SourceIntentWS {
+export class SourceIntentEventModel implements EventLogWS {
+  network: Network
   blockNumber: number
   blockHash: string
   transactionIndex: number
   removed: boolean
   address: string
-  network: Network
   data: string
   topics: string[]
   transactionHash: string

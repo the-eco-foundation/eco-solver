@@ -9,19 +9,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { RedlockModule } from './nest-redlock/nest-redlock.module'
 import { SolveIntentModule } from './source-intent/source-intent.module'
-import { BullModule } from '@nestjs/bullmq'
 import { SourceIntentModel } from './source-intent/schemas/source-intent.schema'
-export const queueConfig = BullModule.forRoot({
-  connection: {
-    host: 'localhost',
-    port: 6379,
-  },
-  defaultJobOptions: {
-    removeOnComplete: 1000,
-    removeOnFail: 5000,
-    attempts: 3,
-  },
-})
 
 @Module({
   imports: [

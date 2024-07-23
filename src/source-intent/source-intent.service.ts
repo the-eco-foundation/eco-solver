@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { AlchemyService } from '../alchemy/alchemy.service'
 import { RedlockService } from '../nest-redlock/nest-redlock.service'
-import { SourceIntentWS } from './dtos/SourceIntentWS'
+import { EventLogWS } from './dtos/EventLogWS'
 import { InjectModel } from '@nestjs/mongoose'
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { Model } from 'mongoose'
@@ -23,7 +23,7 @@ export class SourceIntentService implements OnModuleInit {
 
   onModuleInit() {}
 
-  async createIntent(intentWs: SourceIntentWS) {
+  async createIntent(intentWs: EventLogWS) {
     const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics)
     this.logger.log(`Creating intent: `)
     const lock = await this.redlockService.acquireLock([intent.hash as string], 5000)

@@ -7,7 +7,7 @@ import { JobsOptions, Queue } from 'bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
 import { SourceIntentTx } from '../bullmq/processors/dtos/SourceIntentTx.dto'
-import { SourceIntentWS } from './dtos/SourceIntentWS'
+import { EventLogWS } from './dtos/EventLogWS'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 
 /**
@@ -29,7 +29,6 @@ export class SourceIntentWsService implements OnModuleInit {
 
   onModuleInit() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
-
     this.ecoConfigService.getContracts().sourceIntents.forEach((source) => {
       this.alchemyService
         .getAlchemy(source.network)
@@ -41,7 +40,7 @@ export class SourceIntentWsService implements OnModuleInit {
   }
 
   addJob(network: Network) {
-    return async (event: SourceIntentWS) => {
+    return async (event: EventLogWS) => {
       //add network to the event since alchemy doesn`t
       event.network = network
       this.logger.debug(

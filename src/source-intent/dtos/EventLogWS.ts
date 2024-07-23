@@ -1,4 +1,5 @@
 import { Network } from 'alchemy-sdk'
+import { Log as EthersLog } from 'alchemy-sdk'
 
 /**
  * {
@@ -18,15 +19,6 @@ import { Network } from 'alchemy-sdk'
   logIndex: 2
 }
  */
-export interface SourceIntentWS {
-  blockNumber: number
-  blockHash: string
-  transactionIndex: number
-  removed: boolean
-  address: string
+export interface EventLogWS extends EthersLog {
   network: Network
-  data: string
-  topics: string[]
-  transactionHash: string
-  logIndex: number
 }
