@@ -1,9 +1,10 @@
 export const QUEUES = {
-  CREATE_INTENT: {
-    queue: 'create_intent',
-    prefix: '{solver-create-intent}',
+  SOURCE_INTENT: {
+    queue: 'source_intent',
+    prefix: '{solver-source-intent}',
     jobs: {
       create_intent: 'create_intent',
+      process_intent: 'process_intent',
     },
   },
 }

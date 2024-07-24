@@ -1,12 +1,17 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { AlchemyService } from '../alchemy/alchemy.service'
 import { RedlockService } from '../nest-redlock/nest-redlock.service'
-import { EventLogWS } from './dtos/EventLogWS'
+import { EventLogWS, SourceIntentTxHash } from './dtos/EventLogWS'
 import { InjectModel } from '@nestjs/mongoose'
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { Model } from 'mongoose'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { decodeCreateIntentLog } from '../ws/ws.helpers'
+import { InjectQueue } from '@nestjs/bullmq'
+import { QUEUES } from '../common/redis/constants'
+import { JobsOptions, Queue } from 'bullmq'
+import { EcoConfigService } from '../eco-configs/eco-config.service'
+import { SourceIntentTx } from '../bullmq/processors/dtos/SourceIntentTx.dto'
 
 /**
  * Service class for solving an intent on chain
@@ -14,18 +19,22 @@ import { decodeCreateIntentLog } from '../ws/ws.helpers'
 @Injectable()
 export class SourceIntentService implements OnModuleInit {
   private logger = new Logger(SourceIntentService.name)
-
+  private intentJobConfig: JobsOptions
   constructor(
     private readonly alchemyService: AlchemyService,
+    @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private redlockService: RedlockService,
+    private readonly ecoConfigService: EcoConfigService,
   ) {}
 
-  onModuleInit() {}
+  onModuleInit() {
+    this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
+  }
 
   async createIntent(intentWs: EventLogWS) {
-    const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics)
     this.logger.log(`Creating intent: `)
+    const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics)
     const lock = await this.redlockService.acquireLock([intent.hash as string], 5000)
     //this instance didn`t get the lock, so just break out here
     if (!lock) {
@@ -58,6 +67,13 @@ export class SourceIntentService implements OnModuleInit {
         receipt: null,
         status: 'PENDING',
       })
+
+      //add to processing queue
+      await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.process_intent, intent.hash, {
+        jobId: intent.hash as string,
+        ...this.intentJobConfig,
+      })
+
       this.logger.debug(
         EcoLogMessage.fromDefault({
           message: `Recorded intent ${record.intent.hash}`,
@@ -74,24 +90,5 @@ export class SourceIntentService implements OnModuleInit {
     }
   }
 
-  // @OnEvent(EVENTS.SOURCE_INTENT_CREATED)
-  // async handleSourceIntentCreatedEvent(payload: any) {
-  //   let lock: Lock
-  //   try {
-  //     lock = await this.redlockService.acquire([`test:${1}`], 5000)
-  //     await this.delay(2000)
-  //     this.logger.log(`Received event: ${payload}`)
-  //     lock.release()
-  //   } catch (e) {
-  //     this.logger.error(e)
-  //   }
-  // }
-
-  // async acquireLock(hash: string): Promise<Lock | null> {
-  //   try {
-  //     return await this.redlockService.acquire([hash], 5000)
-  //   } catch {
-  //     return null
-  //   }
-  // }
+  async processIntent(intentHash: SourceIntentTxHash) {}
 }

@@ -6,7 +6,6 @@ import { AlchemyEventType, Network } from 'alchemy-sdk'
 import { JobsOptions, Queue } from 'bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
-import { SourceIntentTx } from '../bullmq/processors/dtos/SourceIntentTx.dto'
 import { EventLogWS } from './dtos/EventLogWS'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 
@@ -22,7 +21,7 @@ export class SourceIntentWsService implements OnModuleInit {
   private intentJobConfig: JobsOptions
 
   constructor(
-    @InjectQueue(QUEUES.CREATE_INTENT.queue) private readonly solveIntentQueue: Queue,
+    @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     private readonly alchemyService: AlchemyService,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
@@ -52,14 +51,10 @@ export class SourceIntentWsService implements OnModuleInit {
         }),
       )
       //add to processing queue
-      await this.solveIntentQueue.add(
-        QUEUES.CREATE_INTENT.jobs.create_intent,
-        event as SourceIntentTx,
-        {
-          jobId: event.transactionHash,
-          ...this.intentJobConfig,
-        },
-      )
+      await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.create_intent, event as EventLogWS, {
+        jobId: event.transactionHash,
+        ...this.intentJobConfig,
+      })
     }
   }
 }

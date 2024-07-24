@@ -22,3 +22,6 @@ import { Log as EthersLog } from 'alchemy-sdk'
 export interface EventLogWS extends EthersLog {
   network: Network
 }
+
+// The hash of the log event
+export type SourceIntentTxHash = string

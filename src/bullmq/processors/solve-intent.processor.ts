@@ -4,7 +4,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
 import { EcoLogMessage } from '../../common/logging/eco-log-message'
 import { SourceIntentService } from '../../source-intent/source-intent.service'
-import { EventLogWS } from '../../source-intent/dtos/EventLogWS'
+import { EventLogWS, SourceIntentTxHash } from '../../source-intent/dtos/EventLogWS'
 
 @Injectable()
 @Processor(QUEUES.CREATE_INTENT.queue)
@@ -25,9 +25,10 @@ export class SolveIntentProcessor extends WorkerHost {
     )
 
     switch (job.name) {
-      case QUEUES.CREATE_INTENT.jobs.create_intent:
-        const intentData = job.data as EventLogWS
-        return await this.sourceIntentService.createIntent(intentData)
+      case QUEUES.SOURCE_INTENT.jobs.create_intent:
+        return await this.sourceIntentService.createIntent(job.data as EventLogWS)
+      case QUEUES.SOURCE_INTENT.jobs.process_intent:
+        return await this.sourceIntentService.processIntent(job.data as SourceIntentTxHash)
       default:
         this.logger.error(
           EcoLogMessage.fromDefault({
