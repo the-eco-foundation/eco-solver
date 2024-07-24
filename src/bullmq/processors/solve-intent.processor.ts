@@ -7,7 +7,7 @@ import { SourceIntentService } from '../../source-intent/source-intent.service'
 import { EventLogWS, SourceIntentTxHash } from '../../source-intent/dtos/EventLogWS'
 
 @Injectable()
-@Processor(QUEUES.CREATE_INTENT.queue)
+@Processor(QUEUES.SOURCE_INTENT.queue)
 export class SolveIntentProcessor extends WorkerHost {
   private logger = new Logger(SolveIntentProcessor.name)
   constructor(private readonly sourceIntentService: SourceIntentService) {

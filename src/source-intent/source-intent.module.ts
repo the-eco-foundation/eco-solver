@@ -15,7 +15,7 @@ import { SourceIntentController } from './source-intent.controller'
     EcoConfigModule,
     AlchemyModule,
     MongooseModule.forFeature([{ name: SourceIntentModel.name, schema: SourceIntentSchema }]),
-    initBullMQ(QUEUES.CREATE_INTENT),
+    initBullMQ(QUEUES.SOURCE_INTENT),
   ],
   providers: [SourceIntentService, SourceIntentWsService, SolveIntentProcessor],
   controllers: [SourceIntentController],

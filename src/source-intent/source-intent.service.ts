@@ -11,7 +11,6 @@ import { InjectQueue } from '@nestjs/bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { JobsOptions, Queue } from 'bullmq'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { SourceIntentTx } from '../bullmq/processors/dtos/SourceIntentTx.dto'
 
 /**
  * Service class for solving an intent on chain
@@ -90,5 +89,20 @@ export class SourceIntentService implements OnModuleInit {
     }
   }
 
-  async processIntent(intentHash: SourceIntentTxHash) {}
+  /**
+   * This function kicks of the process of fulfilling an intent. It's called
+   * by the queue processor when it's time to fulfill the intent.
+   * {@link QUEUES.SOURCE_INTENT.jobs.process_intent}
+   * @param intentHash the hash of the intent to fulfill
+   */
+  async processIntent(intentHash: SourceIntentTxHash) {
+    this.logger.debug(
+      EcoLogMessage.fromDefault({
+        message: `Processing intent ${intentHash}`,
+        properties: {
+          intentHash: intentHash,
+        },
+      }),
+    )
+  }
 }
