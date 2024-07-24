@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common'
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
 import { EcoConfigModule } from './eco-configs/eco-config.module'
 import { AlchemyModule } from './alchemy/alchemy.module'
 import { ChainMonitorModule } from './chain-monitor/chain-monitor.module'
@@ -11,7 +9,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { RedlockModule } from './nest-redlock/nest-redlock.module'
 import { SolveIntentModule } from './source-intent/source-intent.module'
-import { SoucerIntentService } from './source-intent/source-intent.service'
+import { SourceIntentModel } from './source-intent/schemas/source-intent.schema'
 
 @Module({
   imports: [
@@ -24,6 +22,7 @@ import { SoucerIntentService } from './source-intent/source-intent.service'
     }),
     SolverModule,
     SolveIntentModule,
+    SourceIntentModel,
     MongooseModule.forRootAsync({
       imports: [EcoConfigModule],
       inject: [EcoConfigService],
@@ -58,8 +57,8 @@ import { SoucerIntentService } from './source-intent/source-intent.service'
     }),
     ...getPino(),
   ],
-  controllers: [AppController],
-  providers: [AppService, SoucerIntentService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
 

@@ -3,13 +3,14 @@ import { QUEUES } from '../../common/redis/constants'
 import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
 import { EcoLogMessage } from '../../common/logging/eco-log-message'
-import { SoucerIntentService } from '../../source-intent/source-intent.service'
+import { SourceIntentService } from '../../source-intent/source-intent.service'
+import { EventLogWS, SourceIntentTxHash } from '../../source-intent/dtos/EventLogWS'
 
 @Injectable()
-@Processor(QUEUES.SOLVE_INTENT.queue)
+@Processor(QUEUES.SOURCE_INTENT.queue)
 export class SolveIntentProcessor extends WorkerHost {
   private logger = new Logger(SolveIntentProcessor.name)
-  constructor(private readonly sourceIntentService: SoucerIntentService) {
+  constructor(private readonly sourceIntentService: SourceIntentService) {
     super()
   }
 
@@ -22,10 +23,12 @@ export class SolveIntentProcessor extends WorkerHost {
         message: `SolveIntentProcessor: process`,
       }),
     )
+
     switch (job.name) {
-      case QUEUES.SOLVE_INTENT.jobs.token:
-        const intentData = job.data
-        return await this.sourceIntentService.fillIntent(intentData)
+      case QUEUES.SOURCE_INTENT.jobs.create_intent:
+        return await this.sourceIntentService.createIntent(job.data as EventLogWS)
+      case QUEUES.SOURCE_INTENT.jobs.process_intent:
+        return await this.sourceIntentService.processIntent(job.data as SourceIntentTxHash)
       default:
         this.logger.error(
           EcoLogMessage.fromDefault({
