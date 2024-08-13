@@ -10,10 +10,12 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
 import { RedlockModule } from './nest-redlock/nest-redlock.module'
 import { SolveIntentModule } from './source-intent/source-intent.module'
 import { SourceIntentModel } from './source-intent/schemas/source-intent.schema'
+import { BalanceModule } from './balance/balance.module'
 
 @Module({
   imports: [
     AlchemyModule,
+    BalanceModule,
     ChainMonitorModule,
     EcoConfigModule,
     EventEmitterModule.forRoot({

@@ -2,14 +2,32 @@ import { Controller, Get } from '@nestjs/common'
 import { SourceIntentWsService } from './source-intent.ws.service'
 import { getRandomString } from '../common/utils/strings'
 import { Network } from 'alchemy-sdk'
+import { SourceIntentService } from './source-intent.service'
 
 @Controller('intent')
 export class SourceIntentController {
-  constructor(private readonly sourcews: SourceIntentWsService) {}
+  constructor(
+    private readonly sourcews: SourceIntentWsService,
+    private readonly sourceService: SourceIntentService,
+  ) {}
 
   @Get()
   fakeIntent() {
+    // const erc = ERC20__factory.createInterface()
+    // const tx = erc.parseTransaction({ data: '0xa9059cbb000000000000000000000000cd80b973e7cbb93c21cc5ac0a5f45d12a32582aa00000000000000000000000000000000000000000000000000000000000004d2' })
+    // console.log('tx: ', tx)
+
+    // return this.sourcews.addJob(Network.OPT_SEPOLIA)(intent)
     return this.sourcews.addJob(Network.OPT_SEPOLIA)(intent)
+  }
+
+  @Get('process')
+  async fakeProcess() {
+    const hash = '0x341c195547c8becccdcb8390a2fd8bc416316224d7d4e1938137d45829407044'
+    return await this.sourceService.validateIntent(hash)
+    //  await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.process_intent, hash, {
+    //   jobId: hash,
+    // })
   }
 }
 

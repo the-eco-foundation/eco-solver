@@ -1,6 +1,6 @@
 import { EventFilter } from 'ethers'
-import { IntentSource__factory } from '../typing/contracts'
-import { SourceIntentDataModel } from '../source-intent/schemas/source-intent-data.schema'
+import { IntentSource__factory } from '../../typing/contracts'
+import { SourceIntentDataModel } from '../../source-intent/schemas/source-intent-data.schema'
 
 /**
  * Creates the filter for the events that we want to listen to for the IntentSource contract

@@ -5,7 +5,7 @@ import { SourceIntentDataModel } from './source-intent-data.schema'
 
 export type SourceIntentStatus = 'PENDING' | 'SOLVED' | 'EXPIRED'
 
-@Schema()
+@Schema({ timestamps: true })
 export class SourceIntentModel {
   @Prop()
   event: SourceIntentEventModel

@@ -17,6 +17,27 @@ export class RedlockService extends Redlock {
   }
 
   /**
+   * Executes the callback if the lock key is required, otherwise it throws an error
+   * @param key the key to lock on
+   * @param callback the callback to execute
+   * @returns
+   */
+  async lockCall(key: string, callback: () => Promise<any>): Promise<any> {
+    const lock = await this.acquireLock([key], 5000)
+    if (!lock) {
+      throw new Error('Could not acquire lock')
+    }
+
+    try {
+      return await callback()
+    } catch (e) {
+      throw e
+    } finally {
+      await lock.release()
+    }
+  }
+
+  /**
    * Non-throwing lock aquire that returns null if the lock is not available
    *
    * @param resources

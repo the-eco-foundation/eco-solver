@@ -24,10 +24,9 @@ export type EcoConfigType = {
     dbName: string
     enableJournaling: boolean
   }
-  contracts: {
-    sourceIntents: SourceIntent[]
-    solvers: Solver[]
-  }
+  sourceIntents: SourceIntent[]
+  //chainID to Solver type mapping
+  solvers: Record<number, Solver>
   logger: {
     usePino: boolean
     pinoConfig: PinoParams
@@ -78,6 +77,29 @@ export type AlchemyConfigType = {
 }
 
 /**
+ * The config type for a single solver configuration
+ */
+export type Solver = {
+  solverAddress: string
+  //target address to contract type mapping
+  targets: Record<string, TargetContract>
+  network: Network
+}
+
+/**
+ * The config type for a supported target contract
+ */
+export type TargetContract = {
+  contractType: TargetContractType
+  selectors: string[]
+}
+
+/**
+ * The types of contracts that we support
+ */
+export type TargetContractType = 'erc20' | 'erc721' | 'erc1155'
+
+/**
  * The config type for a single prover source configuration
  */
 export class SourceIntent {
@@ -96,23 +118,5 @@ export class SourceIntent {
 
   // supportsToken(address: string): boolean {
   //   return this.tokenAddresses.includes(ethers.getAddress(address))
-  // }
-}
-
-/**
- * The config type for a single solver configuration
- */
-export class Solver {
-  // The network that the solver is on
-  network: Network
-  // The address that the solver contract is deployed at
-  solverAddress: string
-  // The address of the token that the solver is using
-  tokenAddress: string
-
-  // constructor(solver: Solver) {
-  //   this.network = solver.network
-  //   this.solverAddress = solver.solverAddress
-  //   this.tokenAddress = ethers.getAddress(solver.tokenAddress)
   // }
 }

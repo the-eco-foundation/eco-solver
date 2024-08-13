@@ -27,8 +27,10 @@ export class SolveIntentProcessor extends WorkerHost {
     switch (job.name) {
       case QUEUES.SOURCE_INTENT.jobs.create_intent:
         return await this.sourceIntentService.createIntent(job.data as EventLogWS)
-      case QUEUES.SOURCE_INTENT.jobs.process_intent:
-        return await this.sourceIntentService.processIntent(job.data as SourceIntentTxHash)
+      case QUEUES.SOURCE_INTENT.jobs.validate_intent:
+        return await this.sourceIntentService.validateIntent(job.data as SourceIntentTxHash)
+      case QUEUES.SOURCE_INTENT.jobs.feasable_intent:
+        return await this.sourceIntentService.feasableIntent(job.data as SourceIntentTxHash)
       default:
         this.logger.error(
           EcoLogMessage.fromDefault({

@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { AlchemyService } from '../alchemy/alchemy.service'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { getCreateIntentLogFilter } from '../ws/ws.helpers'
+import { getCreateIntentLogFilter } from '../common/utils/ws.helpers'
 import { AlchemyEventType, Network } from 'alchemy-sdk'
 import { JobsOptions, Queue } from 'bullmq'
 import { QUEUES } from '../common/redis/constants'
@@ -28,7 +28,7 @@ export class SourceIntentWsService implements OnModuleInit {
 
   onModuleInit() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
-    this.ecoConfigService.getContracts().sourceIntents.forEach((source) => {
+    this.ecoConfigService.getSourceIntents().forEach((source) => {
       this.alchemyService
         .getAlchemy(source.network)
         .ws.on(
