@@ -29,7 +29,7 @@ export default {
           selectors: ['transfer(address,uint256)'],
         },
       },
-      network: 'op-sepolia',
+      network: 'opt-sepolia',
     },
   },
 }

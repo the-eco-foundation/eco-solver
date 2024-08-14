@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { AlchemyService } from '../alchemy/alchemy.service'
 import { RedlockService } from '../nest-redlock/nest-redlock.service'
-import { EventLogWS, SourceIntentTxHash } from './dtos/EventLogWS'
 import { InjectModel } from '@nestjs/mongoose'
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { Model } from 'mongoose'
@@ -11,11 +10,12 @@ import { InjectQueue } from '@nestjs/bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { JobsOptions, Queue } from 'bullmq'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { Solver, TargetContractType } from '../eco-configs/eco-config.types'
+import { Solver } from '../eco-configs/eco-config.types'
 import { EcoError } from '../common/errors/eco-error'
 import { includes, isEqual } from 'lodash'
-import { ERC20__factory } from '../typing/contracts'
-import { AddressLike, Interface, TransactionDescription } from 'ethers'
+import { AddressLike, TransactionDescription } from 'ethers'
+import { getFragment } from '../common/utils/fragments'
+import { EventLogWS, SourceIntentTxHash } from '../common/events/websocket'
 
 /**
  * Service class for solving an intent on chain
@@ -231,7 +231,7 @@ export class SourceIntentService implements OnModuleInit {
       //shouldn't happen since we do this.targetsSupported(model, solver) before this call
       throw EcoError.SourceIntentTargetConfigNotFound(target as string)
     }
-    const frag = this.getFragment(targetConfig.contractType)
+    const frag = getFragment(targetConfig.contractType)
     const tx = frag.parseTransaction({ data: data as string })
     const supported = tx && includes(targetConfig.selectors, tx.signature)
     if (!supported) {
@@ -247,17 +247,6 @@ export class SourceIntentService implements OnModuleInit {
       )
     }
     return null
-  }
-
-  getFragment(targetType: TargetContractType): Interface {
-    switch (targetType) {
-      case 'erc20':
-        return ERC20__factory.createInterface()
-      case 'erc721':
-      case 'erc1155':
-      default:
-        throw EcoError.SourceIntentUnsupportedTargetType(targetType)
-    }
   }
 
   targetsSupported(model: SourceIntentModel, solver: Solver): boolean {

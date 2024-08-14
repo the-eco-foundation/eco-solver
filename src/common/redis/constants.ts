@@ -9,6 +9,13 @@ export const QUEUES = {
       profitable_intent: 'profitable_intent',
     },
   },
+  ETH_SOCKET: {
+    queue: 'eth_socket',
+    prefix: '{eth_socket}',
+    jobs: {
+      erc20_balance_socket: 'erc20_balance_socket',
+    },
+  },
   SOLVER: {
     queue: 'solver',
     prefix: '{solver}',

@@ -1,5 +1,5 @@
 import { EventFilter } from 'ethers'
-import { IntentSource__factory } from '../../typing/contracts'
+import { ERC20__factory, IntentSource__factory } from '../../typing/contracts'
 import { SourceIntentDataModel } from '../../source-intent/schemas/source-intent-data.schema'
 
 /**
@@ -29,6 +29,25 @@ export function getCreateIntentLogFilter(sourceIntentContractAddress: string): E
 }
 
 /**
+ *
+ * @param erc20Address
+ * @param from
+ * @param to
+ * @returns
+ */
+export function getTransferLogFilter(
+  erc20Address: string,
+  from?: string,
+  to?: string,
+): EventFilter {
+  const transfer = ERC20__factory.createInterface().encodeFilterTopics('Transfer', [from, to])
+  return {
+    address: erc20Address,
+    topics: transfer,
+  }
+}
+
+/**
  * Decodes the IntentCreated event log
  *
  * @param data the encoded data from the event log
@@ -40,4 +59,18 @@ export function decodeCreateIntentLog(data: string, topics: string[]): SourceInt
   const frag = ii.getEvent('IntentCreated')
   const decode = ii.decodeEventLog(frag, data, topics)
   return SourceIntentDataModel.fromEvent(decode)
+}
+
+/**
+ * Decodes the Transfer event log
+ *
+ * @param data the encoded data from the event log
+ * @param topics the log topics
+ * @returns
+ */
+export function decodeTransferLog(data: string, topics: string[]) {
+  const ii = ERC20__factory.createInterface()
+  const frag = ii.getEvent('Transfer')
+  const decode = ii.decodeEventLog(frag, data, topics)
+  return decode
 }

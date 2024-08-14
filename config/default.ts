@@ -45,8 +45,8 @@ export default {
     },
     jobs: {
       intentJobConfig: {
-        removeOnComplete: 1000,
-        removeOnFail: 500,
+        removeOnComplete: false,
+        removeOnFail: false,
       },
     },
   },

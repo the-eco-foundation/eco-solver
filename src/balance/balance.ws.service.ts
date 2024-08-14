@@ -1,39 +1,46 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { AlchemyService } from '../alchemy/alchemy.service'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { getCreateIntentLogFilter } from '../common/utils/ws.helpers'
+import { getTransferLogFilter } from '../common/utils/ws.helpers'
 import { AlchemyEventType, Network } from 'alchemy-sdk'
 import { JobsOptions, Queue } from 'bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
 import { EventLogWS } from '../common/events/websocket'
 
-/**
- * Service class for solving an intent on chain. When this service starts up,
- * it creates websockets for all the supported prover contracts and listens for
- * events on them. When a new event is detected, it will publish that event to the
- * eventbus.
- */
 @Injectable()
-export class SourceIntentWsService implements OnModuleInit {
-  private logger = new Logger(SourceIntentWsService.name)
+export class BalanceWebsocketService implements OnModuleInit {
+  private logger = new Logger(BalanceWebsocketService.name)
   private intentJobConfig: JobsOptions
 
   constructor(
-    @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
+    @InjectQueue(QUEUES.ETH_SOCKET.queue) private readonly ethQueue: Queue,
     private readonly alchemyService: AlchemyService,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
   onModuleInit() {
+    this.subscribeWS()
+  }
+
+  subscribeWS() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
-    this.ecoConfigService.getSourceIntents().forEach((source) => {
-      this.alchemyService
-        .getAlchemy(source.network)
-        .ws.on(
-          getCreateIntentLogFilter(source.sourceAddress) as AlchemyEventType,
-          this.addJob(source.network),
-        )
+
+    Object.entries(this.ecoConfigService.getSolvers()).forEach((entity) => {
+      const [_, solver] = entity
+      const instanceAddress = this.alchemyService.getWallet(solver.network).address
+
+      Object.entries(solver.targets).forEach((targetEntity) => {
+        const [address, source] = targetEntity
+        if (source.contractType === 'erc20') {
+          this.alchemyService
+            .getAlchemy(solver.network)
+            .ws.on(
+              getTransferLogFilter(address, null, instanceAddress) as AlchemyEventType,
+              this.addJob(solver.network),
+            )
+        }
+      })
     })
   }
 
@@ -42,7 +49,7 @@ export class SourceIntentWsService implements OnModuleInit {
       //add network to the event since alchemy doesn`t
       event.network = network
       //add to processing queue
-      await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.create_intent, event as EventLogWS, {
+      await this.ethQueue.add(QUEUES.ETH_SOCKET.jobs.erc20_balance_socket, event as EventLogWS, {
         jobId: event.transactionHash,
         ...this.intentJobConfig,
       })
