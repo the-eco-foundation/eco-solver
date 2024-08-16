@@ -7,6 +7,7 @@ import { JobsOptions, Queue } from 'bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
 import { EventLogWS } from '../common/events/websocket'
+import { getIntentJobId } from '../common/utils/strings'
 
 /**
  * Service class for solving an intent on chain. When this service starts up,
@@ -15,8 +16,8 @@ import { EventLogWS } from '../common/events/websocket'
  * eventbus.
  */
 @Injectable()
-export class SourceIntentWsService implements OnModuleInit {
-  private logger = new Logger(SourceIntentWsService.name)
+export class WebsocketIntentService implements OnModuleInit {
+  private logger = new Logger(WebsocketIntentService.name)
   private intentJobConfig: JobsOptions
 
   constructor(
@@ -43,7 +44,7 @@ export class SourceIntentWsService implements OnModuleInit {
       event.network = network
       //add to processing queue
       await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.create_intent, event as EventLogWS, {
-        jobId: event.transactionHash,
+        jobId: getIntentJobId('websocket', event.transactionHash),
         ...this.intentJobConfig,
       })
     }

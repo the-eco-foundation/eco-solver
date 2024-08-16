@@ -89,7 +89,7 @@ export type Solver = {
 /**
  * The config type for a supported target contract
  */
-export type TargetContract = {
+export interface TargetContract {
   contractType: TargetContractType
   selectors: string[]
 }
@@ -107,16 +107,6 @@ export class SourceIntent {
   network: Network
   // The address that the prover source contract is deployed at, we read events from this contract to fulfill
   sourceAddress: string
-  // // The addresses of the tokens that we support as rewards
-  // tokenAddresses: string[]
-
-  // constructor(si: SourceIntent) {
-  //   this.network = si.network
-  //   this.sourceAddress = si.sourceAddress
-  //   this.tokenAddresses = si.tokenAddresses.map((address) => ethers.getAddress(address))
-  // }
-
-  // supportsToken(address: string): boolean {
-  //   return this.tokenAddresses.includes(ethers.getAddress(address))
-  // }
+  // The addresses of the tokens that we support as rewards
+  tokens: string[]
 }

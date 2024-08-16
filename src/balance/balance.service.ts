@@ -37,6 +37,14 @@ export class BalanceService implements OnModuleInit {
   }
 
   /**
+   * Get the token balance of the solver
+   * @returns
+   */
+  async getTokenBalance(network: Network, tokenAddress: string) {
+    return this.tokenBalances.get(getDestinationNetworkAddressKey(network, tokenAddress))
+  }
+
+  /**
    * Updates the token balance of the solver, called from {@link EthWebsocketProcessor}
    * @returns
    */

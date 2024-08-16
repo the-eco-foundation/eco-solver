@@ -6,7 +6,7 @@ export const QUEUES = {
       create_intent: 'create_intent',
       validate_intent: 'validate_intent',
       feasable_intent: 'feasable_intent',
-      profitable_intent: 'profitable_intent',
+      fulfill_intent: 'fulfill_intent',
     },
   },
   ETH_SOCKET: {

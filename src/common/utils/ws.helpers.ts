@@ -1,6 +1,6 @@
 import { EventFilter } from 'ethers'
 import { ERC20__factory, IntentSource__factory } from '../../typing/contracts'
-import { SourceIntentDataModel } from '../../source-intent/schemas/source-intent-data.schema'
+import { SourceIntentDataModel } from '../../intent/schemas/source-intent-data.schema'
 
 /**
  * Creates the filter for the events that we want to listen to for the IntentSource contract
@@ -73,4 +73,24 @@ export function decodeTransferLog(data: string, topics: string[]) {
   const frag = ii.getEvent('Transfer')
   const decode = ii.decodeEventLog(frag, data, topics)
   return decode
+}
+
+/**
+ * Returns the selector for the erc20 function
+ * @param funName the name of the erc20 function
+ * @returns
+ */
+export function getERC20Selector(
+  funName:
+    | 'allowance'
+    | 'approve'
+    | 'balanceOf'
+    | 'decimals'
+    | 'name'
+    | 'symbol'
+    | 'totalSupply'
+    | 'transfer'
+    | 'transferFrom',
+): string {
+  return ERC20__factory.createInterface().getFunction(funName).selector
 }

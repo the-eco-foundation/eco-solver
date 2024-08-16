@@ -26,6 +26,8 @@ export class EcoError extends Error {
     return new EcoError(`Unsupported target type ${targetType}`)
   }
 
+  static FeasableIntentNoTransactionError = new Error('No transaction data found')
+
   // EcoConfig Service
 
   static isEcoError(error: any): boolean {

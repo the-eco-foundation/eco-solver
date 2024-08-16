@@ -1,14 +1,14 @@
 import { Controller, Get } from '@nestjs/common'
-import { SourceIntentWsService } from './source-intent.ws.service'
+import { WebsocketIntentService } from './websocket-intent.service'
 import { getRandomString } from '../common/utils/strings'
 import { Network } from 'alchemy-sdk'
-import { SourceIntentService } from './source-intent.service'
+import { ValidateIntentService } from './validate-intent.service'
 
 @Controller('intent')
 export class SourceIntentController {
   constructor(
-    private readonly sourcews: SourceIntentWsService,
-    private readonly sourceService: SourceIntentService,
+    private readonly wsService: WebsocketIntentService,
+    private readonly validateService: ValidateIntentService,
   ) {}
 
   @Get()
@@ -18,13 +18,13 @@ export class SourceIntentController {
     // console.log('tx: ', tx)
 
     // return this.sourcews.addJob(Network.OPT_SEPOLIA)(intent)
-    return this.sourcews.addJob(Network.OPT_SEPOLIA)(intent)
+    return this.wsService.addJob(Network.OPT_SEPOLIA)(intent)
   }
 
   @Get('process')
   async fakeProcess() {
     const hash = '0x341c195547c8becccdcb8390a2fd8bc416316224d7d4e1938137d45829407044'
-    return await this.sourceService.validateIntent(hash)
+    return await this.validateService.validateIntent(hash)
     //  await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.process_intent, hash, {
     //   jobId: hash,
     // })
