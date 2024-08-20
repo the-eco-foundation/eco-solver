@@ -5,6 +5,8 @@ import { ethers } from 'ethers'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoError } from '../common/errors/eco-error'
 
+import { FClient } from './f-client'
+
 /**
  * This service provides access to the Alchemy SDK for multiple networks.
  * It initializes the Alchemy SDK with the default network and any additional in the {@link EcoConfigService}.
@@ -25,11 +27,14 @@ export class AlchemyService implements OnModuleInit {
 
   async onModuleInit() {
     const alchemyConfigs = this.ecoConfigService.getAlchemy()
-    this._supportedNetworks = this._supportedNetworks.concat(alchemyConfigs.networks)
+    this._supportedNetworks = this._supportedNetworks.concat(
+      alchemyConfigs.networks.map((n) => n.name),
+    )
+    const a = new FClient({})
     const apiKey = alchemyConfigs.apiKey
     const configs: Partial<Record<Network, AlchemyMultichainSettings>> =
       alchemyConfigs.networks.reduce((acc, network) => {
-        acc[network] = { apiKey: apiKey, network: network }
+        acc[network.name] = { apiKey: apiKey, network: network }
         return acc
       }, {})
 

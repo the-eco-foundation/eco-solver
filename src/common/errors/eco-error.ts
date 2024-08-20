@@ -10,8 +10,13 @@ export class EcoError extends Error {
   static AlchemyUnsupportedNetworkError(network: Network) {
     return new EcoError(`App does not support network ${network}, check your config file`)
   }
+  static AlchemyUnsupportedNetworkIDError(id: number) {
+    return new EcoError(`App does not support network ${id}, check your config file`)
+  }
   static AlchemyUnsupportedChainError(chain: chains.Chain) {
-    return new EcoError(`App does not support chain ${chain.id}:${chain.name}, check your config file`)
+    return new EcoError(
+      `App does not support chain ${chain.id}:${chain.name}, check your config file`,
+    )
   }
   static AlchemyServiceProviderError(network: string) {
     return new EcoError(`Could not create alchemy provider ${network}`)

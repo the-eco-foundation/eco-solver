@@ -73,7 +73,12 @@ export type MongoAuthType = {
  */
 export type AlchemyConfigType = {
   apiKey: string
-  networks: Network[]
+  networks: AlchemyNetwork[]
+}
+
+export type AlchemyNetwork = {
+  name: Network
+  id: number
 }
 
 /**
