@@ -4,8 +4,7 @@ import { AlchemyMultichainClient, AlchemyMultichainSettings } from './alchemy-mu
 import { ethers } from 'ethers'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoError } from '../common/errors/eco-error'
-
-import { FClient } from './f-client'
+import { AASmartMultichainClient } from './aa-smart-multichain-client'
 
 /**
  * This service provides access to the Alchemy SDK for multiple networks.
@@ -30,7 +29,6 @@ export class AlchemyService implements OnModuleInit {
     this._supportedNetworks = this._supportedNetworks.concat(
       alchemyConfigs.networks.map((n) => n.name),
     )
-    const a = new FClient({})
     const apiKey = alchemyConfigs.apiKey
     const configs: Partial<Record<Network, AlchemyMultichainSettings>> =
       alchemyConfigs.networks.reduce((acc, network) => {

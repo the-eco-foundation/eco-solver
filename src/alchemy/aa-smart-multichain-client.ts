@@ -12,20 +12,27 @@ import * as chains from 'viem/chains'
 //   chain
 //   signer: LocalAccountSigner.privateKeyToAccountSigner("OWNER_MNEMONIC"),
 // })
-export class FClient {
+export class AASmartMultichainClient {
   readonly settings: Record<number, SmartAccountClientConfig>
   readonly instances: Map<number, SmartAccountClient> = new Map()
   constructor(
     settings: Record<string, SmartAccountClientConfig>,
   ) {
     this.settings = settings
-    this.getSettings(1)
   }
 
-  async loadInstance(chainID: number) {
-    const client = await createSmartAccountClient({
-      ...this.getSettings(chainID),
-    })
+  async clientForChain(chainID: number): Promise<SmartAccountClient> {
+    return await this.loadInstance(chainID)
+  }
+
+  async loadInstance(chainID: number): Promise<SmartAccountClient> {
+    if (!this.instances.has(chainID)) {
+      const client = await createSmartAccountClient({
+        ...this.getSettings(chainID),
+      })
+      this.instances.set(chainID, client)
+    }
+    return this.instances.get(chainID)
   }
     /**
    * Use overrides if they exist -- otherwise use the default settings.
