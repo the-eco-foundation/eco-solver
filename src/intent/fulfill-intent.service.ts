@@ -4,15 +4,8 @@ import { SourceIntentTxHash } from '../common/events/websocket'
 import { JobsOptions, Queue } from 'bullmq'
 import { InjectQueue } from '@nestjs/bullmq'
 import { QUEUES } from '../common/redis/constants'
-import { TransactionTargetData, UtilsIntentService } from './utils-intent.service'
+import { UtilsIntentService } from './utils-intent.service'
 import { BalanceService } from '../balance/balance.service'
-import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { EcoError } from '../common/errors/eco-error'
-import { getERC20Selector } from '../common/utils/ws.helpers'
-import { BigNumberish, Network } from 'alchemy-sdk'
-import { AddressLike } from 'ethers'
-import { SourceIntentModel } from './schemas/source-intent.schema'
-import { intersectionBy } from 'lodash'
 
 /**
  * Service class for getting configs for the app
@@ -33,6 +26,5 @@ export class FulfillIntentService implements OnModuleInit {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
   }
 
-  async executeFullfillIntent(intentHash: SourceIntentTxHash) {
-  }
+  async executeFullfillIntent(intentHash: SourceIntentTxHash) {}
 }

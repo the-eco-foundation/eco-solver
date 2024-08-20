@@ -1,4 +1,5 @@
 import { EcoConfigModule } from '../eco-configs/eco-config.module'
+import { AAModularAccountService } from './aa-modular-multichain.service'
 import { AlchemyService } from './alchemy.service'
 
 import { Module } from '@nestjs/common'
@@ -6,8 +7,8 @@ import { Module } from '@nestjs/common'
 @Module({
   imports: [EcoConfigModule],
 
-  providers: [AlchemyService],
+  providers: [AlchemyService, AAModularAccountService],
 
-  exports: [AlchemyService],
+  exports: [AlchemyService, AAModularAccountService],
 })
 export class AlchemyModule {}

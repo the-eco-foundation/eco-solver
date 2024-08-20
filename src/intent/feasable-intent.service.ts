@@ -29,7 +29,7 @@ export class FeasableIntentService implements OnModuleInit {
     private readonly balanceService: BalanceService,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
-  ) { }
+  ) {}
 
   onModuleInit() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
@@ -106,9 +106,7 @@ export class FeasableIntentService implements OnModuleInit {
         const sourceNetwork = model.event.network
         const source = this.ecoConfigService
           .getSourceIntents()
-          .find((intent) =>
-            intent.network == sourceNetwork
-          )
+          .find((intent) => intent.network == sourceNetwork)
         if (!source) {
           return false
         }
@@ -151,7 +149,6 @@ export class FeasableIntentService implements OnModuleInit {
   ): boolean {
     let sum = 0n
     intersectionBy(acceptedTokens, rewardTokens).forEach((token) => {
-      console.log('token', token)
       const index = rewardTokens.findIndex((t) => t == token)
       if (index < 0) {
         return false
