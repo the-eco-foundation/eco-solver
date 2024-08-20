@@ -2,11 +2,16 @@ import { Network } from 'alchemy-sdk'
 import { Logger } from '@nestjs/common'
 import * as _ from 'lodash'
 import { EcoLogMessage } from '../logging/eco-log-message'
+import {type Chain} from 'viem'
+import { chains } from '@alchemy/aa-core'
 
 export class EcoError extends Error {
   // Alchemy Service
   static AlchemyUnsupportedNetworkError(network: Network) {
     return new EcoError(`App does not support network ${network}, check your config file`)
+  }
+  static AlchemyUnsupportedChainError(chain: chains.Chain) {
+    return new EcoError(`App does not support chain ${chain.id}:${chain.name}, check your config file`)
   }
   static AlchemyServiceProviderError(network: string) {
     return new EcoError(`Could not create alchemy provider ${network}`)

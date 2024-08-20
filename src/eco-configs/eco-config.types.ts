@@ -84,6 +84,7 @@ export type Solver = {
   //target address to contract type mapping
   targets: Record<string, TargetContract>
   network: Network
+  chainID: number
 }
 
 /**

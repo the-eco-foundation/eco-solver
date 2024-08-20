@@ -14,6 +14,7 @@ export default {
   sourceIntents: [
     {
       network: 'opt-sepolia',
+      chainID: 11155420,
       sourceAddress: '0x6B79cD3fE2Eccd3a69c52e621a81d26E75983787',
       tokens: [
         '0x5fd84259d66Cd46123540766Be93DFE6D43130D7', //usdc
@@ -27,6 +28,7 @@ export default {
     },
   ],
   solvers: {
+    //base sepolia
     84532: {
       solverAddress: '0x5d0cab22a8E2F01CE4482F2CbFE304627d8F1816',
       targets: {
@@ -46,6 +48,7 @@ export default {
       },
       network: 'base-sepolia',
     },
+    //op sepolia
     11155420: {
       solverAddress: '0x5d0cab22a8E2F01CE4482F2CbFE304627d8F1816', //todo update to real address
       targets: {
