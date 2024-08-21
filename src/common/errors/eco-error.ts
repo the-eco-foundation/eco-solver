@@ -2,7 +2,6 @@ import { Network } from 'alchemy-sdk'
 import { Logger } from '@nestjs/common'
 import * as _ from 'lodash'
 import { EcoLogMessage } from '../logging/eco-log-message'
-import {type Chain} from 'viem'
 import { chains } from '@alchemy/aa-core'
 
 export class EcoError extends Error {

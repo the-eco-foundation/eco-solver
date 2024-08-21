@@ -6,12 +6,11 @@
 // import { EcoError } from '../common/errors/eco-error'
 // import { AAModularMultichainClient } from './aa-modular-multichain-client'
 
-
 // @Injectable()
 // export class AAService implements OnModuleInit {
 //   private logger = new Logger(AAService.name)
 //   private aa: AAModularMultichainClient
-  
+
 //   /**
 //    * Lazy-loaded mapping of `Network` enum to `Wallet` instance.
 //    *

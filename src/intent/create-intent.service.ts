@@ -23,7 +23,7 @@ export class CreateIntentService implements OnModuleInit {
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly ecoConfigService: EcoConfigService,
-  ) { }
+  ) {}
 
   onModuleInit() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
