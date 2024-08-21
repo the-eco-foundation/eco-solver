@@ -1,0 +1,77 @@
+name: Compare deployed vs proposed
+
+on:
+  pull_request:
+    branches:
+      - release-staging-not-active
+
+env:
+  APPNAME: solver
+  ASSUMED_ROLE: arn:aws:iam::027715947294:role/solver-eks-readonly-bend-staging
+  AWS_REGION: us-east-2
+  GHENV: staging
+
+permissions:
+      id-token: write
+      contents: read
+jobs:
+  compare:
+    name: Compare
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ env.ASSUMED_ROLE }}
+          role-session-name: ${{ env.APPNAME }}-staging-diff
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Sts GetCallerIdentity
+        run: |
+          aws sts get-caller-identity
+      - name: get existing sha tag from kubectl
+        id: existing
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          aws eks --region "us-east-2" update-kubeconfig --name "eks-beam-${GHENV}"
+          echo "BEFORE_SHA=$(kubectl describe deployment ${APPNAME} | grep Image: |sed 's| *Image:.*/.*:\(.*\)|\1|g')" >> $GITHUB_OUTPUT
+      - name: get proposed sha
+        id: proposed
+        run: |
+          echo "AFTER_SHA=$(grep ghsha: .github/workflows/build-push-staging.yml | sed 's| *ghsha: \(.*\)|\1|g')" >> $GITHUB_OUTPUT
+      - name: debug diff link
+        env:
+          AFTER_SHA: ${{ steps.proposed.outputs.AFTER_SHA }}
+          BEFORE_SHA: ${{ steps.existing.outputs.BEFORE_SHA }}
+        run: |
+          if [ "${BEFORE_SHA}" = "${AFTER_SHA}" ]; then
+            echo commit sha did NOT change
+          else
+            echo commit shas ARE different
+            echo compare link: https://github.com/eco/${APPNAME}/compare/${BEFORE_SHA}...${AFTER_SHA}
+          fi
+      - uses: actions/github-script@v6
+        env:
+          AFTER_SHA: ${{ steps.proposed.outputs.AFTER_SHA }}
+          BEFORE_SHA: ${{ steps.existing.outputs.BEFORE_SHA }}
+        with:
+          script: |
+            const { AFTER_SHA, APPNAME, BEFORE_SHA } = process.env;
+            let body = '';
+            if (`${AFTER_SHA}` === `${BEFORE_SHA}`) {
+              console.log('same commit sha');
+              body = 'commit sha did not change, merging this PR will NOT deploy'
+            } else {
+              console.log('diff commit sha');
+              body = `View diff at https://github.com/eco/${APPNAME}/compare/${BEFORE_SHA}...${AFTER_SHA}`;
+              console.log(body);
+            }
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
