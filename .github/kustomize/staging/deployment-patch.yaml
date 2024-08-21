@@ -1,0 +1,20 @@
+- op: replace
+  path: /spec/replicas
+  value: 1
+
+- op: add
+  path: /spec/template/spec/containers/0/env
+  value:
+    - name: DD_ENV
+      value: "staging"
+    - name: NODE_ENV
+      value: "staging"
+
+- op: add
+  path: /spec/template/spec/containers/0/ports
+  value:
+    - containerPort: 3000
+
+- op: add
+  path: /spec/template/spec/serviceAccount
+  value: solver-bend-staging
