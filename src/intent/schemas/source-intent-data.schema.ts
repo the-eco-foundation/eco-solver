@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { IntentStruct } from '../../typing/contracts/IntentSource'
 import { AddressLike, BigNumberish, BytesLike } from 'ethers'
 import { EcoError } from '../../common/errors/eco-error'
+import { Hex } from 'viem'
 
 @Schema({ timestamps: true })
 export class SourceIntentDataModel implements IntentStruct {
@@ -12,7 +13,7 @@ export class SourceIntentDataModel implements IntentStruct {
   @Prop({ required: true, type: BigInt })
   destinationChain: BigNumberish
   @Prop({ required: true, type: Array<string> })
-  targets: AddressLike[]
+  targets: Hex[]
   @Prop({ required: true, type: Array<string> })
   data: BytesLike[]
   @Prop({ required: true, type: Array<string> })
@@ -30,7 +31,7 @@ export class SourceIntentDataModel implements IntentStruct {
     hash: BytesLike,
     creator: AddressLike,
     destinationChain: BigNumberish,
-    targets: AddressLike[],
+    targets: Hex[],
     data: BytesLike[],
     rewardTokens: AddressLike[],
     rewardAmounts: BigNumberish[],

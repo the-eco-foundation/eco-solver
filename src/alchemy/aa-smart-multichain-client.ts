@@ -1,4 +1,5 @@
 import {
+  baseSepolia,
   chains,
   createSmartAccountClient,
   LocalAccountSigner,
@@ -50,7 +51,7 @@ export class AASmartMultichainClient {
 
   async loadInstance(chainID: number): Promise<SmartAccountClient> {
     if (!this.instances.has(chainID)) {
-      const client = await createSmartAccountClient(await this.getSettings(chainID))
+      const client = createSmartAccountClient(await this.getSettings(chainID))
       this.instances.set(chainID, client)
     }
     return this.instances.get(chainID)
@@ -74,7 +75,7 @@ export class AASmartMultichainClient {
         chain: chain,
         account: await createMultiOwnerModularAccount({
           transport: rpcTransport as any,
-          chain: optimismSepolia,
+          chain,
           signer: this.configs.signer,
         })
         

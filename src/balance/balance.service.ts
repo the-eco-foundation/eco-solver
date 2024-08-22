@@ -59,7 +59,7 @@ export class BalanceService implements OnModuleInit {
     )
 
     const intent = decodeTransferLog(balanceEvent.data, balanceEvent.topics)
-    const key = getDestinationNetworkAddressKey(balanceEvent.network, balanceEvent.address)
+    const key = getDestinationNetworkAddressKey(balanceEvent.sourceNetwork, balanceEvent.address)
     const balanceObj = this.tokenBalances.get(key)
     if (balanceObj) {
       balanceObj.balance = balanceObj.balance + intent[2]

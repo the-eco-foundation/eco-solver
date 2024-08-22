@@ -37,17 +37,18 @@ export class BalanceWebsocketService implements OnModuleInit {
             .getAlchemy(solver.network)
             .ws.on(
               getTransferLogFilter(address, null, instanceAddress) as AlchemyEventType,
-              this.addJob(solver.network),
+              this.addJob(solver.network, solver.chainID),
             )
         }
       })
     })
   }
 
-  addJob(network: Network) {
+  addJob(network: Network, chainID: number) {
     return async (event: EventLogWS) => {
       //add network to the event since alchemy doesn`t
-      event.network = network
+      event.sourceNetwork = network
+      event.sourceChainID = chainID
       //add to processing queue
       await this.ethQueue.add(QUEUES.ETH_SOCKET.jobs.erc20_balance_socket, event as EventLogWS, {
         jobId: event.transactionHash,

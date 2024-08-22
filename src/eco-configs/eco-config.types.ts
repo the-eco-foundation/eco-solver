@@ -4,6 +4,7 @@ import { Params as PinoParams } from 'nestjs-pino'
 import * as Redis from 'ioredis'
 import { Settings } from 'redlock'
 import { JobsOptions } from 'bullmq'
+import { Hex } from 'viem'
 
 // The config type that we store in json
 export type EcoConfigType = {
@@ -85,7 +86,7 @@ export type AlchemyNetwork = {
  * The config type for a single solver configuration
  */
 export type Solver = {
-  solverAddress: string
+  solverAddress: Hex
   //target address to contract type mapping
   targets: Record<string, TargetContract>
   network: Network
@@ -111,6 +112,8 @@ export type TargetContractType = 'erc20' | 'erc721' | 'erc1155'
 export class SourceIntent {
   // The network that the prover is on
   network: Network
+  // The chain ID of the network
+  chainID: number
   // The address that the prover source contract is deployed at, we read events from this contract to fulfill
   sourceAddress: string
   // The addresses of the tokens that we support as rewards

@@ -8,6 +8,7 @@ import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
 import { EventLogWS } from '../common/events/websocket'
 import { getIntentJobId } from '../common/utils/strings'
+import { SourceIntent } from '../eco-configs/eco-config.types'
 
 /**
  * Service class for solving an intent on chain. When this service starts up,
@@ -29,19 +30,21 @@ export class WebsocketIntentService implements OnModuleInit {
   onModuleInit() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
     this.ecoConfigService.getSourceIntents().forEach((source) => {
+      
       this.alchemyService
         .getAlchemy(source.network)
         .ws.on(
           getCreateIntentLogFilter(source.sourceAddress) as AlchemyEventType,
-          this.addJob(source.network),
+          this.addJob(source),
         )
     })
   }
 
-  addJob(network: Network) {
+  addJob(source: SourceIntent) {
     return async (event: EventLogWS) => {
-      //add network to the event since alchemy doesn`t
-      event.network = network
+      //add network and chainID to the event since alchemy doesn`t
+      event.sourceNetwork = source.network
+      event.sourceChainID = source.chainID
       //add to processing queue
       await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.create_intent, event as EventLogWS, {
         jobId: getIntentJobId('websocket', event.transactionHash),

@@ -74,7 +74,7 @@ export class UtilsIntentService implements OnModuleInit {
           message: `Selectors not supported for intent ${model.intent.hash}`,
           properties: {
             intentHash: model.intent.hash,
-            network: model.event.network,
+            sourceNetwork: model.event.sourceNetwork,
             unsupportedSelector: tx.signature,
           },
         }),
@@ -95,7 +95,7 @@ export class UtilsIntentService implements OnModuleInit {
           message: `Targets not supported for intent ${model.intent.hash}`,
           properties: {
             intentHash: model.intent.hash,
-            network: model.event.network,
+            sourceNetwork: model.event.sourceNetwork,
           },
         }),
       )
@@ -121,7 +121,7 @@ export class UtilsIntentService implements OnModuleInit {
           message: `No solver found for chain ${model.intent.destinationChain}`,
           properties: {
             intentHash: intentHash,
-            network: model.event.network,
+            sourceNetwork: model.event.sourceNetwork,
           },
         }),
       )

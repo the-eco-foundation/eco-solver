@@ -4,7 +4,8 @@ import { EventLogWS } from '../../common/events/websocket'
 
 @Schema()
 export class SourceIntentEventModel implements EventLogWS {
-  network: Network
+  sourceChainID: number
+  sourceNetwork: Network
   blockNumber: number
   blockHash: string
   transactionIndex: number

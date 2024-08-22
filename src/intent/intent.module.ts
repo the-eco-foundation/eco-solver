@@ -32,7 +32,7 @@ import { FulfillIntentService } from './fulfill-intent.service'
     UtilsIntentService,
     SolveIntentProcessor,
   ],
-  controllers: [SourceIntentController],
+  // controllers: [SourceIntentController],
   exports: [],
 })
 export class IntentModule {}

@@ -14,6 +14,8 @@ import { AddressLike } from 'ethers'
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { intersectionBy } from 'lodash'
 import { getIntentJobId } from '../common/utils/strings'
+import { getAlchemyNetwork } from '../common/utils/chains'
+import { Solver } from '../eco-configs/eco-config.types'
 
 /**
  * Service class for getting configs for the app
@@ -65,7 +67,7 @@ export class FeasableIntentService implements OnModuleInit {
 
       switch (tt.targetConfig.contractType) {
         case 'erc20':
-          return await this.handleErc20(tt, model, solver.network, target)
+          return await this.handleErc20(tt, model, solver, target)
         case 'erc721':
         case 'erc1155':
         default:
@@ -87,23 +89,24 @@ export class FeasableIntentService implements OnModuleInit {
    *
    * @param tt the transaction target data
    * @param model the source intent model
-   * @param network the target network for the fullfillment
+   * @param solver the target solver
    * @param target  the target address
    * @returns
    */
   async handleErc20(
     tt: TransactionTargetData,
     model: SourceIntentModel,
-    targetNetwork: Network,
+    solver: Solver,
     target: AddressLike,
   ): Promise<boolean> {
+    const targetNetwork = solver.network
     switch (tt.transactionDescription.selector) {
       case getERC20Selector('transfer'):
         //check we have enough tokens to transfer on destination fullfillment
         const balance = await this.balanceService.getTokenBalance(targetNetwork, target as string)
         const amount = tt.transactionDescription.args[1] as bigint
         const solvent = balance.balance >= amount
-        const sourceNetwork = model.event.network
+        const sourceNetwork = model.event.sourceNetwork
         const source = this.ecoConfigService
           .getSourceIntents()
           .find((intent) => intent.network == sourceNetwork)

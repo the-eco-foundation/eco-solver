@@ -32,7 +32,7 @@ export default {
   solvers: {
     //base sepolia
     84532: {
-      solverAddress: '0x5d0cab22a8E2F01CE4482F2CbFE304627d8F1816',
+      solverAddress: '0xe547628e5F7AEf5FEd847491b36Bf8bbF30E93E1',
       targets: {
         //base sepolia USDC
         '0xAb1D243b07e99C91dE9E4B80DFc2B07a8332A2f7': {
@@ -49,10 +49,11 @@ export default {
         },
       },
       network: 'base-sepolia',
+      chainID: 84532
     },
     //op sepolia
     11155420: {
-      solverAddress: '0x5d0cab22a8E2F01CE4482F2CbFE304627d8F1816', //todo update to real address
+      solverAddress: '0x3487f465E285a4eC20a526903f89C74b172fE845', //todo update to real address
       targets: {
         //op sepolia USDC
         '0x5fd84259d66Cd46123540766Be93DFE6D43130D7': {
@@ -61,6 +62,7 @@ export default {
         },
       },
       network: 'opt-sepolia',
+      chainID: 11155420
     },
   },
 }

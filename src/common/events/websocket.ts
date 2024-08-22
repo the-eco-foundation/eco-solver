@@ -20,7 +20,8 @@ import { Log as EthersLog } from 'alchemy-sdk'
 }
  */
 export interface EventLogWS extends EthersLog {
-  network: Network
+  sourceNetwork: Network
+  sourceChainID: number
 }
 
 // The hash of the log event
