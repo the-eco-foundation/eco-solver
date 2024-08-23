@@ -46,7 +46,7 @@ export class SourceIntentDataModel implements IntentStruct {
     this.destinationChain = destinationChain
     this.targets = targets
     this.data = data
-    this.rewardTokens = rewardTokens
+    this.rewardTokens = rewardTokens.map((t) => (t as string).toLowerCase())
     this.rewardAmounts = rewardAmounts
     this.expiryTime = expiryTime
     this.hasBeenWithdrawn = false

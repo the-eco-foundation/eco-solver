@@ -30,7 +30,16 @@ describe('AlchemyService', () => {
   const baseNetwork = Network.BASE_SEPOLIA
   const alchemyConfig: AlchemyConfigType = {
     apiKey: 'coolkey',
-    networks: [baseNetwork, Network.OPT_SEPOLIA],
+    networks: [
+      {
+        name: baseNetwork,
+        id: 8453,
+      },
+      {
+        name: Network.OPT_SEPOLIA,
+        id: 11155420,
+      },
+    ],
   }
 
   beforeEach(async () => {

@@ -14,7 +14,6 @@ import { AddressLike } from 'ethers'
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { intersectionBy } from 'lodash'
 import { getIntentJobId } from '../common/utils/strings'
-import { getAlchemyNetwork } from '../common/utils/chains'
 import { Solver } from '../eco-configs/eco-config.types'
 
 /**
@@ -36,7 +35,7 @@ export class FeasableIntentService implements OnModuleInit {
   onModuleInit() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
     //todo get this from config or service per token/chain
-    this.fee = 1001n
+    this.fee = 1000n
   }
 
   async feasableIntent(intentHash: SourceIntentTxHash) {
@@ -50,30 +49,7 @@ export class FeasableIntentService implements OnModuleInit {
     const { model, solver } = data
 
     //check if we have tokens on the solver chain
-    const feasable = model.intent.targets.every(async (target, index) => {
-      const tt = this.utilsIntentService.getTransactionTargetData(model, solver, target, index)
-      if (tt === null) {
-        this.logger.error(
-          EcoLogMessage.withError({
-            message: `feasableIntent: Invalid transaction data`,
-            error: EcoError.FeasableIntentNoTransactionError,
-            properties: {
-              model: model,
-            },
-          }),
-        )
-        return false
-      }
-
-      switch (tt.targetConfig.contractType) {
-        case 'erc20':
-          return await this.handleErc20(tt, model, solver, target)
-        case 'erc721':
-        case 'erc1155':
-        default:
-          return false
-      }
-    })
+    const feasable = await this.validateExecution(model, solver)
 
     if (feasable) {
       //add to processing queue
@@ -103,7 +79,7 @@ export class FeasableIntentService implements OnModuleInit {
     switch (tt.transactionDescription.selector) {
       case getERC20Selector('transfer'):
         //check we have enough tokens to transfer on destination fullfillment
-        const balance = await this.balanceService.getTokenBalance(targetNetwork, target as string)
+        const balance = await this.balanceService.getTokenBalance(solver.chainID, target as string)
         const amount = tt.transactionDescription.args[1] as bigint
         const solvent = balance.balance >= amount
         const sourceNetwork = model.event.sourceNetwork
@@ -177,5 +153,42 @@ export class FeasableIntentService implements OnModuleInit {
   convertToUSDC(network: Network, token: string, amount: bigint): bigint {
     //todo: get the price of the token in usdc instead of assuming 1-1 here
     return amount
+  }
+
+  async validateExecution(model: SourceIntentModel, solver: Solver): Promise<boolean> {
+    const execs = model.intent.targets.map((target, index) => {
+      return this.validateEachExecution(model, solver, target, index)
+    })
+    return (await Promise.all(execs)).every((e) => e)
+  }
+
+  async validateEachExecution(
+    model: SourceIntentModel,
+    solver: Solver,
+    target: AddressLike,
+    index: number,
+  ) {
+    const tt = this.utilsIntentService.getTransactionTargetData(model, solver, target, index)
+    if (tt === null) {
+      this.logger.error(
+        EcoLogMessage.withError({
+          message: `feasableIntent: Invalid transaction data`,
+          error: EcoError.FeasableIntentNoTransactionError,
+          properties: {
+            model: model,
+          },
+        }),
+      )
+      return false
+    }
+
+    switch (tt.targetConfig.contractType) {
+      case 'erc20':
+        return await this.handleErc20(tt, model, solver, target)
+      case 'erc721':
+      case 'erc1155':
+      default:
+        return false
+    }
   }
 }

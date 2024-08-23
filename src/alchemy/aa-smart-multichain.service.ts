@@ -3,8 +3,6 @@ import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoError } from '../common/errors/eco-error'
 import { LocalAccountSigner, SmartAccountClient } from '@alchemy/aa-core'
 import { AASmartMultichainClient } from './aa-smart-multichain-client'
-import { CreateMultiOwnerModularAccountParams } from '@alchemy/aa-accounts'
-import { HDAccount, LocalAccount, PrivateKeyAccount } from 'viem'
 
 export type AAMultiChainConfig = {
   apiKey: string
@@ -17,7 +15,7 @@ export class AASmartAccountService implements OnModuleInit {
   private aa: AASmartMultichainClient
   private _supportedNetworks: number[] = []
 
-  constructor(private ecoConfigService: EcoConfigService) { }
+  constructor(private ecoConfigService: EcoConfigService) {}
 
   async onModuleInit() {
     const alchemyConfigs = this.ecoConfigService.getAlchemy()
@@ -30,7 +28,7 @@ export class AASmartAccountService implements OnModuleInit {
     const configs: AAMultiChainConfig = {
       apiKey: alchemyConfigs.apiKey,
       ids: alchemyConfigs.networks.map((n) => n.id),
-      signer
+      signer,
     }
     alchemyConfigs.networks.map((n) => n.id)
 

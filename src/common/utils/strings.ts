@@ -1,11 +1,10 @@
-
 import { chains } from '@alchemy/aa-core'
 export function getRandomString() {
   return Math.random().toString(36).slice(2)
 }
 
-export function getDestinationNetworkAddressKey(network: string, tokenAddress: string): string {
-  return `${network}-${tokenAddress}`
+export function getDestinationNetworkAddressKey(chainID: number, tokenAddress: string): string {
+  return `${chainID}-${tokenAddress}`
 }
 
 /**
@@ -23,8 +22,8 @@ export function getIntentJobId(serviceName: string, intentHash: string): string 
  * Merges the two strings into a valid api url
  * @param rpc the rpc endpoint
  * @param apiKey the alchemy api key
- * @returns 
+ * @returns
  */
 export function getAchemyRPCUrl(chain: chains.Chain, apiKey: string): string {
-  return chain.rpcUrls.alchemy.http[0] + "/" + apiKey
+  return chain.rpcUrls.alchemy.http[0] + '/' + apiKey
 }

@@ -88,7 +88,7 @@ export type AlchemyNetwork = {
 export type Solver = {
   solverAddress: Hex
   //target address to contract type mapping
-  targets: Record<string, TargetContract>
+  targets: Record<Hex, TargetContract>
   network: Network
   chainID: number
 }

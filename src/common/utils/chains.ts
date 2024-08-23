@@ -21,11 +21,11 @@ import {
 // Chain type is imported from viem package, which is a dependency of the aa-core package
 // will complain if importing from viem directly...
 import { Chain } from '@alchemy/aa-core/node_modules/viem/_types/types/chain'
-import { BigNumber, Network } from 'alchemy-sdk'
+import { Network } from 'alchemy-sdk'
 import { Chain as ViemChain } from 'viem'
 
 /**
- * Chains supported by the Alchemy API, with custom RPC URLs. 
+ * Chains supported by the Alchemy API, with custom RPC URLs.
  */
 const ChainsSupportedAA: Chain[] = [
   arbitrum,
@@ -73,6 +73,6 @@ export function getAlchemyNetwork(chainId: number): Network {
     case 84532:
       return Network.BASE_SEPOLIA
     default:
-      return "" as Network
+      return '' as Network
   }
 }

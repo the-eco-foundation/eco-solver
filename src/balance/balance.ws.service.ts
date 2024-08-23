@@ -27,7 +27,7 @@ export class BalanceWebsocketService implements OnModuleInit {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
 
     Object.entries(this.ecoConfigService.getSolvers()).forEach((entity) => {
-      const [_, solver] = entity
+      const [, solver] = entity
       const instanceAddress = this.alchemyService.getWallet(solver.network).address
 
       Object.entries(solver.targets).forEach((targetEntity) => {

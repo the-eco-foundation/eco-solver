@@ -2,13 +2,14 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { AlchemyService } from '../alchemy/alchemy.service'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { getCreateIntentLogFilter } from '../common/utils/ws.helpers'
-import { AlchemyEventType, Network } from 'alchemy-sdk'
+import { AlchemyEventType } from 'alchemy-sdk'
 import { JobsOptions, Queue } from 'bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
 import { EventLogWS } from '../common/events/websocket'
 import { getIntentJobId } from '../common/utils/strings'
 import { SourceIntent } from '../eco-configs/eco-config.types'
+import { EcoLogMessage } from '../common/logging/eco-log-message'
 
 /**
  * Service class for solving an intent on chain. When this service starts up,
@@ -30,7 +31,6 @@ export class WebsocketIntentService implements OnModuleInit {
   onModuleInit() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
     this.ecoConfigService.getSourceIntents().forEach((source) => {
-      
       this.alchemyService
         .getAlchemy(source.network)
         .ws.on(
@@ -45,6 +45,14 @@ export class WebsocketIntentService implements OnModuleInit {
       //add network and chainID to the event since alchemy doesn`t
       event.sourceNetwork = source.network
       event.sourceChainID = source.chainID
+      this.logger.debug(
+        EcoLogMessage.fromDefault({
+          message: `websocket intent`,
+          properties: {
+            event: event,
+          },
+        }),
+      )
       //add to processing queue
       await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.create_intent, event as EventLogWS, {
         jobId: getIntentJobId('websocket', event.transactionHash),

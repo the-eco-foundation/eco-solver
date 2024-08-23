@@ -1,16 +1,15 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { AlchemyService } from '../alchemy/alchemy.service'
 import { isSupportedTokenType } from '../common/utils/fragments'
 import { Solver } from '../eco-configs/eco-config.types'
-import { ERC20, ERC20__factory } from '../typing/contracts'
-import { Network } from 'alchemy-sdk'
 import { getDestinationNetworkAddressKey } from '../common/utils/strings'
 import { EventLogWS } from '../common/events/websocket'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { decodeTransferLog } from '../common/utils/ws.helpers'
+import { AASmartAccountService } from '../alchemy/aa-smart-multichain.service'
+import { erc20Abi, Hex } from 'viem'
 
-type TockenBalance = { erc20: ERC20; decimals: bigint; balance: bigint }
+type TockenBalance = { decimals: bigint; balance: bigint }
 
 /**
  * Service class for getting configs for the app
@@ -23,14 +22,14 @@ export class BalanceService implements OnModuleInit {
 
   constructor(
     private readonly ecoConfig: EcoConfigService,
-    private readonly alchemyService: AlchemyService,
+    private readonly aaService: AASmartAccountService,
   ) {}
 
   async onModuleInit() {
     //iterate over all solvers
     await Promise.all(
       Object.entries(this.ecoConfig.getSolvers()).map(async (entry) => {
-        const [_, solver] = entry
+        const [, solver] = entry
         await this.loadTokenBalances(solver)
       }),
     )
@@ -40,8 +39,8 @@ export class BalanceService implements OnModuleInit {
    * Get the token balance of the solver
    * @returns
    */
-  async getTokenBalance(network: Network, tokenAddress: string) {
-    return this.tokenBalances.get(getDestinationNetworkAddressKey(network, tokenAddress))
+  async getTokenBalance(chainID: number, tokenAddress: string) {
+    return this.tokenBalances.get(getDestinationNetworkAddressKey(chainID, tokenAddress))
   }
 
   /**
@@ -59,7 +58,7 @@ export class BalanceService implements OnModuleInit {
     )
 
     const intent = decodeTransferLog(balanceEvent.data, balanceEvent.topics)
-    const key = getDestinationNetworkAddressKey(balanceEvent.sourceNetwork, balanceEvent.address)
+    const key = getDestinationNetworkAddressKey(balanceEvent.sourceChainID, balanceEvent.address)
     const balanceObj = this.tokenBalances.get(key)
     if (balanceObj) {
       balanceObj.balance = balanceObj.balance + intent[2]
@@ -76,23 +75,36 @@ export class BalanceService implements OnModuleInit {
         const [tokenAddress, targetContract] = target
         if (isSupportedTokenType(targetContract.contractType)) {
           //load the balance in the local mapping
-          await this.loadERC20TokenBalance(solver.network, tokenAddress)
+          await this.loadERC20TokenBalance(solver.chainID, tokenAddress as Hex)
         }
       }),
     )
   }
 
-  private async loadERC20TokenBalance(
-    network: Network,
-    tokenAddress: string,
-  ): Promise<TockenBalance> {
-    const key = getDestinationNetworkAddressKey(network, tokenAddress)
+  private async loadERC20TokenBalance(chainID: number, tokenAddress: Hex): Promise<TockenBalance> {
+    const key = getDestinationNetworkAddressKey(chainID, tokenAddress)
     if (!this.tokenBalances.has(key)) {
-      const signer = this.alchemyService.getWallet(network)
-      const tokenContract = ERC20__factory.connect(tokenAddress, signer)
-      const balance = await tokenContract.balanceOf(signer.address)
-      const decimals = await tokenContract.decimals()
-      this.tokenBalances.set(key, { erc20: tokenContract, balance, decimals })
+      const client = await this.aaService.getClient(chainID)
+      const erc20 = {
+        address: tokenAddress,
+        abi: erc20Abi,
+      }
+      const [{ result: balance }, { result: decimals }] = await client.multicall({
+        // @ts-expect-error - multicall is complaining about "Type instantiation is excessively deep and possibly infinite."
+        contracts: [
+          {
+            ...erc20,
+            functionName: 'balanceOf',
+            args: [client.account.address],
+          },
+          {
+            ...erc20,
+            functionName: 'decimals',
+          },
+        ],
+      })
+
+      this.tokenBalances.set(key, { balance, decimals: BigInt(decimals) })
     }
     return this.tokenBalances.get(key)
   }

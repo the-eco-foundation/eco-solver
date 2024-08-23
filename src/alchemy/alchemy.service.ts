@@ -4,7 +4,6 @@ import { AlchemyMultichainClient, AlchemyMultichainSettings } from './alchemy-mu
 import { ethers } from 'ethers'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoError } from '../common/errors/eco-error'
-import { AASmartMultichainClient } from './aa-smart-multichain-client'
 
 /**
  * This service provides access to the Alchemy SDK for multiple networks.

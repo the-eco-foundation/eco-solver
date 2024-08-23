@@ -1,5 +1,3 @@
-//publicAddress of pk 0xd6783D1bD6Bf593C975D718041a592f4C908A3ec
-//publicAddress of smartAccountWallet 0x3A322Ff8ef24592e5e50D2EB4E630cDA87Bd83A6
 export default {
   logger: {
     usePino: false,
@@ -49,7 +47,7 @@ export default {
         },
       },
       network: 'base-sepolia',
-      chainID: 84532
+      chainID: 84532,
     },
     //op sepolia
     11155420: {
@@ -62,7 +60,7 @@ export default {
         },
       },
       network: 'opt-sepolia',
-      chainID: 11155420
+      chainID: 11155420,
     },
   },
 }
