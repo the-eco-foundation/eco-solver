@@ -11,7 +11,7 @@ export class SourceIntentDataModel implements IntentStruct {
   @Prop({ required: true, type: String })
   creator: AddressLike
   @Prop({ required: true, type: BigInt })
-  destinationChain: BigNumberish
+  destinationChainID: BigNumberish
   @Prop({ required: true, type: Array<string> })
   targets: Hex[]
   @Prop({ required: true, type: Array<string> })
@@ -43,7 +43,7 @@ export class SourceIntentDataModel implements IntentStruct {
     }
     this.hash = hash
     this.creator = creator
-    this.destinationChain = destinationChain
+    this.destinationChainID = destinationChain
     this.targets = targets
     this.data = data
     this.rewardTokens = rewardTokens.map((t) => (t as string).toLowerCase())

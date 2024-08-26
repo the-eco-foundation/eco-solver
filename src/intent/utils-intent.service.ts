@@ -114,11 +114,11 @@ export class UtilsIntentService implements OnModuleInit {
       return { model: null, solver: null, err: EcoError.SourceIntentDataNotFound(intentHash) }
     }
 
-    const solver = this.ecoConfigService.getSolver(model.intent.destinationChain as number)
+    const solver = this.ecoConfigService.getSolver(model.intent.destinationChainID as number)
     if (!solver) {
       this.logger.log(
         EcoLogMessage.fromDefault({
-          message: `No solver found for chain ${model.intent.destinationChain}`,
+          message: `No solver found for chain ${model.intent.destinationChainID}`,
           properties: {
             intentHash: intentHash,
             sourceNetwork: model.event.sourceNetwork,
