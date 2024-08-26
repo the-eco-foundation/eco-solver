@@ -10,7 +10,7 @@
     - name: NODE_ENV
       value: "preproduction"
     - name: REDIS_URL
-      value: ""
+      value: "clustercfg.solver-preprod.89fxev.use2.cache.amazonaws.com"
 
 - op: add
   path: /spec/template/spec/containers/0/ports

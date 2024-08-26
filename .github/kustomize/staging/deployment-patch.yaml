@@ -6,13 +6,11 @@
   path: /spec/template/spec/containers/0/env
   value:
     - name: DD_ENV
-      value: "preproduction"
+      value: "staging"
     - name: NODE_ENV
-      value: "preproduction"
-    - name: WEBHOOK_URL
-      value: "https://api.retool.com/v1/workflows/d54f12e4-fbf9-4bf8-9c84-118b9acb1836/startTrigger?workflowApiKey=retool_wk_4be7a81d74684738a1b910623e9c6e6d"
+      value: "staging"
     - name: REDIS_URL
-      value: ""
+      value: "clustercfg.solver-cluster.hdoe3k.use2.cache.amazonaws.com"
 
 - op: add
   path: /spec/template/spec/containers/0/ports
