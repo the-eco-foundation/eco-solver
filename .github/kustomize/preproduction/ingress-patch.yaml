@@ -1,7 +1,7 @@
 - op: add
   path: "/metadata/annotations"
   value:
-    cert-manager.io/cluster-issuer: "letsencrypt-beam-staging"
+    cert-manager.io/cluster-issuer: "letsencrypt-beam-production"
 
 - op: add
   path: "/metadata/annotations"
@@ -15,7 +15,7 @@
 
 - op: add
   path: /spec/rules/0/host
-  value: solver.staging.bend.eco
+  value: solver-preprod.bend.eco
 
 - op: add
   path: /spec/rules/0/http/paths/0/backend/service/port
@@ -25,4 +25,4 @@
 - op: add
   path: /spec/tls/0/hosts
   value:
-    - solver.staging.bend.eco
+    - solver-preprod.bend.eco

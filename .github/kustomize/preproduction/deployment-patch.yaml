@@ -9,8 +9,6 @@
       value: "preproduction"
     - name: NODE_ENV
       value: "preproduction"
-    - name: WEBHOOK_URL
-      value: "https://api.retool.com/v1/workflows/d54f12e4-fbf9-4bf8-9c84-118b9acb1836/startTrigger?workflowApiKey=retool_wk_4be7a81d74684738a1b910623e9c6e6d"
     - name: REDIS_URL
       value: ""
 
@@ -22,3 +20,4 @@
 - op: add
   path: /spec/template/spec/serviceAccount
   value: solver
+
