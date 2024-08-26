@@ -9,7 +9,7 @@ jobs:
     uses: eco/workflows/.github/workflows/deploy-to-eks.yml@v20231102
     with:
       appname: solver-preproduction
-      assumed-role: arn:aws:iam::165381489880:role/solver-eks-actions-bend-production
+      assumed-role: arn:aws:iam::165381489880:role/solver-eks-actions-beam-production
       aws-region: us-east-2
       ecr-repository: eco-solver
       ghenv: production
