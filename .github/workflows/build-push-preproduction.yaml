@@ -1,0 +1,17 @@
+name: Build Push to Amazon ECR
+
+on:
+  push:
+    branches:
+      - release-preproduction-not-active
+jobs:
+  deploy:
+    uses: eco/workflows/.github/workflows/deploy-to-eks.yml@v20231102
+    with:
+      appname: solver-preproduction
+      assumed-role: arn:aws:iam::165381489880:role/solver-eks-actions-bend-production
+      aws-region: us-east-2
+      ecr-repository: eco-solver
+      ghenv: production
+      ghsha: 
+      targetenv: preproduction
