@@ -1,0 +1,23 @@
+- op: replace
+  path: /spec/replicas
+  value: 1
+
+- op: add
+  path: /spec/template/spec/containers/0/env
+  value:
+    - name: DD_ENV
+      value: "preproduction"
+    - name: NODE_ENV
+      value: "preproduction"
+    - name: REDIS_URL
+      value: "clustercfg.solver-preprod.89fxev.use2.cache.amazonaws.com"
+
+- op: add
+  path: /spec/template/spec/containers/0/ports
+  value:
+    - containerPort: 3000
+
+- op: add
+  path: /spec/template/spec/serviceAccount
+  value: solver
+

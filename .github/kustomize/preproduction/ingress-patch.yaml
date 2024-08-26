@@ -1,0 +1,28 @@
+- op: add
+  path: "/metadata/annotations"
+  value:
+    cert-manager.io/cluster-issuer: "letsencrypt-beam-production"
+
+- op: add
+  path: "/metadata/annotations"
+  value:
+    nginx.org/client-max-body-size: "50m"
+
+- op: add
+  path: "/metadata/annotations"
+  value:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
+- op: add
+  path: /spec/rules/0/host
+  value: solver-preprod.bend.eco
+
+- op: add
+  path: /spec/rules/0/http/paths/0/backend/service/port
+  value:
+    number: 3000
+
+- op: add
+  path: /spec/tls/0/hosts
+  value:
+    - solver-preprod.bend.eco
