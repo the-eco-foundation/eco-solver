@@ -1,7 +1,6 @@
 ---
 resources:
 - ../base
-namespace: protocol
 patches:
 - target:
     group: apps
