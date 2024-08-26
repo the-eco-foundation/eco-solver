@@ -65,4 +65,5 @@ dump.rdb
 config/*
 !config/default.ts
 !config/development.ts
+!config/preproduction.ts
 !config/test.ts
