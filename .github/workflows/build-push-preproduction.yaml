@@ -3,7 +3,7 @@ name: Build Push to Amazon ECR
 on:
   push:
     branches:
-      - release-preproduction-not-active
+      - release-preproduction
 jobs:
   deploy:
     uses: eco/workflows/.github/workflows/deploy-to-eks.yml@v20231102
@@ -13,5 +13,5 @@ jobs:
       aws-region: us-east-2
       ecr-repository: eco-solver
       ghenv: production
-      ghsha: 
+      ghsha: b0bb8f0e6db49e5d11018906c8c9ff3c6bbf060c
       targetenv: preproduction
