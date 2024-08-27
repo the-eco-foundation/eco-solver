@@ -17,10 +17,6 @@ export default {
     enableJournaling: true,
   },
   redis: {
-    connection: {
-      host: 'localhost',
-      port: 6379,
-    },
     options: {
       single: {
         autoResubscribe: true,

@@ -3,6 +3,10 @@ export default {
     usePino: false,
   },
   redis: {
+    connection: {
+      host: 'localhost',
+      port: 6379,
+    },
     jobs: {
       //remove on complete/fail for dev so we can submit the same tx multiple times
       intentJobConfig: {

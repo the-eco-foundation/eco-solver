@@ -17,11 +17,10 @@ export class EcoConfigService implements OnModuleInit {
   constructor(private readonly configSource: ConfigSource) {
     this.externalConfigs = configSource.getConfig()
     this.ecoConfig = config
-  }
-
-  async onModuleInit() {
     this.initConfigs()
   }
+
+  async onModuleInit() {}
 
   /**
    * Returns the static configs  for the app, from the 'config' package
