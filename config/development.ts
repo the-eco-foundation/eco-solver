@@ -2,6 +2,19 @@ export default {
   logger: {
     usePino: false,
   },
+  database: {
+    auth: {
+      enabled: false,
+      username: '',
+      password: '',
+      type: '',
+    },
+
+    uriPrefix: 'mongodb://',
+    uri: 'localhost:27017',
+    dbName: 'eco-solver-local',
+    enableJournaling: true,
+  },
   redis: {
     connection: {
       host: 'localhost',
