@@ -2,7 +2,10 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoError } from '../common/errors/eco-error'
 import { LocalAccountSigner, SmartAccountClient } from '@alchemy/aa-core'
+import { privateKeyToAccount } from 'viem/accounts'
 import { AASmartMultichainClient } from './aa-smart-multichain-client'
+import { createNonceManager, nonceManager, PrivateKeyAccount } from 'viem'
+import { privateKeyAndNonceToAccountSigner } from './aa.helper'
 
 export type AAMultiChainConfig = {
   apiKey: string
@@ -23,8 +26,11 @@ export class AASmartAccountService implements OnModuleInit {
     this._supportedNetworks = this._supportedNetworks.concat(
       alchemyConfigs.networks.map((n) => n.id),
     )
-
-    const signer = LocalAccountSigner.privateKeyToAccountSigner(`0x${ethConfigs.privateKey}`)
+    // const account = privateKeyToAccount(`0x${ethConfigs.privateKey}`)
+    // // const manager = createNonceManager({source:})
+    // const signer = new LocalAccountSigner(account as PrivateKeyAccount)
+    // const signer = LocalAccountSigner.privateKeyToAccountSigner(`0x${ethConfigs.privateKey}`)
+    const signer = privateKeyAndNonceToAccountSigner(`0x${ethConfigs.privateKey}`)
     const configs: AAMultiChainConfig = {
       apiKey: alchemyConfigs.apiKey,
       ids: alchemyConfigs.networks.map((n) => n.id),
