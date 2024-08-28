@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import * as config from 'config'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { ConfigSource } from './interfaces/config-source.interface'
-import { EcoConfigType, Solver } from './eco-config.types'
+import { EcoConfigType, Solver, SourceIntent } from './eco-config.types'
 import { keys } from 'lodash'
 
 /**
@@ -58,7 +58,13 @@ export class EcoConfigService implements OnModuleInit {
 
   // Returns the source intents config
   getSourceIntents(): EcoConfigType['sourceIntents'] {
-    return this.ecoConfig.get('sourceIntents')
+    const intents = this.ecoConfig.get('sourceIntents').map((intent: SourceIntent) => {
+      intent.tokens = intent.tokens.map((token) => {
+        return token.toLocaleLowerCase()
+      })
+      return intent
+    })
+    return intents
   }
 
   // Returns the solvers config

@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { SourceIntentTxHash } from '../common/events/websocket'
 import { TransactionTargetData, UtilsIntentService } from './utils-intent.service'
-import {} from '../balance/balance.service'
+import { } from '../balance/balance.service'
 import { AASmartAccountService } from '../alchemy/aa-smart-multichain.service'
 import { InboxAbi } from '../contracts'
 import { encodeFunctionData, erc20Abi, Hex } from 'viem'
@@ -10,6 +10,9 @@ import { EcoError } from '../common/errors/eco-error'
 import { getERC20Selector } from '../common/utils/ws.helpers'
 import { Solver } from '../eco-configs/eco-config.types'
 import { BatchUserOperationCallData, UserOperationCallData } from '@alchemy/aa-core'
+import { SourceIntentModel } from './schemas/source-intent.schema'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
 
 /**
  * Service class for getting configs for the app
@@ -19,13 +22,14 @@ export class FulfillIntentService implements OnModuleInit {
   private logger = new Logger(FulfillIntentService.name)
 
   constructor(
+    @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly aaService: AASmartAccountService,
-  ) {}
+  ) { }
 
-  onModuleInit() {}
+  onModuleInit() { }
 
-  async onApplicationBootstrap() {}
+  async onApplicationBootstrap() { }
 
   async executeFullfillIntent(intentHash: SourceIntentTxHash) {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
@@ -68,7 +72,7 @@ export class FulfillIntentService implements OnModuleInit {
 
     const flatExecuteData = executeData.flat()
     const smartAccountClient = await this.aaService.getClient(solver.chainID)
-
+    let receipt: any
     try {
       const args = [
         model.event.sourceChainID,
@@ -94,8 +98,21 @@ export class FulfillIntentService implements OnModuleInit {
       const uo = await smartAccountClient.sendUserOperation({
         uo: flatExecuteData,
       })
-      await smartAccountClient.waitForUserOperationTransaction(uo)
+      receipt = await smartAccountClient.waitForUserOperationTransaction(uo)
+      model.status = 'SOLVED'
+      this.logger.debug(
+        EcoLogMessage.fromDefault({
+          message: `Fulfilled transaction ${receipt}`,
+          properties: {
+            userOPHash: receipt,
+            destinationChainID: model.intent.destinationChainID,
+            sourceChainID: model.event.sourceChainID
+          },
+        }),
+      )
     } catch (e) {
+      receipt = e
+      model.status = 'FAILED'
       this.logger.error(
         EcoLogMessage.withError({
           message: `fulfillIntent: Invalid transaction`,
@@ -103,9 +120,15 @@ export class FulfillIntentService implements OnModuleInit {
           properties: {
             model: model,
             flatExecuteData: flatExecuteData,
+            error: e
           },
         }),
       )
+    } finally {
+      model.receipt = receipt
+      await this.intentModel.updateOne({
+        'intent.hash': model.intent.hash,
+      }, model)
     }
   }
   /**

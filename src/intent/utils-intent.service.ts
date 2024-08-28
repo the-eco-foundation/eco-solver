@@ -85,9 +85,11 @@ export class UtilsIntentService implements OnModuleInit {
   }
 
   targetsSupported(model: SourceIntentModel, solver: Solver): boolean {
+    const modelTargets = model.intent.targets.map((t) => t.toLowerCase()) 
+    const solverTargets = Object.keys(solver.targets).map((t) => t.toLowerCase()) 
     //all targets are included in the solver targets array
     const targetsSupported =
-      difference(model.intent.targets, Object.keys(solver.targets)).length == 0
+      difference(modelTargets, solverTargets).length == 0
 
     if (!targetsSupported) {
       this.logger.warn(
