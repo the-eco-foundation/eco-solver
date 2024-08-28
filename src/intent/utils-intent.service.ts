@@ -9,6 +9,7 @@ import { EcoError } from '../common/errors/eco-error'
 import { AddressLike, TransactionDescription } from 'ethers'
 import { getFragment } from '../common/utils/fragments'
 import { difference, includes } from 'lodash'
+import { Hex } from 'viem'
 
 /**
  * Data for a transaction target
@@ -109,26 +110,40 @@ export class UtilsIntentService implements OnModuleInit {
   async getProcessIntentData(
     intentHash: string,
   ): Promise<{ model: SourceIntentModel; solver: Solver; err?: EcoError } | undefined> {
-    const model = await this.intentModel.findOne({
-      'intent.hash': intentHash,
-    })
-    if (!model) {
-      return { model: null, solver: null, err: EcoError.SourceIntentDataNotFound(intentHash) }
-    }
-
-    const solver = this.ecoConfigService.getSolver(model.intent.destinationChainID as number)
-    if (!solver) {
-      this.logger.log(
+    try{
+      const model = await this.intentModel.findOne({
+        'intent.hash': intentHash,
+      })
+      if (!model) {
+        return { model: null, solver: null, err: EcoError.SourceIntentDataNotFound(intentHash) }
+      }
+  
+      const solver = this.ecoConfigService.getSolver(model.intent.destinationChainID as number)
+      if (!solver) {
+        this.logger.log(
+          EcoLogMessage.fromDefault({
+            message: `No solver found for chain ${model.intent.destinationChainID}`,
+            properties: {
+              intentHash: intentHash,
+              sourceNetwork: model.event.sourceNetwork,
+            },
+          }),
+        )
+        return null
+      }
+      return { model, solver }
+    }catch(e){
+      this.logger.error(
         EcoLogMessage.fromDefault({
-          message: `No solver found for chain ${model.intent.destinationChainID}`,
+          message: `Error in getProcessIntentData ${intentHash}`,
           properties: {
             intentHash: intentHash,
-            sourceNetwork: model.event.sourceNetwork,
+            error: e,
           },
         }),
       )
-      return null
+      return 
     }
-    return { model, solver }
+
   }
 }
