@@ -7,8 +7,8 @@ export default {
     jobs: {
       //remove on complete/fail for dev so we can submit the same tx multiple times
       intentJobConfig: {
-        removeOnComplete: true,
-        removeOnFail: true,
+        removeOnComplete: false,
+        removeOnFail: false,
       },
     },
   },
