@@ -13,5 +13,5 @@ jobs:
       aws-region: us-east-2
       ecr-repository: eco-solver
       ghenv: production
-      ghsha: afc80e02bdd2813a1dfa94f46c77a069bd499154
+      ghsha: f2efd81c2c395817b8eb0eb38c038a29bad47137
       targetenv: preproduction
