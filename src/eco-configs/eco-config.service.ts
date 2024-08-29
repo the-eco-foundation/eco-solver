@@ -2,8 +2,8 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import * as config from 'config'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { ConfigSource } from './interfaces/config-source.interface'
-import { EcoConfigType, Solver } from './eco-config.types'
-import { keys } from 'lodash'
+import { EcoConfigType, Solver, SourceIntent } from './eco-config.types'
+import { entries, keys } from 'lodash'
 
 /**
  * Service class for getting configs for the app
@@ -20,7 +20,7 @@ export class EcoConfigService implements OnModuleInit {
     this.initConfigs()
   }
 
-  async onModuleInit() {}
+  async onModuleInit() { }
 
   /**
    * Returns the static configs  for the app, from the 'config' package
@@ -58,12 +58,27 @@ export class EcoConfigService implements OnModuleInit {
 
   // Returns the source intents config
   getSourceIntents(): EcoConfigType['sourceIntents'] {
-    return this.ecoConfig.get('sourceIntents')
+    const intents = this.ecoConfig.get('sourceIntents').map((intent: SourceIntent) => {
+      intent.tokens = intent.tokens.map((token) => {
+        return token.toLocaleLowerCase()
+      })
+      return intent
+    })
+    return intents
   }
 
   // Returns the solvers config
   getSolvers(): EcoConfigType['solvers'] {
-    return this.ecoConfig.get('solvers')
+    const solvers = this.ecoConfig.get('solvers')
+    entries(solvers).forEach(([key, solver]: [string, Solver]) => {
+      const out = {}
+      entries(solver.targets).forEach(([key, target]) => {
+        out[key.toLowerCase()] = target
+      })
+      solver.targets = out
+      return solver
+    })
+    return solvers
   }
 
   // Returns the solver for a specific chain or undefined if its not supported

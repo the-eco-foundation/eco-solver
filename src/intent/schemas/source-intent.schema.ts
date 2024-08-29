@@ -3,7 +3,7 @@ import { ContractTransactionReceipt } from 'ethers'
 import { SourceIntentEventModel } from './source-intent-event.schema'
 import { SourceIntentDataModel } from './source-intent-data.schema'
 
-export type SourceIntentStatus = 'PENDING' | 'SOLVED' | 'EXPIRED'
+export type SourceIntentStatus = 'PENDING' | 'SOLVED' | 'EXPIRED' | 'FAILED'
 
 @Schema({ timestamps: true })
 export class SourceIntentModel {

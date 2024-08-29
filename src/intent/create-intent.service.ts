@@ -39,47 +39,57 @@ export class CreateIntentService implements OnModuleInit {
       }),
     )
     const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics)
+    try {
+      //check db if the intent is already filled
+      const model = await this.intentModel.findOne({
+        'intent.hash': intent.hash,
+      })
+      if (model) {
+        // Record already exists, do nothing and return
+        this.logger.debug(
+          EcoLogMessage.fromDefault({
+            message: `Record for intent already exists ${intent.hash}`,
+            properties: {
+              intentHash: intent.hash,
+              intent: intent,
+            },
+          }),
+        )
+        return
+      }
+      //create db record
+      const record = await this.intentModel.create<SourceIntentModel>({
+        event: intentWs,
+        intent: intent,
+        receipt: null,
+        status: 'PENDING',
+      })
 
-    //check db if the intent is already filled
-    const model = await this.intentModel.findOne({
-      'intent.hash': intent.hash,
-    })
-    if (model) {
-      // Record already exists, do nothing and return
+      //add to processing queue
+      await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.validate_intent, intent.hash, {
+        jobId: getIntentJobId('create', intent.hash as string),
+        ...this.intentJobConfig,
+      })
+
       this.logger.debug(
         EcoLogMessage.fromDefault({
-          message: `Record for intent already exists ${intent.hash}`,
+          message: `Recorded intent ${record.intent.hash}`,
           properties: {
             intentHash: intent.hash,
-            intent: intent,
+            intent: record.intent,
           },
         }),
       )
-      return
+    } catch (e) {
+      this.logger.error(
+        EcoLogMessage.fromDefault({
+          message: `Error in createIntent ${intentWs.transactionHash}`,
+          properties: {
+            intentHash: intentWs.transactionHash,
+            error: e,
+          },
+        }),
+      )
     }
-
-    //create db record
-    const record = await this.intentModel.create<SourceIntentModel>({
-      event: intentWs,
-      intent: intent,
-      receipt: null,
-      status: 'PENDING',
-    })
-
-    //add to processing queue
-    await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.validate_intent, intent.hash, {
-      jobId: getIntentJobId('create', intent.hash as string),
-      ...this.intentJobConfig,
-    })
-
-    this.logger.debug(
-      EcoLogMessage.fromDefault({
-        message: `Recorded intent ${record.intent.hash}`,
-        properties: {
-          intentHash: intent.hash,
-          intent: record.intent,
-        },
-      }),
-    )
   }
 }

@@ -44,7 +44,7 @@ export class SourceIntentDataModel implements IntentStruct {
     this.hash = hash
     this.creator = creator
     this.destinationChainID = destinationChain
-    this.targets = targets
+    this.targets = targets.map((t) => (t as string).toLowerCase() as Hex)
     this.data = data
     this.rewardTokens = rewardTokens.map((t) => (t as string).toLowerCase())
     this.rewardAmounts = rewardAmounts

@@ -29,19 +29,14 @@ export class SolveIntentProcessor extends WorkerHost {
     this.logger.debug(
       EcoLogMessage.fromDefault({
         message: `SolveIntentProcessor: process`,
+        properties: {
+          job: job.name,
+        },
       }),
     )
 
     switch (job.name) {
       case QUEUES.SOURCE_INTENT.jobs.create_intent:
-        this.logger.debug(
-          EcoLogMessage.fromDefault({
-            message: `SolveIntentProcessor: ws event`,
-            properties: {
-              event: job.data,
-            },
-          }),
-        )
         return await this.createIntentService.createIntent(job.data as EventLogWS)
       case QUEUES.SOURCE_INTENT.jobs.validate_intent:
         return await this.validateIntentService.validateIntent(job.data as SourceIntentTxHash)

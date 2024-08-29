@@ -38,7 +38,7 @@ export default {
     usePino: true,
     pinoConfig: {
       pinoHttp: {
-        useLevel: 'debug',
+        level: 'debug',
         useLevelLabels: true,
         redact: {
           paths: [
