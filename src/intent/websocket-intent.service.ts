@@ -55,7 +55,7 @@ export class WebsocketIntentService implements OnModuleInit {
       )
       //add to processing queue
       await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.create_intent, event as EventLogWS, {
-        jobId: getIntentJobId('websocket', event.transactionHash),
+        jobId: getIntentJobId('websocket', event.transactionHash, event.logIndex),
         ...this.intentJobConfig,
       })
     }

@@ -26,6 +26,8 @@ export class SourceIntentDataModel implements IntentStruct {
   hasBeenWithdrawn: boolean
   @Prop({ required: true, type: String })
   nonce: BytesLike
+  @Prop({ required: true, type: Number })
+  logIndex: number
 
   constructor(
     hash: BytesLike,
@@ -37,6 +39,7 @@ export class SourceIntentDataModel implements IntentStruct {
     rewardAmounts: BigNumberish[],
     expiryTime: BigNumberish,
     nonce: BytesLike,
+    logIndex: number,
   ) {
     if (targets.length !== data.length) {
       throw EcoError.SourceIntentDataInvalidParams
@@ -51,6 +54,7 @@ export class SourceIntentDataModel implements IntentStruct {
     this.expiryTime = expiryTime
     this.hasBeenWithdrawn = false
     this.nonce = nonce
+    this.logIndex = logIndex
   }
 
   static fromEvent(event: Array<any>): SourceIntentDataModel {
@@ -64,6 +68,7 @@ export class SourceIntentDataModel implements IntentStruct {
       event[6],
       event[7],
       event[8],
+      event[9],
     )
   }
 }

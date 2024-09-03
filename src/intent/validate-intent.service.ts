@@ -91,7 +91,7 @@ export class ValidateIntentService implements OnModuleInit {
 
     //add to processing queue
     await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.feasable_intent, intentHash, {
-      jobId: getIntentJobId('validate', intentHash),
+      jobId: getIntentJobId('validate', intentHash, model.intent.logIndex),
       ...this.intentJobConfig,
     })
   }

@@ -54,7 +54,7 @@ export class FeasableIntentService implements OnModuleInit {
     if (feasable) {
       //add to processing queue
       await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.fulfill_intent, intentHash, {
-        jobId: getIntentJobId('feasable', intentHash),
+        jobId: getIntentJobId('feasable', intentHash, model.intent.logIndex),
         ...this.intentJobConfig,
       })
     }
