@@ -1,4 +1,4 @@
-import { EventFilter } from 'ethers'
+import { EventFilter, Result } from 'ethers'
 import { ERC20__factory, IntentSource__factory } from '../../typing/contracts'
 import { SourceIntentDataModel } from '../../intent/schemas/source-intent-data.schema'
 
@@ -62,8 +62,9 @@ export function decodeCreateIntentLog(
   const ii = IntentSource__factory.createInterface()
   const frag = ii.getEvent('IntentCreated')
   const decode = ii.decodeEventLog(frag, data, topics)
-  decode.push(logIndex)
-  return SourceIntentDataModel.fromEvent(decode)
+  const eventArray = decode.toArray(true)
+  eventArray.push(logIndex)
+  return SourceIntentDataModel.fromEvent(eventArray)
 }
 
 /**
