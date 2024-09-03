@@ -38,7 +38,7 @@ export class CreateIntentService implements OnModuleInit {
         },
       }),
     )
-    const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics)
+    const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics, intentWs.logIndex)
     try {
       //check db if the intent is already filled
       const model = await this.intentModel.findOne({
@@ -67,7 +67,7 @@ export class CreateIntentService implements OnModuleInit {
 
       //add to processing queue
       await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.validate_intent, intent.hash, {
-        jobId: getIntentJobId('create', intent.hash as string),
+        jobId: getIntentJobId('create', intent.hash as string, intent.logIndex),
         ...this.intentJobConfig,
       })
 
