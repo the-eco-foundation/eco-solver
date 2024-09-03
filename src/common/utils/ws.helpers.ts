@@ -54,10 +54,15 @@ export function getTransferLogFilter(
  * @param topics the log topics
  * @returns
  */
-export function decodeCreateIntentLog(data: string, topics: string[]): SourceIntentDataModel {
+export function decodeCreateIntentLog(
+  data: string,
+  topics: string[],
+  logIndex: number,
+): SourceIntentDataModel {
   const ii = IntentSource__factory.createInterface()
   const frag = ii.getEvent('IntentCreated')
   const decode = ii.decodeEventLog(frag, data, topics)
+  decode.push(logIndex)
   return SourceIntentDataModel.fromEvent(decode)
 }
 

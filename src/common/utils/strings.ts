@@ -12,10 +12,11 @@ export function getDestinationNetworkAddressKey(chainID: number, tokenAddress: s
  * as they progress down the processing pipe and interfere in the queue
  *
  * @param intentHash the hash of the intent to fulfill
+ * @param logIndex the transaction index of the intent to fulfill. Necessary if multiple intents are in the same transaction
  * @returns
  */
-export function getIntentJobId(serviceName: string, intentHash: string): string {
-  return `${serviceName}-${intentHash}`
+export function getIntentJobId(serviceName: string, intentHash: string, logIndex: number): string {
+  return `${serviceName}-${intentHash}-${logIndex}`
 }
 
 /**
