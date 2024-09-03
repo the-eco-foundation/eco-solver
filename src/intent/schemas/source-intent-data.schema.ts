@@ -8,15 +8,15 @@ import { Hex } from 'viem'
 export class SourceIntentDataModel implements IntentStruct {
   @Prop({ required: true, type: String })
   hash: BytesLike
-  @Prop({ required: true, type: String })
+  @Prop({ required: true, type: String, lowercase: true })
   creator: AddressLike
   @Prop({ required: true, type: BigInt })
   destinationChainID: BigNumberish
-  @Prop({ required: true, type: Array<string> })
+  @Prop({ required: true, type: Array<string>, lowercase: true })
   targets: Hex[]
   @Prop({ required: true, type: Array<string> })
   data: BytesLike[]
-  @Prop({ required: true, type: Array<string> })
+  @Prop({ required: true, type: Array<string>, lowercase: true })
   rewardTokens: AddressLike[]
   @Prop({ required: true, type: Array<bigint> })
   rewardAmounts: BigNumberish[]

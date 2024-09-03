@@ -7,10 +7,10 @@ export type SourceIntentStatus = 'PENDING' | 'SOLVED' | 'EXPIRED' | 'FAILED'
 
 @Schema({ timestamps: true })
 export class SourceIntentModel {
-  @Prop()
+  @Prop({ required: true })
   event: SourceIntentEventModel
 
-  @Prop()
+  @Prop({ required: true })
   intent: SourceIntentDataModel
 
   @Prop()

@@ -1,14 +1,15 @@
 import { LocalAccountSigner } from '@alchemy/aa-core'
-import { Hex, PrivateKeyAccount } from 'viem'
+import { Hex, NonceManagerSource, PrivateKeyAccount } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { createNonceManager, jsonRpc } from 'viem/nonce'
+import { createNonceManager } from 'viem/nonce'
 
 export function privateKeyAndNonceToAccountSigner(
+  getAtom: NonceManagerSource,
   key: Hex,
-  // @ts-expect-error
+  // @ts-expect-error complains on private key
 ): LocalAccountSigner<PrivateKeyAccount> {
   const nonceManager = createNonceManager({
-    source: jsonRpc(),
+    source: getAtom,
   })
   const signer: PrivateKeyAccount = privateKeyToAccount(key, { nonceManager })
 

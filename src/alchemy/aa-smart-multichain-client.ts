@@ -9,13 +9,19 @@ import { EcoError } from '../common/errors/eco-error'
 import { ChainsSupported } from '../common/utils/chains'
 import { createMultiOwnerModularAccount } from '@alchemy/aa-accounts'
 import { getAchemyRPCUrl } from '../common/utils/strings'
-import { AAMultiChainConfig } from './aa-smart-multichain.service'
-
+// import { AAMultiChainConfig } from './aa-smart-multichain.service'
+type AAMultiChainConfig = any
 export class AASmartMultichainClient {
   readonly configs: AAMultiChainConfig
   readonly instances: Map<number, SmartAccountClient> = new Map()
   constructor(configs: AAMultiChainConfig) {
     this.configs = configs
+    // const params = configs.ids.map(async (chainId) => {
+    //   const client = await this.aa.clientForChain(chainId)
+    //   return ({ address: client.account.address, client })
+    // })
+    // const initParams = await Promise.all(params)
+    // await this.configs.atom.initializeNonces(initParams)
   }
 
   async clientForChain(chainID: number): Promise<SmartAccountClient> {

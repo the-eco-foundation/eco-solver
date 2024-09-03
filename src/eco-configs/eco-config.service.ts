@@ -3,7 +3,9 @@ import * as config from 'config'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { ConfigSource } from './interfaces/config-source.interface'
 import { EcoConfigType, Solver, SourceIntent } from './eco-config.types'
-import { entries, keys } from 'lodash'
+import { entries } from 'lodash'
+import { lowercaseKeys } from '../common/utils/objects'
+import { Hex } from 'viem'
 
 /**
  * Service class for getting configs for the app
@@ -20,7 +22,7 @@ export class EcoConfigService implements OnModuleInit {
     this.initConfigs()
   }
 
-  async onModuleInit() { }
+  async onModuleInit() {}
 
   /**
    * Returns the static configs  for the app, from the 'config' package
@@ -49,10 +51,6 @@ export class EcoConfigService implements OnModuleInit {
 
   // Returns the alchemy configs
   getAlchemy(): EcoConfigType['alchemy'] {
-    const a = this.ecoConfig.get('solvers')
-    keys(a).forEach((k) => {
-      a[k]
-    })
     return this.ecoConfig.get('alchemy')
   }
 
@@ -62,6 +60,7 @@ export class EcoConfigService implements OnModuleInit {
       intent.tokens = intent.tokens.map((token) => {
         return token.toLocaleLowerCase()
       })
+      intent.sourceAddress = intent.sourceAddress.toLowerCase() as Hex
       return intent
     })
     return intents
@@ -70,13 +69,9 @@ export class EcoConfigService implements OnModuleInit {
   // Returns the solvers config
   getSolvers(): EcoConfigType['solvers'] {
     const solvers = this.ecoConfig.get('solvers')
-    entries(solvers).forEach(([key, solver]: [string, Solver]) => {
-      const out = {}
-      entries(solver.targets).forEach(([key, target]) => {
-        out[key.toLowerCase()] = target
-      })
-      solver.targets = out
-      return solver
+    entries(solvers).forEach(([, solver]: [string, Solver]) => {
+      solver.solverAddress = solver.solverAddress.toLowerCase() as Hex
+      solver.targets = lowercaseKeys(solver.targets)
     })
     return solvers
   }
