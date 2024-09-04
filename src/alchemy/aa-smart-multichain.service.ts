@@ -4,15 +4,13 @@ import { EcoError } from '../common/errors/eco-error'
 import { LocalAccountSigner, SmartAccountClient } from '@alchemy/aa-core'
 import { AASmartMultichainClient } from './aa-smart-multichain-client'
 import { NonceService } from '../sign/nonce.service'
-import { privateKeyAndNonceToAccountSigner } from './aa.helper'
-import { AtomicNonceService } from '../sign/atomic.nonce.service'
-
+import { SignerService } from '../sign/signer.service'
 
 export type AAMultiChainConfig = {
   apiKey: string
   ids: number[]
   signer: LocalAccountSigner<any>
-  atom: AtomicNonceService<any>
+  // atom: AtomicNonceService<any>
 }
 @Injectable()
 export class AASmartAccountService implements OnModuleInit {
@@ -22,7 +20,8 @@ export class AASmartAccountService implements OnModuleInit {
 
   constructor(
     private readonly ecoConfigService: EcoConfigService,
-    private readonly atom: NonceService,
+    private readonly nonceService: NonceService,
+    private readonly signerService: SignerService, 
   ) {}
 
   async onModuleInit() {
@@ -35,17 +34,16 @@ export class AASmartAccountService implements OnModuleInit {
     // // const manager = createNonceManager({source:})
     // const signer = new LocalAccountSigner(account as PrivateKeyAccount)
     // const signer = LocalAccountSigner.privateKeyToAccountSigner(`0x${ethConfigs.privateKey}`)
-    const signer = privateKeyAndNonceToAccountSigner(this.atom, `0x${ethConfigs.privateKey}`)
-
+    // const signer = privateKeyAndNonceToAccountSigner(this.atom, `0x${ethConfigs.privateKey}`)
+    const signer = this.signerService.getSigner()
     const configs: AAMultiChainConfig = {
       apiKey: alchemyConfigs.apiKey,
       ids: alchemyConfigs.networks.map((n) => n.id),
       signer,
-      atom: this.atom,
     }
 
     this.aa = new AASmartMultichainClient(configs)
-    await this.atom.initNonce(this)
+    await this.nonceService.initNonce(this)
   }
 
   get supportedNetworks(): ReadonlyArray<number> {
@@ -56,8 +54,6 @@ export class AASmartAccountService implements OnModuleInit {
     if (!this.supportedNetworks.includes(id)) {
       throw EcoError.AlchemyUnsupportedNetworkIDError(id)
     }
-    const a = await (await this.aa.clientForChain(id)).getTransactionCount({address: '0xd6783D1bD6Bf593C975D718041a592f4C908A3ec'})
-    console.log(a)
     return await this.aa.clientForChain(id)
   }
 }

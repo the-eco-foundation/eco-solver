@@ -61,7 +61,6 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
   constructor(protected model: Model<T>) {}
 
   async syncNonces(params: AtomicKeyClientParams[]): Promise<void> {
-    //  const five =  await params[0].client.getTransactionCount({address: '0xd6783D1bD6Bf593C975D718041a592f4C908A3ec'})
     const nonceSyncs = params.map(async (param: AtomicKeyClientParams) => {
       const { address, client } = param
       const nonceNum = await client.getTransactionCount({ address, blockTag: 'pending' })

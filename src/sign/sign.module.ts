@@ -7,6 +7,7 @@ import { NonceMeta, NonceMetaSchema } from './schemas/nonce_meta.schema'
 import { initBullMQ } from '../bullmq/bullmq.helper'
 import { QUEUES } from '../common/redis/constants'
 import { EcoConfigModule } from '../eco-configs/eco-config.module'
+import { SignerService } from './signer.service'
 
 @Module({
   imports: [
@@ -17,8 +18,8 @@ import { EcoConfigModule } from '../eco-configs/eco-config.module'
     ]),
     initBullMQ(QUEUES.SIGNER),
   ],
-  providers: [NonceService, SignerProcessor],
-  
-  exports: [NonceService],
+  providers: [NonceService, SignerService, SignerProcessor],
+  // controllers: [SignController],
+  exports: [NonceService, SignerService],
 })
 export class SignModule { }

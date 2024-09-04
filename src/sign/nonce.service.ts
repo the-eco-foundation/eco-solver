@@ -6,7 +6,6 @@ import { JobsOptions, Queue } from 'bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { AASmartMultichainClient } from '../alchemy/aa-smart-multichain-client'
 import { entries } from 'lodash'
 import { NonceMeta } from './schemas/nonce_meta.schema'
 import { AtomicKeyClientParams, AtomicNonceService } from './atomic.nonce.service'
@@ -28,6 +27,7 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnModuleI
   async onModuleInit() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
   }
+
   setClient(aa: AASmartAccountService) {
     this.client = aa
   }
@@ -53,18 +53,6 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnModuleI
     })
 
     return await Promise.all(paramsAsync)
-
-    // let nonces = await this.getNonces()
-
-    // const expData = new Date(Date.now() - this.ecoConfigService.getEth().nonce.update_interval_ms)
-    // nonces = nonces.filter(nonce => nonce.updatedAt < expData)
-    // const params: AtomicKeyClientParams[] = nonces.reduce((acc, nonce) => {
-    //   const { address, chainId } = nonce.getAtomicNonceVals()
-    //   acc.push({ address, client: this.client.instances.get(chainId) })
-    //   return acc
-    // }, [])
-
-    // return await this.syncNonces(params)
   }
 
   async getLastSynceAt(): Promise<Date> {

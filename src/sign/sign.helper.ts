@@ -4,12 +4,12 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { createNonceManager } from 'viem/nonce'
 
 export function privateKeyAndNonceToAccountSigner(
-  getAtom: NonceManagerSource,
+  atomicNonceSource: NonceManagerSource,
   key: Hex,
   // @ts-expect-error complains on private key
 ): LocalAccountSigner<PrivateKeyAccount> {
   const nonceManager = createNonceManager({
-    source: getAtom,
+    source: atomicNonceSource,
   })
   const signer: PrivateKeyAccount = privateKeyToAccount(key, { nonceManager })
 
