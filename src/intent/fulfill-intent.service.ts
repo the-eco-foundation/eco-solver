@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { SourceIntentTxHash } from '../common/events/websocket'
 import { TransactionTargetData, UtilsIntentService } from './utils-intent.service'
-import { } from '../balance/balance.service'
 import { AASmartAccountService } from '../alchemy/aa-smart-multichain.service'
 import { InboxAbi } from '../contracts'
 import { encodeFunctionData, erc20Abi, Hex } from 'viem'
@@ -25,11 +24,11 @@ export class FulfillIntentService implements OnModuleInit {
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly aaService: AASmartAccountService,
-  ) { }
+  ) {}
 
-  onModuleInit() { }
+  onModuleInit() {}
 
-  async onApplicationBootstrap() { }
+  async onApplicationBootstrap() {}
 
   async executeFullfillIntent(intentHash: SourceIntentTxHash) {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
@@ -106,7 +105,7 @@ export class FulfillIntentService implements OnModuleInit {
           properties: {
             userOPHash: receipt,
             destinationChainID: model.intent.destinationChainID,
-            sourceChainID: model.event.sourceChainID
+            sourceChainID: model.event.sourceChainID,
           },
         }),
       )
@@ -120,15 +119,18 @@ export class FulfillIntentService implements OnModuleInit {
           properties: {
             model: model,
             flatExecuteData: flatExecuteData,
-            error: e
+            error: e,
           },
         }),
       )
     } finally {
       model.receipt = receipt
-      await this.intentModel.updateOne({
-        'intent.hash': model.intent.hash,
-      }, model)
+      await this.intentModel.updateOne(
+        {
+          'intent.hash': model.intent.hash,
+        },
+        model,
+      )
     }
   }
   /**
