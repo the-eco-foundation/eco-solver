@@ -29,7 +29,7 @@ export class SignerProcessor extends WorkerHost {
 
     switch (job.name) {
       case QUEUES.SIGNER.jobs.nonce_sync:
-        return this.nonceService.syncNonces(job.data as AtomicKeyClientParams[])
+        return this.nonceService.syncNonces()
       default:
         this.logger.error(
           EcoLogMessage.fromDefault({

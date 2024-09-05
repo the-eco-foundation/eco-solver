@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { now } from 'mongoose'
 import { AtomicKeyParams } from '../atomic.nonce.service'
 import { getAtomicNonceVals } from '../../common/utils/strings'
+import { Hex } from 'viem'
 
 @Schema({ timestamps: true })
 export class Nonce {
@@ -10,6 +11,12 @@ export class Nonce {
 
   @Prop({ required: true, default: 0 })
   nonce: number
+
+  @Prop({ required: true})
+  chainID: number
+
+  @Prop({ required: true })
+  address: Hex
 
   @Prop({ required: true, default: now() })
   createdAt: Date

@@ -1,4 +1,4 @@
-import { EventFilter, Result } from 'ethers'
+import { EventFilter } from 'ethers'
 import { ERC20__factory, IntentSource__factory } from '../../typing/contracts'
 import { SourceIntentDataModel } from '../../intent/schemas/source-intent-data.schema'
 

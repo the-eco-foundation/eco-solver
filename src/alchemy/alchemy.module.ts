@@ -1,22 +1,28 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { EcoConfigModule } from '../eco-configs/eco-config.module'
-import { EcoConfigService } from '../eco-configs/eco-config.service'
-
-// import { AASmartAccountService } from './aa-smart-multichain.service'
 import { AlchemyService } from './alchemy.service'
-import { AASmartAccountService } from './aa-smart-multichain.service'
+import { MultichainAtomicSmartAccountService } from './multichain-atomic-smart-account.service'
 import { SignModule } from '../sign/sign.module'
-
-
+import { MultichainSmartAccountService } from './multichain_smart_account.service'
+import { MultichainPublicClientService } from './multichain-public-client.service'
 
 @Module({
-  imports: [
-    EcoConfigModule,
-    SignModule
+  imports: [EcoConfigModule, 
+    forwardRef(() => SignModule)
+    ],
+
+  providers: [
+    AlchemyService,
+    MultichainAtomicSmartAccountService,
+    MultichainSmartAccountService,
+    MultichainPublicClientService,
   ],
 
-  providers: [AlchemyService, AASmartAccountService],
-
-  exports: [AlchemyService, AASmartAccountService],
+  exports: [
+    AlchemyService,
+    MultichainAtomicSmartAccountService,
+    MultichainSmartAccountService,
+    MultichainPublicClientService,
+  ],
 })
 export class AlchemyModule {}

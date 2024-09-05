@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Nonce } from './schemas/nonce.schema'
@@ -7,46 +7,46 @@ import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { entries } from 'lodash'
-import { NonceMeta } from './schemas/nonce_meta.schema'
 import { AtomicKeyClientParams, AtomicNonceService } from './atomic.nonce.service'
-import { AASmartAccountService } from '../alchemy/aa-smart-multichain.service'
 import { Hex, sha256 } from 'viem'
+import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
 
 @Injectable()
-export class NonceService extends AtomicNonceService<Nonce> implements OnModuleInit {
+export class NonceService extends AtomicNonceService<Nonce> implements OnModuleInit, OnApplicationBootstrap {
   private intentJobConfig: JobsOptions
-  private client: AASmartAccountService
+
   constructor(
     @InjectModel(Nonce.name) private nonceModel: Model<Nonce>,
-    @InjectModel(NonceMeta.name) private nonceMetaModel: Model<NonceMeta>,
     @InjectQueue(QUEUES.SIGNER.queue) private readonly signerQueue: Queue,
+    private readonly smartAccountService: MultichainSmartAccountService,
     private readonly ecoConfigService: EcoConfigService,
   ) {
     super(nonceModel)
   }
-  async onModuleInit() {
+  async onApplicationBootstrap() {
+    console.log('accountService', (await this.smartAccountService.getClient(84532)).account.address)//// <<<-------
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
+    this.syncQueue()
+  }
+  async onModuleInit() {
+    // console.log('accountService', (await this.smartAccountService.getClient(84532)).account.address)//// <<<-------
+    // this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
+    // this.syncQueue()
   }
 
-  setClient(aa: AASmartAccountService) {
-    this.client = aa
-  }
-
-  async initNonce(aa: AASmartAccountService) {
-    this.setClient(aa)
+  async syncQueue() {
     const { should, hash } = await this.shouldSync()
     if (should) {
-      const syncParams = await this.getSyncParams(aa)
-      await this.signerQueue.add(QUEUES.SIGNER.jobs.nonce_sync, syncParams, {
+      await this.signerQueue.add(QUEUES.SIGNER.jobs.nonce_sync, {}, {
         jobId: hash,
         ...this.intentJobConfig,
       })
     }
   }
 
-  async getSyncParams(aa: AASmartAccountService): Promise<AtomicKeyClientParams[]> {
+  protected override async getSyncParams(): Promise<AtomicKeyClientParams[]> {
     const paramsAsync = entries(this.ecoConfigService.getSolvers()).map(async ([chainId]) => {
-      const client = await aa.getClient(parseInt(chainId))
+      const client = await this.smartAccountService.getClient(parseInt(chainId))
 
       const address = client.account.address
       return { address, client } as AtomicKeyClientParams
@@ -56,7 +56,7 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnModuleI
   }
 
   async getLastSynceAt(): Promise<Date> {
-    const meta = await this.nonceMetaModel.findOne().exec()
+    const meta = await this.nonceModel.findOne({updatedAt: {$exists: true}}).sort({updatedAt: -1}).exec()
     if (!meta) {
       return new Date(0)
     }

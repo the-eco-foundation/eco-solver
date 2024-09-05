@@ -56,34 +56,38 @@ export type AtomicGetParameters = AtomicKeyParams & { client: Client }
 // }
 @Injectable()
 export abstract class AtomicNonceService<T extends { nonce: number }>
-  implements NonceManagerSource
-{
-  constructor(protected model: Model<T>) {}
+  implements NonceManagerSource {
+  constructor(protected model: Model<T>) { }
 
-  async syncNonces(params: AtomicKeyClientParams[]): Promise<void> {
+  async syncNonces(): Promise<void> {
+    const params: AtomicKeyClientParams[] = await this.getSyncParams()
+    if (params.length === 0) {
+      return
+    }
     const nonceSyncs = params.map(async (param: AtomicKeyClientParams) => {
       const { address, client } = param
       const nonceNum = await client.getTransactionCount({ address, blockTag: 'pending' })
       return {
         nonceNum,
-        chainId: client.chain.id,
+        chainID: client.chain.id,
         address: address,
       }
     })
 
     try {
       const updatedNonces = await Promise.all(nonceSyncs)
+      console.log(updatedNonces)
       const updates = updatedNonces.map(async (nonce) => {
-        const { address, chainId } = nonce
-        const key = getAtomicNonceKey({ address, chainId })
+        const { address, chainID } = nonce
+        const key = getAtomicNonceKey({ address, chainId: chainID })
         const query = { key }
-        const updates = { $set: { nonce } }
-        return this.model.findOneAndUpdate(query, updates).exec()
+        const updates = { $set: { nonce: nonce.nonceNum, chainID, address } }
+        const options = { upsert: true, new: true }
+        return this.model.findOneAndUpdate(query, updates, options).exec()
       })
 
       await Promise.all(updates)
     } catch (e) {
-      console.error(e)
       EcoLogMessage.fromDefault({
         message: `Error syncing nonces`,
         properties: {
@@ -115,7 +119,7 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
     //     return await this.getIncNonce(parameters)
     //   }
   }
-  async set(params: AtomicGetParameters, nonce: number): Promise<void> {}
+  async set(params: AtomicGetParameters, nonce: number): Promise<void> { }
 
   async getIncNonce(parameters: AtomicGetParameters): Promise<number> {
     const query = { key: getAtomicNonceKey(parameters) }
@@ -129,6 +133,10 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
       .findOneAndUpdate(query, { $set: updates }, options)
       .exec()
     return updateResponse.nonce
+  }
+
+  protected async getSyncParams(): Promise<AtomicKeyClientParams[]> {
+    return []
   }
 
   async getNonces(): Promise<T[]> {

@@ -1,25 +1,26 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 import { Nonce, NonceSchema } from './schemas/nonce.schema'
 import { NonceService } from './nonce.service'
 import { SignerProcessor } from '../bullmq/processors/signer.processor'
-import { NonceMeta, NonceMetaSchema } from './schemas/nonce_meta.schema'
 import { initBullMQ } from '../bullmq/bullmq.helper'
 import { QUEUES } from '../common/redis/constants'
 import { EcoConfigModule } from '../eco-configs/eco-config.module'
 import { SignerService } from './signer.service'
+import { AtomicSignerService } from './atomic-signer.service'
+import { AlchemyModule } from '../alchemy/alchemy.module'
 
 @Module({
   imports: [
+    forwardRef(() => AlchemyModule),
     EcoConfigModule,
     MongooseModule.forFeature([
       { name: Nonce.name, schema: NonceSchema },
-      { name: NonceMeta.name, schema: NonceMetaSchema },
     ]),
     initBullMQ(QUEUES.SIGNER),
   ],
-  providers: [NonceService, SignerService, SignerProcessor],
+  providers: [NonceService, AtomicSignerService, SignerService, SignerProcessor],
   // controllers: [SignController],
-  exports: [NonceService, SignerService],
+  exports: [NonceService, SignerService, AtomicSignerService],
 })
 export class SignModule { }
