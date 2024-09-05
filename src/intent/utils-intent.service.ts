@@ -86,11 +86,10 @@ export class UtilsIntentService implements OnModuleInit {
   }
 
   targetsSupported(model: SourceIntentModel, solver: Solver): boolean {
-    const modelTargets = model.intent.targets.map((t) => t.toLowerCase()) 
-    const solverTargets = Object.keys(solver.targets).map((t) => t.toLowerCase()) 
+    const modelTargets = model.intent.targets.map((t) => t.toLowerCase())
+    const solverTargets = Object.keys(solver.targets).map((t) => t.toLowerCase())
     //all targets are included in the solver targets array
-    const targetsSupported =
-      difference(modelTargets, solverTargets).length == 0
+    const targetsSupported = difference(modelTargets, solverTargets).length == 0
 
     if (!targetsSupported) {
       this.logger.warn(
@@ -110,14 +109,14 @@ export class UtilsIntentService implements OnModuleInit {
   async getProcessIntentData(
     intentHash: string,
   ): Promise<{ model: SourceIntentModel; solver: Solver; err?: EcoError } | undefined> {
-    try{
+    try {
       const model = await this.intentModel.findOne({
         'intent.hash': intentHash,
       })
       if (!model) {
         return { model: null, solver: null, err: EcoError.SourceIntentDataNotFound(intentHash) }
       }
-  
+
       const solver = this.ecoConfigService.getSolver(model.intent.destinationChainID as number)
       if (!solver) {
         this.logger.log(
@@ -132,7 +131,7 @@ export class UtilsIntentService implements OnModuleInit {
         return null
       }
       return { model, solver }
-    }catch(e){
+    } catch (e) {
       this.logger.error(
         EcoLogMessage.fromDefault({
           message: `Error in getProcessIntentData ${intentHash}`,
@@ -142,8 +141,7 @@ export class UtilsIntentService implements OnModuleInit {
           },
         }),
       )
-      return 
+      return
     }
-
   }
 }

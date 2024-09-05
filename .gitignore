@@ -66,4 +66,5 @@ config/*
 !config/default.ts
 !config/development.ts
 !config/preproduction.ts
+!config/production.ts
 !config/test.ts
