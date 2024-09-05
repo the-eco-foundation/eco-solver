@@ -3,7 +3,7 @@ name: Build Push to Amazon ECR
 on:
   push:
     branches:
-      - release-production-not-active
+      - release-production
 jobs:
   deploy:
     uses: eco/workflows/.github/workflows/deploy-to-eks.yml@v20231102
