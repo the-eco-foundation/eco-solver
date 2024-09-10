@@ -3,24 +3,7 @@ export default {
     region: 'us-east-2',
     secretID: 'eco-solver-secrets',
   },
-  database: {
-    auth: {
-      enabled: false,
-      username: '',
-      password: '',
-      type: '',
-    },
-
-    uriPrefix: 'mongodb://',
-    uri: 'localhost:27017',
-    dbName: 'eco-solver-local',
-    enableJournaling: true,
-  },
   redis: {
-    connection: {
-      host: 'localhost',
-      port: 6379,
-    },
     options: {
       single: {
         autoResubscribe: true,
@@ -45,8 +28,8 @@ export default {
     },
     jobs: {
       intentJobConfig: {
-        removeOnComplete: 1000,
-        removeOnFail: 500,
+        removeOnComplete: false,
+        removeOnFail: false,
       },
     },
   },
@@ -55,7 +38,7 @@ export default {
     usePino: true,
     pinoConfig: {
       pinoHttp: {
-        useLevel: 'debug',
+        level: 'debug',
         useLevelLabels: true,
         redact: {
           paths: [

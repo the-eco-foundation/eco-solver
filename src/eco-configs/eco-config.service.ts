@@ -2,7 +2,8 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import * as config from 'config'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { ConfigSource } from './interfaces/config-source.interface'
-import { EcoConfigType } from './eco-config.types'
+import { EcoConfigType, Solver, SourceIntent } from './eco-config.types'
+import { entries, keys } from 'lodash'
 
 /**
  * Service class for getting configs for the app
@@ -16,11 +17,10 @@ export class EcoConfigService implements OnModuleInit {
   constructor(private readonly configSource: ConfigSource) {
     this.externalConfigs = configSource.getConfig()
     this.ecoConfig = config
-  }
-
-  async onModuleInit() {
     this.initConfigs()
   }
+
+  async onModuleInit() {}
 
   /**
    * Returns the static configs  for the app, from the 'config' package
@@ -49,12 +49,41 @@ export class EcoConfigService implements OnModuleInit {
 
   // Returns the alchemy configs
   getAlchemy(): EcoConfigType['alchemy'] {
+    const a = this.ecoConfig.get('solvers')
+    keys(a).forEach((k) => {
+      a[k]
+    })
     return this.ecoConfig.get('alchemy')
   }
 
-  // Returns the contracts config
-  getContracts(): EcoConfigType['contracts'] {
-    return this.ecoConfig.get('contracts')
+  // Returns the source intents config
+  getSourceIntents(): EcoConfigType['sourceIntents'] {
+    const intents = this.ecoConfig.get('sourceIntents').map((intent: SourceIntent) => {
+      intent.tokens = intent.tokens.map((token) => {
+        return token.toLocaleLowerCase()
+      })
+      return intent
+    })
+    return intents
+  }
+
+  // Returns the solvers config
+  getSolvers(): EcoConfigType['solvers'] {
+    const solvers = this.ecoConfig.get('solvers')
+    entries(solvers).forEach(([, solver]: [string, Solver]) => {
+      const out = {}
+      entries(solver.targets).forEach(([key, target]) => {
+        out[key.toLowerCase()] = target
+      })
+      solver.targets = out
+      return solver
+    })
+    return solvers
+  }
+
+  // Returns the solver for a specific chain or undefined if its not supported
+  getSolver(chainID: number): Solver | undefined {
+    return this.getSolvers()[chainID]
   }
 
   getDatabaseConfig(): EcoConfigType['database'] {

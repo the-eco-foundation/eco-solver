@@ -25,11 +25,13 @@ export class AlchemyService implements OnModuleInit {
 
   async onModuleInit() {
     const alchemyConfigs = this.ecoConfigService.getAlchemy()
-    this._supportedNetworks = this._supportedNetworks.concat(alchemyConfigs.networks)
+    this._supportedNetworks = this._supportedNetworks.concat(
+      alchemyConfigs.networks.map((n) => n.name),
+    )
     const apiKey = alchemyConfigs.apiKey
     const configs: Partial<Record<Network, AlchemyMultichainSettings>> =
       alchemyConfigs.networks.reduce((acc, network) => {
-        acc[network] = { apiKey: apiKey, network: network }
+        acc[network.name] = { apiKey: apiKey, network: network }
         return acc
       }, {})
 

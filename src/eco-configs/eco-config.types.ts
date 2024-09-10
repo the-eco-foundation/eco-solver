@@ -4,6 +4,7 @@ import { Params as PinoParams } from 'nestjs-pino'
 import * as Redis from 'ioredis'
 import { Settings } from 'redlock'
 import { JobsOptions } from 'bullmq'
+import { Hex } from 'viem'
 
 // The config type that we store in json
 export type EcoConfigType = {
@@ -24,10 +25,9 @@ export type EcoConfigType = {
     dbName: string
     enableJournaling: boolean
   }
-  contracts: {
-    sourceIntents: SourceIntent[]
-    solvers: Solver[]
-  }
+  sourceIntents: SourceIntent[]
+  //chainID to Solver type mapping
+  solvers: Record<number, Solver>
   logger: {
     usePino: boolean
     pinoConfig: PinoParams
@@ -74,8 +74,37 @@ export type MongoAuthType = {
  */
 export type AlchemyConfigType = {
   apiKey: string
-  networks: Network[]
+  networks: AlchemyNetwork[]
 }
+
+export type AlchemyNetwork = {
+  name: Network
+  id: number
+}
+
+/**
+ * The config type for a single solver configuration
+ */
+export type Solver = {
+  solverAddress: Hex
+  //target address to contract type mapping
+  targets: Record<Hex, TargetContract>
+  network: Network
+  chainID: number
+}
+
+/**
+ * The config type for a supported target contract
+ */
+export interface TargetContract {
+  contractType: TargetContractType
+  selectors: string[]
+}
+
+/**
+ * The types of contracts that we support
+ */
+export type TargetContractType = 'erc20' | 'erc721' | 'erc1155'
 
 /**
  * The config type for a single prover source configuration
@@ -83,36 +112,10 @@ export type AlchemyConfigType = {
 export class SourceIntent {
   // The network that the prover is on
   network: Network
+  // The chain ID of the network
+  chainID: number
   // The address that the prover source contract is deployed at, we read events from this contract to fulfill
   sourceAddress: string
-  // // The addresses of the tokens that we support as rewards
-  // tokenAddresses: string[]
-
-  // constructor(si: SourceIntent) {
-  //   this.network = si.network
-  //   this.sourceAddress = si.sourceAddress
-  //   this.tokenAddresses = si.tokenAddresses.map((address) => ethers.getAddress(address))
-  // }
-
-  // supportsToken(address: string): boolean {
-  //   return this.tokenAddresses.includes(ethers.getAddress(address))
-  // }
-}
-
-/**
- * The config type for a single solver configuration
- */
-export class Solver {
-  // The network that the solver is on
-  network: Network
-  // The address that the solver contract is deployed at
-  solverAddress: string
-  // The address of the token that the solver is using
-  tokenAddress: string
-
-  // constructor(solver: Solver) {
-  //   this.network = solver.network
-  //   this.solverAddress = solver.solverAddress
-  //   this.tokenAddress = ethers.getAddress(solver.tokenAddress)
-  // }
+  // The addresses of the tokens that we support as rewards
+  tokens: string[]
 }

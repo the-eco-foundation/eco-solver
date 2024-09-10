@@ -3,14 +3,22 @@ import { QUEUES } from '../../common/redis/constants'
 import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
 import { EcoLogMessage } from '../../common/logging/eco-log-message'
-import { SourceIntentService } from '../../source-intent/source-intent.service'
-import { EventLogWS, SourceIntentTxHash } from '../../source-intent/dtos/EventLogWS'
+import { EventLogWS, SourceIntentTxHash } from '../../common/events/websocket'
+import { FeasableIntentService } from '../../intent/feasable-intent.service'
+import { ValidateIntentService } from '../../intent/validate-intent.service'
+import { CreateIntentService } from '../../intent/create-intent.service'
+import { FulfillIntentService } from '../../intent/fulfill-intent.service'
 
 @Injectable()
 @Processor(QUEUES.SOURCE_INTENT.queue)
 export class SolveIntentProcessor extends WorkerHost {
   private logger = new Logger(SolveIntentProcessor.name)
-  constructor(private readonly sourceIntentService: SourceIntentService) {
+  constructor(
+    private readonly createIntentService: CreateIntentService,
+    private readonly validateIntentService: ValidateIntentService,
+    private readonly feasableIntentSevice: FeasableIntentService,
+    private readonly fulfillIntentSevice: FulfillIntentService,
+  ) {
     super()
   }
 
@@ -21,14 +29,21 @@ export class SolveIntentProcessor extends WorkerHost {
     this.logger.debug(
       EcoLogMessage.fromDefault({
         message: `SolveIntentProcessor: process`,
+        properties: {
+          job: job.name,
+        },
       }),
     )
 
     switch (job.name) {
       case QUEUES.SOURCE_INTENT.jobs.create_intent:
-        return await this.sourceIntentService.createIntent(job.data as EventLogWS)
-      case QUEUES.SOURCE_INTENT.jobs.process_intent:
-        return await this.sourceIntentService.processIntent(job.data as SourceIntentTxHash)
+        return await this.createIntentService.createIntent(job.data as EventLogWS)
+      case QUEUES.SOURCE_INTENT.jobs.validate_intent:
+        return await this.validateIntentService.validateIntent(job.data as SourceIntentTxHash)
+      case QUEUES.SOURCE_INTENT.jobs.feasable_intent:
+        return await this.feasableIntentSevice.feasableIntent(job.data as SourceIntentTxHash)
+      case QUEUES.SOURCE_INTENT.jobs.fulfill_intent:
+        return await this.fulfillIntentSevice.executeFullfillIntent(job.data as SourceIntentTxHash)
       default:
         this.logger.error(
           EcoLogMessage.fromDefault({

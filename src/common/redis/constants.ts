@@ -1,11 +1,25 @@
 export const QUEUES = {
   SOURCE_INTENT: {
     queue: 'source_intent',
-    prefix: '{solver-source-intent}',
+    prefix: '{source-intent}',
     jobs: {
       create_intent: 'create_intent',
-      process_intent: 'process_intent',
+      validate_intent: 'validate_intent',
+      feasable_intent: 'feasable_intent',
+      fulfill_intent: 'fulfill_intent',
     },
+  },
+  ETH_SOCKET: {
+    queue: 'eth_socket',
+    prefix: '{eth_socket}',
+    jobs: {
+      erc20_balance_socket: 'erc20_balance_socket',
+    },
+  },
+  SOLVER: {
+    queue: 'solver',
+    prefix: '{solver}',
+    jobs: {},
   },
 }
 
