@@ -24,11 +24,11 @@ export class FulfillIntentService implements OnModuleInit {
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly aaService: AASmartAccountService,
-  ) {}
+  ) { }
 
-  onModuleInit() {}
+  onModuleInit() { }
 
-  async onApplicationBootstrap() {}
+  async onApplicationBootstrap() { }
 
   async executeFullfillIntent(intentHash: SourceIntentTxHash) {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
@@ -70,6 +70,7 @@ export class FulfillIntentService implements OnModuleInit {
     )
 
     const flatExecuteData = executeData.flat()
+
     const smartAccountClient = await this.aaService.getClient(solver.chainID)
     let receipt: any
     try {
@@ -93,10 +94,20 @@ export class FulfillIntentService implements OnModuleInit {
         data: fulfillIntent,
       })
 
+      this.logger.debug(
+        EcoLogMessage.fromDefault({
+          message: `Fullfilling batch transaction`,
+          properties: {
+            batch: flatExecuteData,
+          },
+        }),
+      )
+
       // @ts-expect-error  flatExecuteData complains here
       const uo = await smartAccountClient.sendUserOperation({
         uo: flatExecuteData,
       })
+      //todo this is blocking, we should use a queue
       receipt = await smartAccountClient.waitForUserOperationTransaction(uo)
       model.status = 'SOLVED'
       this.logger.debug(
