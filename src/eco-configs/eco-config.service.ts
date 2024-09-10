@@ -70,7 +70,7 @@ export class EcoConfigService implements OnModuleInit {
   // Returns the solvers config
   getSolvers(): EcoConfigType['solvers'] {
     const solvers = this.ecoConfig.get('solvers')
-    entries(solvers).forEach(([key, solver]: [string, Solver]) => {
+    entries(solvers).forEach(([, solver]: [string, Solver]) => {
       const out = {}
       entries(solver.targets).forEach(([key, target]) => {
         out[key.toLowerCase()] = target

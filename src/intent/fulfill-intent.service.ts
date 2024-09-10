@@ -24,11 +24,11 @@ export class FulfillIntentService implements OnModuleInit {
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly aaService: AASmartAccountService,
-  ) { }
+  ) {}
 
-  onModuleInit() { }
+  onModuleInit() {}
 
-  async onApplicationBootstrap() { }
+  async onApplicationBootstrap() {}
 
   async executeFullfillIntent(intentHash: SourceIntentTxHash) {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)

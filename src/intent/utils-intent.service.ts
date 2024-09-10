@@ -9,7 +9,6 @@ import { EcoError } from '../common/errors/eco-error'
 import { AddressLike, TransactionDescription } from 'ethers'
 import { getFragment } from '../common/utils/fragments'
 import { difference, includes } from 'lodash'
-import { Hex } from 'viem'
 
 /**
  * Data for a transaction target
