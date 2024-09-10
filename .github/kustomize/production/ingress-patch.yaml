@@ -15,7 +15,7 @@
 
 - op: add
   path: /spec/rules/0/host
-  value: solver-preprod.bend.eco
+  value: solver-lb.bend.eco
 
 - op: add
   path: /spec/rules/0/http/paths/0/backend/service/port
@@ -25,4 +25,4 @@
 - op: add
   path: /spec/tls/0/hosts
   value:
-    - solver-preprod.bend.eco
+    - solver-lb.bend.eco
