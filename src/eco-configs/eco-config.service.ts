@@ -3,7 +3,7 @@ import * as config from 'config'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { ConfigSource } from './interfaces/config-source.interface'
 import { EcoConfigType, Solver, SourceIntent } from './eco-config.types'
-import { entries } from 'lodash'
+import { entries, keys } from 'lodash'
 import { lowercaseKeys } from '../common/utils/objects'
 import { Hex } from 'viem'
 
