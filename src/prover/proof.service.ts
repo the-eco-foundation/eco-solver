@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
-import { addSeconds } from 'date-fns'
+import { addSeconds, compareAsc } from 'date-fns'
 
 @Injectable()
 export class ProofService implements OnModuleInit {
@@ -12,7 +12,7 @@ export class ProofService implements OnModuleInit {
   onModuleInit() {}
 
   isIntentExpirationWithinProofMinimumDate(chainID: number, expirationDate: Date): boolean {
-    return this.getProofMinimumDate(chainID) > expirationDate
+    return compareAsc(expirationDate, this.getProofMinimumDate(chainID)) == 1
   }
 
   getProofMinimumDate(chainID: number): Date {
