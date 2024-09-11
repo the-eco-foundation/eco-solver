@@ -10,6 +10,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
 import { IntentModule } from './intent/intent.module'
 import { SourceIntentModel } from './intent/schemas/source-intent.schema'
 import { BalanceModule } from './balance/balance.module'
+import { ProverModule } from './prover/prover.module'
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { BalanceModule } from './balance/balance.module'
         }
       },
     }),
+    ProverModule,
     ...getPino(),
   ],
   controllers: [],

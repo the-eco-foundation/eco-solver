@@ -39,6 +39,7 @@
     "alchemy-sdk": "^3.3.1",
     "bullmq": "^5.8.5",
     "config": "^3.3.11",
+    "date-fns": "^3.6.0",
     "ethers": "^6.13.0",
     "lodash": "^4.17.21",
     "mongoose": "^8.5.0",
