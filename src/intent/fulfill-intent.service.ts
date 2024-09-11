@@ -93,11 +93,20 @@ export class FulfillIntentService implements OnModuleInit {
         data: fulfillIntent,
       })
 
-      // @ts-expect-error flatExecuteData complains here
+      this.logger.debug(
+        EcoLogMessage.fromDefault({
+          message: `Fullfilling batch transaction`,
+          properties: {
+            batch: flatExecuteData,
+          },
+        }),
+      )
+
+      // @ts-expect-error  flatExecuteData complains here
       const uo = await smartAccountClient.sendUserOperation({
         uo: flatExecuteData,
       })
-
+      //todo this is blocking, we should use a queue
       receipt = await smartAccountClient.waitForUserOperationTransaction(uo)
       model.status = 'SOLVED'
       this.logger.debug(

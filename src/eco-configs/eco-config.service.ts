@@ -51,6 +51,10 @@ export class EcoConfigService implements OnModuleInit {
 
   // Returns the alchemy configs
   getAlchemy(): EcoConfigType['alchemy'] {
+    const a = this.ecoConfig.get('solvers')
+    keys(a).forEach((k) => {
+      a[k]
+    })
     return this.ecoConfig.get('alchemy')
   }
 

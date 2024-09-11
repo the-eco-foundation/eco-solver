@@ -13,7 +13,7 @@ import { WebsocketIntentService } from './websocket-intent.service'
 import { UtilsIntentService } from './utils-intent.service'
 import { BalanceModule } from '../balance/balance.module'
 import { FulfillIntentService } from './fulfill-intent.service'
-import { SourceIntentController } from './intent.controller'
+// import { SourceIntentController } from './intent.controller'
 
 @Module({
   imports: [
@@ -32,7 +32,7 @@ import { SourceIntentController } from './intent.controller'
     UtilsIntentService,
     SolveIntentProcessor,
   ],
-  controllers: [SourceIntentController],
+  // controllers: [SourceIntentController],
   exports: [],
 })
 export class IntentModule {}

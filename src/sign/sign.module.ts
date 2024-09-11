@@ -14,13 +14,11 @@ import { AlchemyModule } from '../alchemy/alchemy.module'
   imports: [
     forwardRef(() => AlchemyModule),
     EcoConfigModule,
-    MongooseModule.forFeature([
-      { name: Nonce.name, schema: NonceSchema },
-    ]),
+    MongooseModule.forFeature([{ name: Nonce.name, schema: NonceSchema }]),
     initBullMQ(QUEUES.SIGNER),
   ],
   providers: [NonceService, AtomicSignerService, SignerService, SignerProcessor],
   // controllers: [SignController],
   exports: [NonceService, SignerService, AtomicSignerService],
 })
-export class SignModule { }
+export class SignModule {}

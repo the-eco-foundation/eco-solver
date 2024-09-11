@@ -12,7 +12,7 @@ export class Nonce {
   @Prop({ required: true, default: 0 })
   nonce: number
 
-  @Prop({ required: true})
+  @Prop({ required: true })
   chainID: number
 
   @Prop({ required: true })

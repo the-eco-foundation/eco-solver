@@ -7,9 +7,7 @@ import { MultichainSmartAccountService } from './multichain_smart_account.servic
 import { MultichainPublicClientService } from './multichain-public-client.service'
 
 @Module({
-  imports: [EcoConfigModule, 
-    forwardRef(() => SignModule)
-    ],
+  imports: [EcoConfigModule, forwardRef(() => SignModule)],
 
   providers: [
     AlchemyService,

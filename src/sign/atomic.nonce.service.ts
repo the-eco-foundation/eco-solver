@@ -56,8 +56,9 @@ export type AtomicGetParameters = AtomicKeyParams & { client: Client }
 // }
 @Injectable()
 export abstract class AtomicNonceService<T extends { nonce: number }>
-  implements NonceManagerSource {
-  constructor(protected model: Model<T>) { }
+  implements NonceManagerSource
+{
+  constructor(protected model: Model<T>) {}
 
   async syncNonces(): Promise<void> {
     const params: AtomicKeyClientParams[] = await this.getSyncParams()
@@ -76,7 +77,6 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
 
     try {
       const updatedNonces = await Promise.all(nonceSyncs)
-      console.log(updatedNonces)
       const updates = updatedNonces.map(async (nonce) => {
         const { address, chainID } = nonce
         const key = getAtomicNonceKey({ address, chainId: chainID })
@@ -119,7 +119,7 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
     //     return await this.getIncNonce(parameters)
     //   }
   }
-  async set(params: AtomicGetParameters, nonce: number): Promise<void> { }
+  async set(params: AtomicGetParameters, nonce: number): Promise<void> {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
   async getIncNonce(parameters: AtomicGetParameters): Promise<number> {
     const query = { key: getAtomicNonceKey(parameters) }

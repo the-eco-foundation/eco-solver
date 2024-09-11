@@ -1,4 +1,4 @@
-import { Injectable, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common'
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Nonce } from './schemas/nonce.schema'
@@ -12,7 +12,7 @@ import { Hex, sha256 } from 'viem'
 import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
 
 @Injectable()
-export class NonceService extends AtomicNonceService<Nonce> implements OnModuleInit, OnApplicationBootstrap {
+export class NonceService extends AtomicNonceService<Nonce> implements OnApplicationBootstrap {
   private intentJobConfig: JobsOptions
 
   constructor(
@@ -24,23 +24,22 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnModuleI
     super(nonceModel)
   }
   async onApplicationBootstrap() {
-    console.log('accountService', (await this.smartAccountService.getClient(84532)).account.address)//// <<<-------
+    // console.log('accountService', (await this.smartAccountService.getClient(84532)).account.address) //// <<<-------
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
     this.syncQueue()
-  }
-  async onModuleInit() {
-    // console.log('accountService', (await this.smartAccountService.getClient(84532)).account.address)//// <<<-------
-    // this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
-    // this.syncQueue()
   }
 
   async syncQueue() {
     const { should, hash } = await this.shouldSync()
     if (should) {
-      await this.signerQueue.add(QUEUES.SIGNER.jobs.nonce_sync, {}, {
-        jobId: hash,
-        ...this.intentJobConfig,
-      })
+      await this.signerQueue.add(
+        QUEUES.SIGNER.jobs.nonce_sync,
+        {},
+        {
+          jobId: hash,
+          ...this.intentJobConfig,
+        },
+      )
     }
   }
 
@@ -56,7 +55,10 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnModuleI
   }
 
   async getLastSynceAt(): Promise<Date> {
-    const meta = await this.nonceModel.findOne({updatedAt: {$exists: true}}).sort({updatedAt: -1}).exec()
+    const meta = await this.nonceModel
+      .findOne({ updatedAt: { $exists: true } })
+      .sort({ updatedAt: -1 })
+      .exec()
     if (!meta) {
       return new Date(0)
     }

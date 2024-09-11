@@ -4,7 +4,6 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
 import { EcoLogMessage } from '../../common/logging/eco-log-message'
 import { NonceService } from '../../sign/nonce.service'
-import { AtomicKeyClientParams } from '../../sign/atomic.nonce.service'
 
 @Injectable()
 @Processor(QUEUES.SIGNER.queue)

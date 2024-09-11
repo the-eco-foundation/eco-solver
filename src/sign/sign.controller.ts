@@ -8,9 +8,9 @@ export class SignController {
   constructor(private readonly aa: MultichainSmartAccountService) {}
   @Get()
   async fake() {
-    const client = (await this.aa.getClient(84532))
-    const ans = await client.account.getNonce()
-    console.log(ans, client.account.address)
+    await this.aa.getClient(84532)
+    // const ans = await client.account.getNonce()
+    // console.log(ans, client.account.address)
 
     return
   }
