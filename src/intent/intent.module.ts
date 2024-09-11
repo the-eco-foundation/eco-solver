@@ -13,6 +13,7 @@ import { WebsocketIntentService } from './websocket-intent.service'
 import { UtilsIntentService } from './utils-intent.service'
 import { BalanceModule } from '../balance/balance.module'
 import { FulfillIntentService } from './fulfill-intent.service'
+import { ProverModule } from '../prover/prover.module'
 // import { SourceIntentController } from './intent.controller'
 
 @Module({
@@ -21,6 +22,7 @@ import { FulfillIntentService } from './fulfill-intent.service'
     BalanceModule,
     EcoConfigModule,
     MongooseModule.forFeature([{ name: SourceIntentModel.name, schema: SourceIntentSchema }]),
+    ProverModule,
     initBullMQ(QUEUES.SOURCE_INTENT),
   ],
   providers: [

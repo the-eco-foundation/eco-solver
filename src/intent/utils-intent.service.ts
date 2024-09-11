@@ -18,6 +18,12 @@ export interface TransactionTargetData {
   targetConfig: TargetContract
 }
 
+export interface IntentProcessData {
+  model: SourceIntentModel
+  solver: Solver
+  err?: EcoError
+}
+
 /**
  * Service class for solving an intent on chain
  */
@@ -105,9 +111,7 @@ export class UtilsIntentService implements OnModuleInit {
     return targetsSupported
   }
 
-  async getProcessIntentData(
-    intentHash: string,
-  ): Promise<{ model: SourceIntentModel; solver: Solver; err?: EcoError } | undefined> {
+  async getProcessIntentData(intentHash: string): Promise<IntentProcessData | undefined> {
     try {
       const model = await this.intentModel.findOne({
         'intent.hash': intentHash,
