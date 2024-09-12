@@ -12,6 +12,7 @@ import { SourceIntentModel } from './intent/schemas/source-intent.schema'
 import { BalanceModule } from './balance/balance.module'
 import { SignModule } from './sign/sign.module'
 import { ProverModule } from './prover/prover.module'
+import { HealthModule } from './health/health.module'
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ProverModule } from './prover/prover.module'
       // the delimiter used to segment namespaces
       delimiter: '.',
     }),
+    HealthModule,
     SolverModule,
     IntentModule,
     SignModule,
