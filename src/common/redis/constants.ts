@@ -16,6 +16,13 @@ export const QUEUES = {
       erc20_balance_socket: 'erc20_balance_socket',
     },
   },
+  SIGNER: {
+    queue: 'signer',
+    prefix: '{signer}',
+    jobs: {
+      nonce_sync: 'nonce_sync',
+    },
+  },
   SOLVER: {
     queue: 'solver',
     prefix: '{solver}',

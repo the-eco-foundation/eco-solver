@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { SourceIntentTxHash } from '../common/events/websocket'
 import { TransactionTargetData, UtilsIntentService } from './utils-intent.service'
-import { AASmartAccountService } from '../alchemy/aa-smart-multichain.service'
 import { InboxAbi } from '../contracts'
 import { encodeFunctionData, erc20Abi, Hex } from 'viem'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
@@ -12,6 +11,7 @@ import { BatchUserOperationCallData, UserOperationCallData } from '@alchemy/aa-c
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
 
 /**
  * Service class for getting configs for the app
@@ -23,7 +23,7 @@ export class FulfillIntentService implements OnModuleInit {
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
-    private readonly aaService: AASmartAccountService,
+    private readonly accountService: MultichainSmartAccountService,
   ) {}
 
   onModuleInit() {}
@@ -70,8 +70,7 @@ export class FulfillIntentService implements OnModuleInit {
     )
 
     const flatExecuteData = executeData.flat()
-
-    const smartAccountClient = await this.aaService.getClient(solver.chainID)
+    const smartAccountClient = await this.accountService.getClient(solver.chainID)
     let receipt: any
     try {
       const args = [

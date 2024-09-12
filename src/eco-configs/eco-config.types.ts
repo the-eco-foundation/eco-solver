@@ -16,6 +16,9 @@ export type EcoConfigType = {
   alchemy: AlchemyConfigType
   eth: {
     privateKey: string
+    nonce: {
+      update_interval_ms: number
+    }
   }
   aws: AwsCredentials
   database: {

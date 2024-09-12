@@ -10,6 +10,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
 import { IntentModule } from './intent/intent.module'
 import { SourceIntentModel } from './intent/schemas/source-intent.schema'
 import { BalanceModule } from './balance/balance.module'
+import { SignModule } from './sign/sign.module'
 import { ProverModule } from './prover/prover.module'
 
 @Module({
@@ -24,6 +25,7 @@ import { ProverModule } from './prover/prover.module'
     }),
     SolverModule,
     IntentModule,
+    SignModule,
     SourceIntentModel,
     MongooseModule.forRootAsync({
       imports: [EcoConfigModule],

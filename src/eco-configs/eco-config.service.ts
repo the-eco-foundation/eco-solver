@@ -4,6 +4,8 @@ import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { ConfigSource } from './interfaces/config-source.interface'
 import { EcoConfigType, Solver, SourceIntent } from './eco-config.types'
 import { entries, keys } from 'lodash'
+import { lowercaseKeys } from '../common/utils/objects'
+import { Hex } from 'viem'
 
 /**
  * Service class for getting configs for the app
@@ -62,6 +64,7 @@ export class EcoConfigService implements OnModuleInit {
       intent.tokens = intent.tokens.map((token) => {
         return token.toLocaleLowerCase()
       })
+      intent.sourceAddress = intent.sourceAddress.toLowerCase() as Hex
       return intent
     })
     return intents
@@ -71,12 +74,8 @@ export class EcoConfigService implements OnModuleInit {
   getSolvers(): EcoConfigType['solvers'] {
     const solvers = this.ecoConfig.get('solvers')
     entries(solvers).forEach(([, solver]: [string, Solver]) => {
-      const out = {}
-      entries(solver.targets).forEach(([key, target]) => {
-        out[key.toLowerCase()] = target
-      })
-      solver.targets = out
-      return solver
+      solver.solverAddress = solver.solverAddress.toLowerCase() as Hex
+      solver.targets = lowercaseKeys(solver.targets)
     })
     return solvers
   }

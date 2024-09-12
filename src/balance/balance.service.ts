@@ -6,9 +6,8 @@ import { getDestinationNetworkAddressKey } from '../common/utils/strings'
 import { EventLogWS } from '../common/events/websocket'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { decodeTransferLog } from '../common/utils/ws.helpers'
-import { AASmartAccountService } from '../alchemy/aa-smart-multichain.service'
 import { erc20Abi, Hex } from 'viem'
-
+import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
 type TockenBalance = { decimals: bigint; balance: bigint }
 
 /**
@@ -22,7 +21,7 @@ export class BalanceService implements OnModuleInit {
 
   constructor(
     private readonly ecoConfig: EcoConfigService,
-    private readonly aaService: AASmartAccountService,
+    private readonly accountService: MultichainSmartAccountService,
   ) {}
 
   async onModuleInit() {
@@ -84,13 +83,14 @@ export class BalanceService implements OnModuleInit {
   private async loadERC20TokenBalance(chainID: number, tokenAddress: Hex): Promise<TockenBalance> {
     const key = getDestinationNetworkAddressKey(chainID, tokenAddress)
     if (!this.tokenBalances.has(key)) {
-      const client = await this.aaService.getClient(chainID)
+      const client = await this.accountService.getClient(chainID)
       const erc20 = {
         address: tokenAddress,
         abi: erc20Abi,
       }
+
       const [{ result: balance }, { result: decimals }] = await client.multicall({
-        // @ts-expect-error - multicall is complaining about "Type instantiation is excessively deep and possibly infinite."
+        //@ts-expect-error client mismatch on property definition
         contracts: [
           {
             ...erc20,
