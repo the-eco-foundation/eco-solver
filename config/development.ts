@@ -53,14 +53,17 @@ export default {
         '0xAb1D243b07e99C91dE9E4B80DFc2B07a8332A2f7': {
           contractType: 'erc20',
           selectors: ['transfer(address,uint256)'],
+          minBalance: 1000,
         },
         '0x8bDa9F5C33FBCB04Ea176ea5Bc1f5102e934257f': {
           contractType: 'erc20',
           selectors: ['transfer(address,uint256)'],
+          minBalance: 1000,
         },
         '0x93551e3F61F8E3EE73DDc096BddbC1ADc52f5A3a': {
           contractType: 'erc20',
           selectors: ['transfer(address,uint256)'],
+          minBalance: 1000,
         },
       },
       network: 'base-sepolia',
@@ -74,6 +77,7 @@ export default {
         '0x5fd84259d66Cd46123540766Be93DFE6D43130D7': {
           contractType: 'erc20',
           selectors: ['transfer(address,uint256)'],
+          minBalance: 1000,
         },
       },
       network: 'opt-sepolia',

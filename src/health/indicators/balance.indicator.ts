@@ -3,7 +3,9 @@ import { HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { BalanceService } from '../../balance/balance.service'
 import { MultichainSmartAccountService } from '../../alchemy/multichain_smart_account.service'
+import { erc20Abi } from 'viem'
 
+type TokenType = { decimal: number; value: string; minBalances?: number }
 @Injectable()
 export class BalanceHealthIndicator extends HealthIndicator {
   private logger = new Logger(BalanceHealthIndicator.name)
@@ -15,50 +17,105 @@ export class BalanceHealthIndicator extends HealthIndicator {
     super()
   }
   async checkBalances(): Promise<HealthIndicatorResult> {
-    // const sourceBalances: { [key: string]: { token: string, decimals: bigint, balance: bigint }[] } = {}
-    // let isHealthy = true
-    // const sourceIntents = this.configService.getSourceIntents()
-    // for (const sourceIntent of sourceIntents) {
-    //   const balanceCalls = sourceIntent.tokens.map(async (token) => {
-    //     const balance = await this.publicClient.getBalance(sourceIntent.sourceAddress, token)
-    //     return { token, balance }
-    //   })
-    // }
-    // const solvers = this.configService.getSolvers()
-
-    // const balances: { [key: string]: TokenBalance[] } = {}
-    // let isHealthy = true
-    // const bridgeSources = this.ecoConfigService.getBridgeNetwork().bridgeSources
-    // for (const bridge of bridgeSources) {
-    //   const key = this.getKey(bridge)
-    //   let bridgeBalanceTokens = await this.etherService.getTokenBalance(bridge)
-    //   bridgeBalanceTokens = bridgeBalanceTokens.map((token) => {
-    //     const minBalance = bridge.tokens.find((token) => token.address === token.address)
-    //       ?.minBalance
-    //     return { ...token, minBalance }
-    //   })
-    //   balances[key] = bridgeBalanceTokens
-
-    //   for (const tokenBalance of balances[key]) {
-    //     const minBalance = bridge.tokens.find((token) => token.address === tokenBalance.address)
-    //       ?.minBalance
-    //     if (tokenBalance.balance < minBalance) {
-    //       isHealthy = false
-    //       break
-    //     }
-    //   }
-    // }
-    // const balancesString = JSON.parse(
-    //   JSON.stringify(
-    //     balances,
-    //     (key, value) => (typeof value === 'bigint' ? value.toString() : value), // return everything else unchanged
-    //   ),
-    // )
-    // return this.getStatus('balances', isHealthy, { balances: balancesString })
-    return this.getStatus('balances', true, { balances: '5' })
+    const [solvers, sources] = await Promise.all([this.getSolvers(), this.getSources()])
+    const isHealthy = solvers.every((solver) => {
+      const tokens = solver.tokens
+      return tokens.every((token) => {
+        if (!token.minBalances) {
+          return true
+        }
+        const minBalanceDecimal = BigInt(token.minBalances) * BigInt(10 ** token.decimal)
+        return BigInt(token.value) >= minBalanceDecimal
+      })
+    })
+    return this.getStatus('balances', isHealthy, { solvers, sources })
   }
 
-  private getSourceKey(network: string, chainID: number): string {
-    return `${network}-${chainID}`
+  private async getSources(): Promise<{ tokens: TokenType[] }[]> {
+    const sources = []
+    const sourceIntents = this.configService.getSourceIntents()
+    for (const sourceIntent of sourceIntents) {
+      const client = await this.accountService.getClient(sourceIntent.chainID)
+      const accountAddress = client.account.address
+
+      const balances = await this.getBalanceCalls(sourceIntent.chainID, sourceIntent.tokens)
+
+      const sourceBalancesString = this.joinBalance(balances, sourceIntent.tokens)
+      sources.push({ ...sourceIntent, accountAddress, tokens: sourceBalancesString })
+    }
+    sources.reverse()
+    return sources
+  }
+
+  private async getSolvers(): Promise<{ tokens: TokenType[] }[]> {
+    const solvers = []
+    const solverConfig = this.configService.getSolvers()
+    await Promise.all(
+      Object.entries(solverConfig).map(async ([, solver]) => {
+        const client = await this.accountService.getClient(solver.chainID)
+        const accountAddress = client.account.address
+        const tokens = Object.keys(solver.targets)
+        const balances = await this.getBalanceCalls(solver.chainID, tokens)
+        const mins = Object.values(solver.targets).map((target) => target.minBalance)
+        const sourceBalancesString = this.joinBalance(balances, tokens, mins)
+        delete solver.targets
+        solvers.push({ ...solver, accountAddress, tokens: sourceBalancesString })
+      }),
+    )
+    solvers.reverse()
+    return solvers
+  }
+
+  private async getBalanceCalls(chainID: number, tokens: string[]) {
+    const client = await this.accountService.getClient(chainID)
+    const accountAddress = client.account.address
+
+    const balanceCalls = tokens.map((token) => {
+      return [
+        {
+          address: token,
+          abi: erc20Abi,
+          functionName: 'balanceOf',
+          args: [accountAddress],
+        },
+        {
+          address: token,
+          abi: erc20Abi,
+          functionName: 'decimals',
+        },
+      ]
+    })
+
+    return await client.multicall({
+      //@ts-expect-error client mismatch on property definition
+      contracts: balanceCalls.flat(),
+    })
+  }
+
+  private joinBalance(
+    balances: any,
+    tokens: string[],
+    minBalances: number[] = [],
+  ): Record<string, TokenType> {
+    let decimal = 0,
+      value = BigInt(0),
+      i = 0
+    const sourceBalancesString: Record<string, TokenType> = {}
+
+    while (
+      balances.length > 0 &&
+      ([{ result: decimal as unknown }, { result: value as unknown }] = [
+        balances.pop(),
+        balances.pop(),
+      ])
+    ) {
+      sourceBalancesString[tokens[i]] = {
+        decimal,
+        value: BigInt(value).toString(),
+        ...(minBalances ? { minBalances: minBalances[i] } : {}),
+      }
+      i++
+    }
+    return sourceBalancesString
   }
 }

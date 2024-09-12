@@ -102,6 +102,7 @@ export type Solver = {
 export interface TargetContract {
   contractType: TargetContractType
   selectors: string[]
+  minBalance: number
 }
 
 /**
