@@ -17,7 +17,11 @@ import { AlchemyModule } from '../alchemy/alchemy.module'
     MongooseModule.forFeature([{ name: Nonce.name, schema: NonceSchema }]),
     initBullMQ(QUEUES.SIGNER),
   ],
-  providers: [NonceService, AtomicSignerService, SignerService, SignerProcessor],
+  providers: [
+    NonceService, 
+    AtomicSignerService, 
+    SignerService, 
+    SignerProcessor],
   // controllers: [SignController],
   exports: [
     SignerService,
