@@ -11,7 +11,6 @@ import { http } from 'viem'
 import { getAchemyRPCUrl } from '../common/utils/strings'
 import { createMultiOwnerModularAccount } from '@alchemy/aa-accounts'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { NonceService } from '../sign/nonce.service'
 import { AtomicSignerService } from '../sign/atomic-signer.service'
 
 @Injectable()
@@ -21,16 +20,9 @@ export class MultichainAtomicSmartAccountService extends ViemMultichainClientSer
 > {
   constructor(
     private readonly atomicSignerService: AtomicSignerService,
-    private readonly nonceService: NonceService,
     readonly ecoConfigService: EcoConfigService,
   ) {
     super(ecoConfigService)
-  }
-
-  onModuleInit() {
-    super.onModuleInit()
-    // const ethConfigs = this.ecoConfigService.getEth()
-    // const signer = privateKeyAndNonceToAccountSigner(this.nonceService, `0x${ethConfigs.privateKey}`)
   }
 
   protected override async createInstanceClient(

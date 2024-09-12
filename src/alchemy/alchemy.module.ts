@@ -1,7 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common'
 import { EcoConfigModule } from '../eco-configs/eco-config.module'
 import { AlchemyService } from './alchemy.service'
-import { MultichainAtomicSmartAccountService } from './multichain-atomic-smart-account.service'
 import { SignModule } from '../sign/sign.module'
 import { MultichainSmartAccountService } from './multichain_smart_account.service'
 import { MultichainPublicClientService } from './multichain-public-client.service'
@@ -11,14 +10,14 @@ import { MultichainPublicClientService } from './multichain-public-client.servic
 
   providers: [
     AlchemyService,
-    MultichainAtomicSmartAccountService,
+    // MultichainAtomicSmartAccountService,
     MultichainSmartAccountService,
     MultichainPublicClientService,
   ],
 
   exports: [
     AlchemyService,
-    MultichainAtomicSmartAccountService,
+    // MultichainAtomicSmartAccountService,
     MultichainSmartAccountService,
     MultichainPublicClientService,
   ],

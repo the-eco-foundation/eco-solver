@@ -11,7 +11,7 @@ import { BatchUserOperationCallData, UserOperationCallData } from '@alchemy/aa-c
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { MultichainAtomicSmartAccountService } from '../alchemy/multichain-atomic-smart-account.service'
+import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
 
 /**
  * Service class for getting configs for the app
@@ -23,7 +23,7 @@ export class FulfillIntentService implements OnModuleInit {
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
-    private readonly accountService: MultichainAtomicSmartAccountService,
+    private readonly accountService: MultichainSmartAccountService,
   ) {}
 
   onModuleInit() {}

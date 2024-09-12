@@ -19,6 +19,10 @@ import { AlchemyModule } from '../alchemy/alchemy.module'
   ],
   providers: [NonceService, AtomicSignerService, SignerService, SignerProcessor],
   // controllers: [SignController],
-  exports: [NonceService, SignerService, AtomicSignerService],
+  exports: [
+    SignerService,
+    // NonceService,
+    // AtomicSignerService
+  ],
 })
 export class SignModule {}

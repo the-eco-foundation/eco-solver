@@ -11,6 +11,10 @@ import { AtomicKeyClientParams, AtomicNonceService } from './atomic.nonce.servic
 import { Hex, sha256 } from 'viem'
 import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
 
+/**
+ * TODO this class needs to be assigned to an EAO, a userOp gets its nonce throught the alchemy sdk
+ * which pulls its fromt the rpc bundler
+ */
 @Injectable()
 export class NonceService extends AtomicNonceService<Nonce> implements OnApplicationBootstrap {
   private intentJobConfig: JobsOptions
