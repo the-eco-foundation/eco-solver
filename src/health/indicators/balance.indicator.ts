@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
-import { BalanceService } from '../../balance/balance.service'
 import { MultichainSmartAccountService } from '../../alchemy/multichain_smart_account.service'
 import { erc20Abi } from 'viem'
 
@@ -11,7 +10,6 @@ export class BalanceHealthIndicator extends HealthIndicator {
   private logger = new Logger(BalanceHealthIndicator.name)
   constructor(
     private readonly accountService: MultichainSmartAccountService,
-    private readonly balanceService: BalanceService,
     private readonly configService: EcoConfigService,
   ) {
     super()
@@ -20,7 +18,7 @@ export class BalanceHealthIndicator extends HealthIndicator {
     const [solvers, sources] = await Promise.all([this.getSolvers(), this.getSources()])
     const isHealthy = solvers.every((solver) => {
       const tokens = solver.tokens
-      return tokens.every((token) => {
+      return Object.values(tokens).every((token) => {
         if (!token.minBalances) {
           return true
         }
@@ -31,7 +29,7 @@ export class BalanceHealthIndicator extends HealthIndicator {
     return this.getStatus('balances', isHealthy, { solvers, sources })
   }
 
-  private async getSources(): Promise<{ tokens: TokenType[] }[]> {
+  private async getSources(): Promise<any[]> {
     const sources = []
     const sourceIntents = this.configService.getSourceIntents()
     for (const sourceIntent of sourceIntents) {
@@ -47,7 +45,7 @@ export class BalanceHealthIndicator extends HealthIndicator {
     return sources
   }
 
-  private async getSolvers(): Promise<{ tokens: TokenType[] }[]> {
+  private async getSolvers(): Promise<{ tokens: Record<string, TokenType> }[]> {
     const solvers = []
     const solverConfig = this.configService.getSolvers()
     await Promise.all(
@@ -62,7 +60,6 @@ export class BalanceHealthIndicator extends HealthIndicator {
         solvers.push({ ...solver, accountAddress, tokens: sourceBalancesString })
       }),
     )
-    solvers.reverse()
     return solvers
   }
 
