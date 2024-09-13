@@ -1,4 +1,4 @@
-export const QUEUES = {
+export const QUEUES: Record<any, QueueInterface> = {
   SOURCE_INTENT: {
     queue: 'source_intent',
     prefix: '{source-intent}',
