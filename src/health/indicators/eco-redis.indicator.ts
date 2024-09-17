@@ -12,11 +12,11 @@ export class EcoRedisHealthIndicator extends RedisHealthIndicator {
   private readonly redis: Redis
   constructor(private readonly configService: EcoConfigService) {
     super()
-    const config = RedisConnectionUtils.getQueueOptions(
-      QUEUES.SOURCE_INTENT,
-      configService.getRedis(),
-    )
-    this.redis = new Redis(config)
+    // const config = RedisConnectionUtils.getQueueOptions(
+    //   QUEUES.SOURCE_INTENT,
+    //   configService.getRedis(),
+    // )
+    // this.redis = new Redis(config)
   }
   async checkRedis(): Promise<HealthIndicatorResult> {
     return this.checkHealth('redis', {
