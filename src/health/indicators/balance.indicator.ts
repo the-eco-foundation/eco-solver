@@ -56,8 +56,13 @@ export class BalanceHealthIndicator extends HealthIndicator {
         const balances = await this.getBalanceCalls(solver.chainID, tokens)
         const mins = Object.values(solver.targets).map((target) => target.minBalance)
         const sourceBalancesString = this.joinBalance(balances, tokens, mins)
-        delete solver.targets
-        solvers.push({ ...solver, accountAddress, tokens: sourceBalancesString })
+
+        solvers.push({
+          ...solver,
+          targets: undefined, //remove targets
+          accountAddress,
+          tokens: sourceBalancesString,
+        })
       }),
     )
     return solvers
