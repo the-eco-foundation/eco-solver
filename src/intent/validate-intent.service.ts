@@ -50,16 +50,18 @@ export class ValidateIntentService implements OnModuleInit {
     const expiresEarly = !this.validExpirationTime(model, solver)
 
     if (targetsUnsupported || selectorsUnsupported || expiresEarly) {
-      this.logger.log( EcoLogMessage.fromDefault({
-        message: `Intent failed validation ${model.intent.hash}`,
-        properties: {
-          intentHash: model.intent.hash,
-          sourceNetwork: model.event.sourceNetwork,
-          targetsUnsupported,
-          selectorsUnsupported,
-          expiresEarly
-        },
-      }),)
+      this.logger.log(
+        EcoLogMessage.fromDefault({
+          message: `Intent failed validation ${model.intent.hash}`,
+          properties: {
+            intentHash: model.intent.hash,
+            sourceNetwork: model.event.sourceNetwork,
+            targetsUnsupported,
+            selectorsUnsupported,
+            expiresEarly,
+          },
+        }),
+      )
       return
     }
 
@@ -85,8 +87,8 @@ export class ValidateIntentService implements OnModuleInit {
 
   private validExpirationTime(model: SourceIntentModel, solver: Solver): boolean {
     //convert to milliseconds
-    const time  = Number.parseInt(`${(model.intent.expiryTime as bigint)}`) * 1000
-    const expires = new Date(time )
+    const time = Number.parseInt(`${model.intent.expiryTime as bigint}`) * 1000
+    const expires = new Date(time)
     const validExipration = this.proofService.isIntentExpirationWithinProofMinimumDate(
       solver.chainID,
       expires,
