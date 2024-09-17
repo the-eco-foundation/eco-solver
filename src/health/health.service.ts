@@ -22,7 +22,7 @@ export class HealthService {
 
   async checkHealth() {
     const healthCheck = await this.health.check([
-      () => this.redisIndicator.checkRedis(),
+      // () => this.redisIndicator.checkRedis(),
       () => this.mongoDBHealthIndicator.checkMongoDB(),
       () => this.permissionIndicator.checkPermissions(),
       () => this.balanceIndicator.checkBalances(),

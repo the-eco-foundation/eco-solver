@@ -3,8 +3,6 @@ import { HealthIndicatorResult } from '@nestjs/terminus'
 import { Redis } from 'ioredis'
 import { RedisHealthIndicator } from '@liaoliaots/nestjs-redis-health'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
-import { RedisConnectionUtils } from '../../common/redis/redis-connection-utils'
-import { QUEUES } from '../../common/redis/constants'
 
 @Injectable()
 export class EcoRedisHealthIndicator extends RedisHealthIndicator {
@@ -12,11 +10,11 @@ export class EcoRedisHealthIndicator extends RedisHealthIndicator {
   private readonly redis: Redis
   constructor(private readonly configService: EcoConfigService) {
     super()
-    const config = RedisConnectionUtils.getQueueOptions(
-      QUEUES.SOURCE_INTENT,
-      configService.getRedis(),
-    )
-    this.redis = new Redis(config)
+    // const config = RedisConnectionUtils.getQueueOptions(
+    //   QUEUES.SOURCE_INTENT,
+    //   configService.getRedis(),
+    // )
+    // this.redis = new Redis(config)
   }
   async checkRedis(): Promise<HealthIndicatorResult> {
     return this.checkHealth('redis', {
