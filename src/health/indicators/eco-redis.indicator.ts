@@ -1,26 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { HealthIndicatorResult } from '@nestjs/terminus'
-import { Redis } from 'ioredis'
 import { RedisHealthIndicator } from '@liaoliaots/nestjs-redis-health'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
+import { RedisConnectionUtils } from '../../common/redis/redis-connection-utils'
 
 @Injectable()
 export class EcoRedisHealthIndicator extends RedisHealthIndicator {
   private logger = new Logger(EcoRedisHealthIndicator.name)
-  private readonly redis: Redis
+  private readonly redis: any
   constructor(private readonly configService: EcoConfigService) {
     super()
-    // const config = RedisConnectionUtils.getQueueOptions(
-    //   QUEUES.SOURCE_INTENT,
-    //   configService.getRedis(),
-    // )
-    // this.redis = new Redis(config)
+    const serviceConfig = configService.getRedis()
+    this.redis = RedisConnectionUtils.getRedisConnection(serviceConfig)
   }
   async checkRedis(): Promise<HealthIndicatorResult> {
     return this.checkHealth('redis', {
       type: 'redis',
       client: this.redis,
-      timeout: 500,
+      timeout: 1000,
     })
   }
 }

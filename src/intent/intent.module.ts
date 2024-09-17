@@ -14,7 +14,6 @@ import { UtilsIntentService } from './utils-intent.service'
 import { BalanceModule } from '../balance/balance.module'
 import { FulfillIntentService } from './fulfill-intent.service'
 import { ProverModule } from '../prover/prover.module'
-// import { SourceIntentController } from './intent.controller'
 
 @Module({
   imports: [
