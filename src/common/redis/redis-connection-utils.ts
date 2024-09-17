@@ -10,6 +10,19 @@ import { RedlockRedisClient } from '../../nest-redlock/nest-redlock.service'
 export class RedisConnectionUtils {
   private static logger = new Logger(RedisConnectionUtils.name)
 
+  static getRedisConnection(redisConfig: RedisConfig): Redis.Redis | Redis.Cluster {
+    const connection = redisConfig.connection
+
+    if (this.isClusterConnection(connection)) {
+      return new Redis.Cluster(
+        connection as Redis.ClusterNode[],
+        RedisConnectionUtils.getClusterOptions(redisConfig),
+      )
+    }
+
+    return new Redis.Redis(connection as Redis.RedisOptions)
+  }
+
   static getQueueOptions(queue: QueueInterface, redisConfig: RedisConfig): RegisterQueueOptions {
     try {
       const connection = redisConfig.connection
