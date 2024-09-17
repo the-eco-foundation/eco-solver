@@ -3,8 +3,6 @@ import { HealthIndicatorResult } from '@nestjs/terminus'
 import { Redis } from 'ioredis'
 import { RedisHealthIndicator } from '@liaoliaots/nestjs-redis-health'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
-import { RedisConnectionUtils } from '../../common/redis/redis-connection-utils'
-import { QUEUES } from '../../common/redis/constants'
 
 @Injectable()
 export class EcoRedisHealthIndicator extends RedisHealthIndicator {
