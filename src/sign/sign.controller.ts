@@ -1,13 +1,12 @@
 import { Controller, Get } from '@nestjs/common'
 import { Logger } from '@nestjs/common'
-import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
 import { SignerService } from './signer.service'
 
 @Controller('sign')
 export class SignController {
   private logger = new Logger(SignController.name)
   constructor(
-    private readonly aa: MultichainSmartAccountService,
+    // private readonly aa: MultichainSmartAccountService,
     private readonly signer: SignerService,
   ) {}
   @Get()

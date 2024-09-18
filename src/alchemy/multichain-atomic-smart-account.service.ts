@@ -7,11 +7,10 @@ import {
   SmartAccountClientConfig,
 } from '@alchemy/aa-core'
 import { ViemMultichainClientService } from './viem_multichain_client.service'
-import { http } from 'viem'
-import { getAchemyRPCUrl } from '../common/utils/strings'
 import { createMultiOwnerModularAccount } from '@alchemy/aa-accounts'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { AtomicSignerService } from '../sign/atomic-signer.service'
+import { getTransport } from './utils'
 
 @Injectable()
 export class MultichainAtomicSmartAccountService extends ViemMultichainClientService<
@@ -34,7 +33,7 @@ export class MultichainAtomicSmartAccountService extends ViemMultichainClientSer
   protected override async buildChainConfig(
     chain: chains.Chain,
   ): Promise<SmartAccountClientConfig> {
-    const rpcTransport = http(getAchemyRPCUrl(chain, this.apiKey))
+    const rpcTransport = getTransport(chain, this.apiKey, true)
     return {
       transport: rpcTransport as any,
       chain: chain,

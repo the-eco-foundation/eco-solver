@@ -19,7 +19,7 @@ export class SourceIntentController {
     const si: SourceIntent = {
       network: intent.sourceNetwork as Network,
       chainID: intent.sourceChainID,
-      sourceAddress: '',
+      sourceAddress: '0x',
       tokens: [],
     }
     this.logger.debug(

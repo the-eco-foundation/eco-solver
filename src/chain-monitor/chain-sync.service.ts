@@ -9,6 +9,7 @@ import { MultichainSmartAccountService } from '../alchemy/multichain_smart_accou
 import { IntentSourceAbi } from '../contracts'
 import { entries } from 'lodash'
 import { BlockTag } from 'viem'
+import { WebsocketIntentService } from '../intent/websocket-intent.service'
 
 @Injectable()
 export class ChainSyncService implements OnModuleInit {
@@ -17,6 +18,7 @@ export class ChainSyncService implements OnModuleInit {
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly accountService: MultichainSmartAccountService,
+    private readonly websocketIntentService: WebsocketIntentService,
     private ecoConfigService: EcoConfigService,
   ) {}
 
@@ -47,7 +49,7 @@ export class ChainSyncService implements OnModuleInit {
       lastRecordedTx.length > 0 ? BigInt(lastRecordedTx[0].event.blockNumber) : 0n
     const toBlock: BlockTag = 'latest'
     const client = await this.accountService.getClient(source.chainID)
-    const logs = await client.getContractEvents({
+    const createIntentLogs = await client.getContractEvents({
       address: source.sourceAddress,
       abi: IntentSourceAbi,
       eventName: 'IntentCreated',
@@ -58,7 +60,7 @@ export class ChainSyncService implements OnModuleInit {
       toBlock,
     })
 
-    if (logs.length === 0) {
+    if (createIntentLogs.length === 0) {
       this.logger.log(
         EcoLogMessage.fromDefault({
           message: `No transactions found for source ${source.network} to sync from block ${fromBlock}`,
@@ -70,6 +72,23 @@ export class ChainSyncService implements OnModuleInit {
       )
       return
     }
+
+    // const buildTxs: Promise<SyncAssetTransfer>[] = createIntentLogs.map((intentLog) => {
+    //   return this.websocketIntentService.addJob(source)(intentLog as EventLogWS)
+    //   // return SyncAssetTransfer.buildSyncAssetTransfer(
+    //   //   tx,
+    //   //   bridge.network,
+    //   //   async (txHash: string) => {
+    //   //     const reciept = await this.alchemyService
+    //   //       .getAlchemy(bridge.network)
+    //   //       .core.getTransactionReceipt(txHash)
+    //   //     return reciept ? reciept.logs : []
+    //   //   },
+    //   // )
+    // })
+
+    // const processTxs = await Promise.all(buildTxs)
+    // await this.chainProcessService.processTxs(processTxs)
   }
 
   async getLastRecordedTx(source: SourceIntent): Promise<SourceIntentModel[]> {

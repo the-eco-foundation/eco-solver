@@ -1,6 +1,3 @@
-import { chains } from '@alchemy/aa-core'
-import { AtomicKeyParams } from '../../sign/atomic.nonce.service'
-import { Hex } from 'viem'
 export function getRandomString() {
   return Math.random().toString(36).slice(2)
 }
@@ -19,23 +16,4 @@ export function getDestinationNetworkAddressKey(chainID: number, tokenAddress: s
  */
 export function getIntentJobId(serviceName: string, intentHash: string, logIndex: number): string {
   return `${serviceName}-${intentHash}-${logIndex}`
-}
-
-/**
- * Merges the two strings into a valid api url
- * @param rpc the rpc endpoint
- * @param apiKey the alchemy api key
- * @returns
- */
-export function getAchemyRPCUrl(chain: chains.Chain, apiKey: string): string {
-  return chain.rpcUrls.alchemy.http[0] + '/' + apiKey
-}
-
-export function getAtomicNonceKey(params: AtomicKeyParams) {
-  return `${params.address}.${params.chainId}`
-}
-
-export function getAtomicNonceVals(key: string): AtomicKeyParams {
-  const [address, chainId] = key.split('.')
-  return { address: address as Hex, chainId: parseInt(chainId) }
 }

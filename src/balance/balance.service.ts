@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { isSupportedTokenType } from '../common/utils/fragments'
 import { Solver } from '../eco-configs/eco-config.types'
@@ -14,7 +14,7 @@ type TockenBalance = { decimals: bigint; balance: bigint }
  * Service class for getting configs for the app
  */
 @Injectable()
-export class BalanceService implements OnModuleInit {
+export class BalanceService implements OnApplicationBootstrap {
   private logger = new Logger(BalanceService.name)
 
   private readonly tokenBalances: Map<string, TockenBalance> = new Map()
@@ -24,7 +24,7 @@ export class BalanceService implements OnModuleInit {
     private readonly accountService: MultichainSmartAccountService,
   ) {}
 
-  async onModuleInit() {
+  async onApplicationBootstrap() {
     //iterate over all solvers
     await Promise.all(
       Object.entries(this.ecoConfig.getSolvers()).map(async (entry) => {
