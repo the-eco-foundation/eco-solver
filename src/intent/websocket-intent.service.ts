@@ -40,7 +40,7 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
         address: source.sourceAddress,
         abi: IntentSourceAbi,
         eventName: 'IntentCreated',
-        // todo restrict by acceptable provers
+        // restrict by acceptable provers
         args: { prover: source.provers },
         onLogs: this.addJob(source),
       })

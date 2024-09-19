@@ -43,7 +43,7 @@ export class ChainSyncService implements OnModuleInit {
    */
   async syncTxs() {
     const missingTxsTasks = this.ecoConfigService.getSourceIntents().map((source) => {
-      return this.getSyncTxs(source)
+      return this.syncTxsPerSource(source)
     })
 
     await Promise.all(missingTxsTasks)
@@ -55,7 +55,7 @@ export class ChainSyncService implements OnModuleInit {
    * @param source the source intent to get the missing transactions for
    * @returns
    */
-  async getSyncTxs(source: SourceIntent) {
+  async syncTxsPerSource(source: SourceIntent) {
     const createIntentLogs = await this.getMissingTxs(source)
     if (createIntentLogs.length === 0) {
       return

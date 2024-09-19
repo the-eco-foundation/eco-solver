@@ -42,7 +42,7 @@ export default {
         '0xd3F4Bef596a04e2be4fbeB17Dd70f02F717c5a6c',
         '0x93551e3F61F8E3EE73DDc096BddbC1ADc52f5A3a',
       ],
-      provers: [],
+      provers: ['0x99b07fF401E2c73826f3043AdaB2ef37e53d4f23'],
     },
   ],
   solvers: {
