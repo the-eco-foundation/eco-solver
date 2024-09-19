@@ -74,8 +74,8 @@ export class ChainSyncService implements OnModuleInit {
    */
   async getMissingTxs(source: SourceIntent): Promise<ViemEventLog[]> {
     const client = await this.accountService.getClient(source.chainID)
-    const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(
-      ([chainID]) => chainID,
+    const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(([chainID]) =>
+      Number.parseInt(chainID),
     )
     const lastRecordedTx = await this.getLastRecordedTx(source)
     const fromBlock: bigint =

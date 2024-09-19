@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { AlchemyModule } from '../alchemy/alchemy.module'
 import { IntentModule } from '../intent/intent.module'
 import { ChainSyncService } from './chain-sync.service'
+import { SolveIntentProcessor } from '../bullmq/processors/solve-intent.processor'
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { ChainSyncService } from './chain-sync.service'
     IntentModule,
     MongooseModule.forFeature([{ name: SourceIntentModel.name, schema: SourceIntentSchema }]),
   ],
-  providers: [ChainSyncService],
+  providers: [ChainSyncService, SolveIntentProcessor],
   exports: [ChainSyncService],
 })
 export class ChainMonitorModule {}
