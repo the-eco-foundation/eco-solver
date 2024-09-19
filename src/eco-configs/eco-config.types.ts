@@ -121,5 +121,7 @@ export class SourceIntent {
   // The address that the prover source contract is deployed at, we read events from this contract to fulfill
   sourceAddress: Hex
   // The addresses of the tokens that we support as rewards
-  tokens: string[]
+  tokens: Hex[]
+  // The addresses of the provers that we support
+  provers: Hex[]
 }

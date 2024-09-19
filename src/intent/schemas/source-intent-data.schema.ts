@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { IntentStruct } from '../../typing/contracts/IntentSource'
 import { AddressLike, BigNumberish, BytesLike } from 'ethers'
 import { EcoError } from '../../common/errors/eco-error'
-import { Hex } from 'viem'
+import { getAddress, Hex } from 'viem'
 
 @Schema({ timestamps: true })
 export class SourceIntentDataModel implements IntentStruct {
@@ -47,9 +47,9 @@ export class SourceIntentDataModel implements IntentStruct {
     this.hash = hash
     this.creator = creator
     this.destinationChainID = destinationChain
-    this.targets = targets.map((t) => (t as string).toLowerCase() as Hex)
+    this.targets = targets.map((target) => getAddress(target))
     this.data = data
-    this.rewardTokens = rewardTokens.map((t) => (t as string).toLowerCase())
+    this.rewardTokens = rewardTokens.map((token) => getAddress(token as string))
     this.rewardAmounts = rewardAmounts
     this.expiryTime = expiryTime
     this.hasBeenWithdrawn = false

@@ -10,7 +10,14 @@ import { IntentSourceAbi } from '../contracts'
 import { entries } from 'lodash'
 import { BlockTag } from 'viem'
 import { WebsocketIntentService } from '../intent/websocket-intent.service'
+import { ViemEventLog } from '../common/events/websocket'
 
+/**
+ * Service class for syncing any missing transactions for all the source intent contracts.
+ * When the module starts up, it will check for any transactions that have occured since the
+ * last recorded transaction in the database and what is on chain. Intended to fill any
+ * gap in transactions that may have been missed while the serivce was down.
+ */
 @Injectable()
 export class ChainSyncService implements OnModuleInit {
   private logger = new Logger(ChainSyncService.name)
@@ -31,24 +38,50 @@ export class ChainSyncService implements OnModuleInit {
     await this.syncTxs()
   }
 
+  /**
+   * Syncs all the missing transactions for all the source intent contracts.
+   */
   async syncTxs() {
-    const syncMissingTxsPromisses = this.ecoConfigService.getSourceIntents().map((source) => {
-      return this.syncMissingIntentTxs(source)
+    const missingTxsTasks = this.ecoConfigService.getSourceIntents().map((source) => {
+      return this.getSyncTxs(source)
     })
 
-    await Promise.all(syncMissingTxsPromisses)
+    await Promise.all(missingTxsTasks)
   }
 
-  async syncMissingIntentTxs(source: SourceIntent) {
+  /**
+   * Returns the missing transactions for a source intent contract
+   *
+   * @param source the source intent to get the missing transactions for
+   * @returns
+   */
+  async getSyncTxs(source: SourceIntent) {
+    const createIntentLogs = await this.getMissingTxs(source)
+    if (createIntentLogs.length === 0) {
+      return
+    }
+
+    return this.websocketIntentService.addJob(source)(createIntentLogs)
+  }
+
+  /**
+   * Gets the missing transactions for a source intent contract by checking the last processed
+   * event in the database and querying the chain for events from that block number.
+   *
+   * TODO: need to add pagination for large amounts of missing transactions with subgraphs at 10k events
+   * @param source the source intent to get missing transactions for
+   * @returns
+   */
+  async getMissingTxs(source: SourceIntent): Promise<ViemEventLog[]> {
+    const client = await this.accountService.getClient(source.chainID)
     const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(
       ([chainID]) => chainID,
     )
     const lastRecordedTx = await this.getLastRecordedTx(source)
-
     const fromBlock: bigint =
       lastRecordedTx.length > 0 ? BigInt(lastRecordedTx[0].event.blockNumber) : 0n
     const toBlock: BlockTag = 'latest'
-    const client = await this.accountService.getClient(source.chainID)
+
     const createIntentLogs = await client.getContractEvents({
       address: source.sourceAddress,
       abi: IntentSourceAbi,
@@ -70,27 +103,25 @@ export class ChainSyncService implements OnModuleInit {
           },
         }),
       )
-      return
+      return []
     }
 
-    // const buildTxs: Promise<SyncAssetTransfer>[] = createIntentLogs.map((intentLog) => {
-    //   return this.websocketIntentService.addJob(source)(intentLog as EventLogWS)
-    //   // return SyncAssetTransfer.buildSyncAssetTransfer(
-    //   //   tx,
-    //   //   bridge.network,
-    //   //   async (txHash: string) => {
-    //   //     const reciept = await this.alchemyService
-    //   //       .getAlchemy(bridge.network)
-    //   //       .core.getTransactionReceipt(txHash)
-    //   //     return reciept ? reciept.logs : []
-    //   //   },
-    //   // )
-    // })
-
-    // const processTxs = await Promise.all(buildTxs)
-    // await this.chainProcessService.processTxs(processTxs)
+    // add the required source network and chain id to the logs
+    return createIntentLogs.map((log) => {
+      return {
+        ...log,
+        sourceNetwork: source.network,
+        sourceChainID: source.chainID,
+      }
+    })
   }
 
+  /**
+   * Returns the last recorded transaction for a source intent contract.
+   *
+   * @param source the source intent to get the last recorded transaction for
+   * @returns
+   */
   async getLastRecordedTx(source: SourceIntent): Promise<SourceIntentModel[]> {
     return await this.intentModel
       .find({ 'event.sourceChainID': source.chainID })

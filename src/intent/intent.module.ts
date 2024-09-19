@@ -34,6 +34,6 @@ import { ProverModule } from '../prover/prover.module'
     SolveIntentProcessor,
   ],
   // controllers: [SourceIntentController],
-  exports: [],
+  exports: [WebsocketIntentService],
 })
 export class IntentModule {}
