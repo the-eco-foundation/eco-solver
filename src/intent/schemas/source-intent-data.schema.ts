@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { IntentStruct } from '../../typing/contracts/IntentSource'
 import { AddressLike, BigNumberish, BytesLike } from 'ethers'
 import { EcoError } from '../../common/errors/eco-error'
-import { Hex } from 'viem'
+import { getAddress, Hex } from 'viem'
 
 @Schema({ timestamps: true })
 export class SourceIntentDataModel implements IntentStruct {
@@ -26,9 +26,10 @@ export class SourceIntentDataModel implements IntentStruct {
   hasBeenWithdrawn: boolean
   @Prop({ required: true, type: String })
   nonce: BytesLike
+  @Prop({ required: true, type: String })
+  prover: AddressLike
   @Prop({ required: true, type: Number })
   logIndex: number
-
   constructor(
     hash: BytesLike,
     creator: AddressLike,
@@ -39,6 +40,7 @@ export class SourceIntentDataModel implements IntentStruct {
     rewardAmounts: BigNumberish[],
     expiryTime: BigNumberish,
     nonce: BytesLike,
+    prover: AddressLike,
     logIndex: number,
   ) {
     if (targets.length !== data.length) {
@@ -47,13 +49,14 @@ export class SourceIntentDataModel implements IntentStruct {
     this.hash = hash
     this.creator = creator
     this.destinationChainID = destinationChain
-    this.targets = targets.map((t) => (t as string).toLowerCase() as Hex)
+    this.targets = targets.map((target) => getAddress(target))
     this.data = data
-    this.rewardTokens = rewardTokens.map((t) => (t as string).toLowerCase())
+    this.rewardTokens = rewardTokens.map((token) => getAddress(token as string))
     this.rewardAmounts = rewardAmounts
     this.expiryTime = expiryTime
     this.hasBeenWithdrawn = false
     this.nonce = nonce
+    this.prover = getAddress(prover as string)
     this.logIndex = logIndex
   }
 
@@ -69,6 +72,7 @@ export class SourceIntentDataModel implements IntentStruct {
       event[7],
       event[8],
       event[9],
+      event[10],
     )
   }
 }

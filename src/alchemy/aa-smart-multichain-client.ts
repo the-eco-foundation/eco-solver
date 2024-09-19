@@ -4,12 +4,12 @@ import {
   SmartAccountClient,
   SmartAccountClientConfig,
 } from '@alchemy/aa-core'
-import { extractChain, http } from 'viem'
+import { extractChain } from 'viem'
 import { EcoError } from '../common/errors/eco-error'
 import { ChainsSupported } from '../common/utils/chains'
 import { createMultiOwnerModularAccount } from '@alchemy/aa-accounts'
-import { getAchemyRPCUrl } from '../common/utils/strings'
 import { AAMultiChainConfig } from './aa-smart-multichain.service'
+import { getTransport } from './utils'
 
 export class AASmartMultichainClient {
   readonly configs: AAMultiChainConfig
@@ -42,7 +42,7 @@ export class AASmartMultichainClient {
 
     // const c = Object.values(aaChains)[0]
     if (this.configs && this.configs.ids.includes(chainID) && chain) {
-      const rpcTransport = http(getAchemyRPCUrl(chain, this.configs.apiKey))
+      const rpcTransport = getTransport(chain, this.configs.apiKey, true)
       return {
         transport: rpcTransport as any,
         chain: chain,

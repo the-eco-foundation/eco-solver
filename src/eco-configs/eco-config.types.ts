@@ -119,7 +119,9 @@ export class SourceIntent {
   // The chain ID of the network
   chainID: number
   // The address that the prover source contract is deployed at, we read events from this contract to fulfill
-  sourceAddress: string
+  sourceAddress: Hex
   // The addresses of the tokens that we support as rewards
-  tokens: string[]
+  tokens: Hex[]
+  // The addresses of the provers that we support
+  provers: Hex[]
 }
