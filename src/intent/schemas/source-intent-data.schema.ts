@@ -26,9 +26,10 @@ export class SourceIntentDataModel implements IntentStruct {
   hasBeenWithdrawn: boolean
   @Prop({ required: true, type: String })
   nonce: BytesLike
+  @Prop({ required: true, type: String })
+  prover: AddressLike
   @Prop({ required: true, type: Number })
   logIndex: number
-
   constructor(
     hash: BytesLike,
     creator: AddressLike,
@@ -39,6 +40,7 @@ export class SourceIntentDataModel implements IntentStruct {
     rewardAmounts: BigNumberish[],
     expiryTime: BigNumberish,
     nonce: BytesLike,
+    prover: AddressLike,
     logIndex: number,
   ) {
     if (targets.length !== data.length) {
@@ -54,6 +56,7 @@ export class SourceIntentDataModel implements IntentStruct {
     this.expiryTime = expiryTime
     this.hasBeenWithdrawn = false
     this.nonce = nonce
+    this.prover = getAddress(prover as string)
     this.logIndex = logIndex
   }
 
@@ -69,6 +72,7 @@ export class SourceIntentDataModel implements IntentStruct {
       event[7],
       event[8],
       event[9],
+      event[10],
     )
   }
 }
