@@ -41,7 +41,7 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
         abi: IntentSourceAbi,
         eventName: 'IntentCreated',
         // restrict by acceptable provers
-        args: { prover: source.provers },
+        args: { _prover: source.provers },
         onLogs: this.addJob(source),
       })
     })
@@ -60,6 +60,7 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
         //bigint as it cant serialize to json
         createIntent = convertBigIntsToStrings(createIntent)
         createIntent.sourceChainID = source.chainID
+        createIntent.sourceNetwork = source.network
         this.logger.debug(
           EcoLogMessage.fromDefault({
             message: `websocket intent`,
