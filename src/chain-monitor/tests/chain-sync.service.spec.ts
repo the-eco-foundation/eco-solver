@@ -94,7 +94,7 @@ describe('ChainSyncService', () => {
       },
     } as any as Solver[]
 
-    const solverSupportedChains = entries(solvers).map(([chainID]) => chainID)
+    const solverSupportedChains = entries(solvers).map(([chainID]) => Number.parseInt(chainID))
 
     const model = { event: { blockNumber: 50n, sourceChainID: sourceIntent.chainID } }
 
