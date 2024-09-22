@@ -1,36 +1,35 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
-import { SourceIntentTxHash } from '../common/events/websocket'
-import { TransactionTargetData, UtilsIntentService } from './utils-intent.service'
+import { Injectable, Logger } from '@nestjs/common'
+import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
+import { createPublicClient, encodeFunctionData, erc20Abi, Hex } from 'viem'
+import {
+  IntentProcessData,
+  TransactionTargetData,
+  UtilsIntentService,
+} from './utils-intent.service'
 import { InboxAbi } from '../contracts'
-import { encodeFunctionData, erc20Abi, Hex } from 'viem'
-import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { EcoError } from '../common/errors/eco-error'
 import { getERC20Selector } from '../common/utils/ws.helpers'
+import { SourceIntentTxHash } from '../common/events/websocket'
+import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { Solver } from '../eco-configs/eco-config.types'
-import { BatchUserOperationCallData, UserOperationCallData } from '@alchemy/aa-core'
 import { SourceIntentModel } from './schemas/source-intent.schema'
-import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
-import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
+import { TransactionExecutorService } from '../transaction-executor/transaction-executor.service'
 
 /**
  * Service class for getting configs for the app
  */
 @Injectable()
-export class FulfillIntentService implements OnModuleInit {
+export class FulfillIntentService {
   private logger = new Logger(FulfillIntentService.name)
 
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
-    private readonly accountService: MultichainSmartAccountService,
+    private readonly transactionExecutorService: TransactionExecutorService,
   ) {}
 
-  onModuleInit() {}
-
-  async onApplicationBootstrap() {}
-
-  async executeFullfillIntent(intentHash: SourceIntentTxHash) {
+  async executeFulfillIntent(intentHash: SourceIntentTxHash) {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
     if (!data) {
       if (data.err) {
@@ -38,77 +37,45 @@ export class FulfillIntentService implements OnModuleInit {
       }
       return
     }
+
     const { model, solver } = data
+    const smartAccountClient = await this.transactionExecutorService.getClient(solver.chainID)
 
-    //create the UserOp from the intent
-    const executeData = model.intent.targets.map(
-      (target, index) => {
-        const tt = this.utilsIntentService.getTransactionTargetData(model, solver, target, index)
-        if (tt === null) {
-          this.logger.error(
-            EcoLogMessage.withError({
-              message: `fulfillIntent: Invalid transaction data`,
-              error: EcoError.FulfillIntentNoTransactionError,
-              properties: {
-                model: model,
-              },
-            }),
-          )
-          return [] as any
-        }
+    // Create transactions for intent targets
+    const targetSolveTxs = this.getTransactionsForTargets(data)
 
-        switch (tt.targetConfig.contractType) {
-          case 'erc20':
-            return this.handleErc20(tt, solver, target)
-          case 'erc721':
-          case 'erc1155':
-          default:
-            return [] as any
-        }
-      },
-      [] as UserOperationCallData | BatchUserOperationCallData,
+    // Create fulfill tx
+    const fulfillIntentData = this.getFulfillIntentData(smartAccountClient.smartWalletAddr, model)
+    const fulfillTx = {
+      to: solver.solverAddress,
+      data: fulfillIntentData,
+    }
+
+    // Combine all transactions
+    const transactions = [...targetSolveTxs, fulfillTx]
+
+    this.logger.debug(
+      EcoLogMessage.fromDefault({
+        message: `Fullfilling batch transaction`,
+        properties: {
+          batch: transactions,
+        },
+      }),
     )
 
-    const flatExecuteData = executeData.flat()
-    const smartAccountClient = await this.accountService.getClient(solver.chainID)
-    let receipt: any
     try {
-      const args = [
-        model.event.sourceChainID,
-        model.intent.targets,
-        model.intent.data,
-        model.intent.expiryTime,
-        model.intent.nonce,
-        smartAccountClient.account.address,
-        model.intent.hash,
-      ]
+      const transactionHash = await smartAccountClient.execute(transactions)
 
-      const fulfillIntent = encodeFunctionData({
-        abi: InboxAbi,
-        functionName: 'fulfill',
-        args,
-      })
-      flatExecuteData.push({
-        target: solver.solverAddress,
-        data: fulfillIntent,
+      const publicClient = createPublicClient({
+        chain: smartAccountClient.walletClient.chain,
+        transport: smartAccountClient.walletClient.transport as any,
       })
 
-      this.logger.debug(
-        EcoLogMessage.fromDefault({
-          message: `Fullfilling batch transaction`,
-          properties: {
-            batch: flatExecuteData,
-          },
-        }),
-      )
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: transactionHash })
 
-      // @ts-expect-error  flatExecuteData complains here
-      const uo = await smartAccountClient.sendUserOperation({
-        uo: flatExecuteData,
-      })
-      //todo this is blocking, we should use a queue
-      receipt = await smartAccountClient.waitForUserOperationTransaction(uo)
       model.status = 'SOLVED'
+      model.receipt = receipt as any
+
       this.logger.debug(
         EcoLogMessage.fromDefault({
           message: `Fulfilled transaction ${receipt}`,
@@ -120,43 +87,34 @@ export class FulfillIntentService implements OnModuleInit {
         }),
       )
     } catch (e) {
-      receipt = e
       model.status = 'FAILED'
+      model.receipt = e
+
       this.logger.error(
         EcoLogMessage.withError({
           message: `fulfillIntent: Invalid transaction`,
           error: EcoError.FulfillIntentBatchError,
           properties: {
             model: model,
-            flatExecuteData: flatExecuteData,
+            flatExecuteData: transactions,
             error: e,
           },
         }),
       )
     } finally {
-      model.receipt = receipt
-      await this.intentModel.updateOne(
-        {
-          'intent.hash': model.intent.hash,
-        },
-        model,
-      )
+      await this.updateTransactionReceipt(model)
     }
   }
+
   /**
    * Checks if the transaction is feasible for an erc20 token transfer.
    *
    * @param tt the transaction target data
-   * @param network the target network for the fullfillment
-   * @param model the source intent model
+   * @param solver the target solver
    * @param target the target ERC20 address
    * @returns
    */
-  handleErc20(
-    tt: TransactionTargetData,
-    solver: Solver,
-    target: Hex,
-  ): UserOperationCallData | BatchUserOperationCallData {
+  handleErc20(tt: TransactionTargetData, solver: Solver, target: Hex) {
     switch (tt.transactionDescription.selector) {
       case getERC20Selector('transfer'):
         const dstAmount = tt.transactionDescription.args[1]
@@ -167,15 +125,75 @@ export class FulfillIntentService implements OnModuleInit {
           args: [solver.solverAddress, dstAmount],
         })
 
-        return [
-          {
-            target,
-            data: transferSolverAmount,
-          },
-        ]
-
+        return [{ to: target, data: transferSolverAmount }]
       default:
         return []
     }
+  }
+
+  /**
+   * Returns the transactions for the intent targets
+   * @param intentProcessData
+   * @private
+   */
+  private getTransactionsForTargets(intentProcessData: IntentProcessData) {
+    const { model, solver } = intentProcessData
+
+    // Create transactions for intent targets
+    return model.intent.targets.flatMap((target, index) => {
+      const tt = this.utilsIntentService.getTransactionTargetData(model, solver, target, index)
+      if (tt === null) {
+        this.logger.error(
+          EcoLogMessage.withError({
+            message: `fulfillIntent: Invalid transaction data`,
+            error: EcoError.FulfillIntentNoTransactionError,
+            properties: {
+              model: model,
+            },
+          }),
+        )
+        return []
+      }
+
+      switch (tt.targetConfig.contractType) {
+        case 'erc20':
+          return this.handleErc20(tt, solver, target)
+        case 'erc721':
+        case 'erc1155':
+        default:
+          return []
+      }
+    })
+  }
+
+  /**
+   * Returns the fulfill intent data
+   * @param walletAddr
+   * @param model
+   * @private
+   */
+  private getFulfillIntentData(walletAddr: string, model: SourceIntentModel) {
+    return encodeFunctionData({
+      abi: InboxAbi,
+      functionName: 'fulfill',
+      args: [
+        model.event.sourceChainID,
+        model.intent.targets,
+        model.intent.data,
+        model.intent.expiryTime,
+        model.intent.nonce,
+        walletAddr,
+        model.intent.hash,
+      ],
+    })
+  }
+
+  /**
+   * Updates the transaction receipt
+   * @param model
+   * @private
+   */
+  private updateTransactionReceipt(model: SourceIntentModel) {
+    return this.intentModel.updateOne({ 'intent.hash': model.intent.hash }, model)
   }
 }

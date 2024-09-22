@@ -35,6 +35,10 @@ export class EcoError extends Error {
     return new EcoError(`Unsupported target type ${targetType}`)
   }
 
+  static UnsupportedSimpleAccountForChainID(id: number) {
+    return new EcoError(`Unsupported simple account for chain id ${id}`)
+  }
+
   static FeasableIntentNoTransactionError = new Error('No transaction data found')
   static FulfillIntentNoTransactionError = new Error('No transaction data found')
   static FulfillIntentBatchError = new Error('Could not fulfill batch transaction')

@@ -2,7 +2,9 @@ import { Injectable, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { privateKeyAndNonceToAccountSigner } from './sign.helper'
 import { LocalAccountSigner } from '@alchemy/aa-core'
+import { Hex } from 'viem'
 import { jsonRpc } from 'viem/nonce'
+
 @Injectable()
 export class SignerService implements OnModuleInit {
   private signer: LocalAccountSigner<any>
@@ -16,10 +18,11 @@ export class SignerService implements OnModuleInit {
     return this.signer
   }
 
+  getPrivateKey(): Hex {
+    return `0x${this.ecoConfigService.getEth().privateKey}`
+  }
+
   protected buildSigner(): LocalAccountSigner<any> {
-    return privateKeyAndNonceToAccountSigner(
-      jsonRpc(),
-      `0x${this.ecoConfigService.getEth().privateKey}`,
-    )
+    return privateKeyAndNonceToAccountSigner(jsonRpc(), this.getPrivateKey())
   }
 }

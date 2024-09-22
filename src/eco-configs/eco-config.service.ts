@@ -103,6 +103,11 @@ export class EcoConfigService implements OnModuleInit {
     return this.ecoConfig.get('logger')
   }
 
+  getSimpleAccount(chainID: number): EcoConfigType['simpleAccounts'][number] {
+    const simpleAccounts = this.ecoConfig.get('simpleAccounts') as EcoConfigType['simpleAccounts']
+    return simpleAccounts.find((account) => account.supportedChainIDs.includes(chainID))
+  }
+
   getMongooseUri() {
     const config = this.getDatabaseConfig()
     return config.auth.enabled

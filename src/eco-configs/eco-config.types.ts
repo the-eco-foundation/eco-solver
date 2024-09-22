@@ -35,6 +35,11 @@ export type EcoConfigType = {
     usePino: boolean
     pinoConfig: PinoParams
   }
+  simpleAccounts: {
+    walletAddr: Hex
+    signerPrivateKey: Hex
+    supportedChainIDs: number[]
+  }[]
 }
 
 export type EcoConfigKeys = keyof EcoConfigType

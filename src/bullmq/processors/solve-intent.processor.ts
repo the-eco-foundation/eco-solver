@@ -43,7 +43,7 @@ export class SolveIntentProcessor extends WorkerHost {
       case QUEUES.SOURCE_INTENT.jobs.feasable_intent:
         return await this.feasableIntentSevice.feasableIntent(job.data as SourceIntentTxHash)
       case QUEUES.SOURCE_INTENT.jobs.fulfill_intent:
-        return await this.fulfillIntentSevice.executeFullfillIntent(job.data as SourceIntentTxHash)
+        return await this.fulfillIntentSevice.executeFulfillIntent(job.data as SourceIntentTxHash)
       default:
         this.logger.error(
           EcoLogMessage.fromDefault({
