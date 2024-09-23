@@ -1,5 +1,4 @@
 import {
-  chains,
   createSmartAccountClient,
   SmartAccountClient,
   SmartAccountClientConfig,
@@ -38,16 +37,18 @@ export class AASmartMultichainClient {
     const chain = extractChain({
       chains: ChainsSupported,
       id: chainID,
-    }) as chains.Chain
+    })
 
     // const c = Object.values(aaChains)[0]
     if (this.configs && this.configs.ids.includes(chainID) && chain) {
       const rpcTransport = getTransport(chain, this.configs.apiKey, true)
       return {
         transport: rpcTransport as any,
+        // @ts-expect-error -- this is a valid chain
         chain: chain,
         account: await createMultiOwnerModularAccount({
           transport: rpcTransport as any,
+          // @ts-expect-error -- this is a valid chain
           chain,
           signer: this.configs.signer,
         }),

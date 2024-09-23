@@ -6,11 +6,11 @@ import { InjectQueue } from '@nestjs/bullmq'
 import { getIntentJobId } from '../common/utils/strings'
 import { SourceIntent } from '../eco-configs/eco-config.types'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { MultichainPublicClientService } from '../alchemy/multichain-public-client.service'
+import { MultichainPublicClientService } from '../common/viem/multichain-public-client.service'
 import { IntentSourceAbi } from '../contracts'
 import { WatchContractEventReturnType } from 'viem'
 import { ViemEventLog } from '../common/events/websocket'
-import { convertBigIntsToStrings } from '../viem/utils'
+import { convertBigIntsToStrings } from '../common/viem/utils'
 
 /**
  * Service class for solving an intent on chain. When this service starts up,

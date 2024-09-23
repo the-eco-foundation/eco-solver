@@ -1,6 +1,6 @@
 import { encodeFunctionData, Hex } from 'viem'
-import * as SimpleAccountABI from '../../../assets/abis/SimpleAccount.json'
 import { SimpleAccountConfig } from './simple-account-config'
+import { SimpleAccountAbi } from '../../../contracts'
 
 export class SimpleAccount {
   constructor(private readonly config: SimpleAccountConfig) {}
@@ -17,7 +17,7 @@ export class SimpleAccount {
     if (transactions.length === 1) {
       const [tx] = transactions
       const data = encodeFunctionData({
-        abi: SimpleAccountABI,
+        abi: SimpleAccountAbi,
         functionName: 'execute',
         args: [tx.to, tx.value, tx.data],
       })
@@ -32,7 +32,7 @@ export class SimpleAccount {
     }
 
     const data = encodeFunctionData({
-      abi: SimpleAccountABI,
+      abi: SimpleAccountAbi,
       functionName: 'executeBatch',
       args: [transactions.map((tx) => tx.to), transactions.map((tx) => tx.data)],
     })

@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common'
 import { SignModule } from '../sign/sign.module'
 import { EcoConfigModule } from '../eco-configs/eco-config.module'
-import { TransactionExecutorService } from './transaction-executor.service'
+import { SAClientService } from './sa-client.service'
 
 @Module({
   imports: [EcoConfigModule, SignModule],
-  providers: [TransactionExecutorService],
-  exports: [TransactionExecutorService],
+  providers: [SAClientService],
+  exports: [SAClientService],
 })
-export class TransactionExecutorModule {}
+export class TransactionModule {}

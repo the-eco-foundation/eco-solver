@@ -1,4 +1,3 @@
-import { chains } from '@alchemy/aa-core'
 import { Chain, http, HttpTransport, webSocket, WebSocketTransport } from 'viem'
 
 /**
@@ -8,7 +7,7 @@ import { Chain, http, HttpTransport, webSocket, WebSocketTransport } from 'viem'
  * @returns
  */
 export function getAchemyRPCUrl(
-  chain: Chain | chains.Chain,
+  chain: Chain,
   apiKey: string,
   websocketEnabled: boolean = true,
 ): string {
@@ -28,7 +27,7 @@ export function getAchemyRPCUrl(
  * @returns the websocket or http transport
  */
 export function getTransport(
-  chain: Chain | chains.Chain,
+  chain: Chain,
   apiKey: string,
   websocketEnabled: boolean = true,
 ): WebSocketTransport | HttpTransport {

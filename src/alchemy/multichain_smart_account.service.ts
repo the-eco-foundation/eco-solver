@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common'
-import { chains } from '@alchemy/aa-core'
 import {
   createSmartAccountClient,
   LocalAccountSigner,
   SmartAccountClient,
   SmartAccountClientConfig,
 } from '@alchemy/aa-core'
-import { ViemMultichainClientService } from './viem_multichain_client.service'
+import { ViemMultichainClientService } from '../common/viem/viem_multichain_client.service'
 import { createMultiOwnerModularAccount } from '@alchemy/aa-accounts'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { SignerService } from '../sign/signer.service'
 import { getTransport } from './utils'
+import { Chain } from 'viem'
 
 @Injectable()
 export class MultichainSmartAccountService extends ViemMultichainClientService<
@@ -34,15 +34,15 @@ export class MultichainSmartAccountService extends ViemMultichainClientService<
     return createSmartAccountClient(configs)
   }
 
-  protected override async buildChainConfig(
-    chain: chains.Chain,
-  ): Promise<SmartAccountClientConfig> {
+  protected override async buildChainConfig(chain: Chain): Promise<SmartAccountClientConfig> {
     const rpcTransport = getTransport(chain, this.apiKey, true)
     return {
       transport: rpcTransport as any,
+      // @ts-expect-error -- this is a valid chain
       chain: chain,
       account: await createMultiOwnerModularAccount({
         transport: rpcTransport as any,
+        // @ts-expect-error -- this is a valid chain
         chain,
         signer: this.getSigner(),
       }),

@@ -14,16 +14,16 @@ import { UtilsIntentService } from './utils-intent.service'
 import { BalanceModule } from '../balance/balance.module'
 import { FulfillIntentService } from './fulfill-intent.service'
 import { ProverModule } from '../prover/prover.module'
-import { TransactionExecutorModule } from '../transaction-executor/transaction-executor.module'
+import { TransactionModule } from '../transaction/transaction.module'
 
 @Module({
   imports: [
     AlchemyModule,
     BalanceModule,
     EcoConfigModule,
-    TransactionExecutorModule,
     MongooseModule.forFeature([{ name: SourceIntentModel.name, schema: SourceIntentSchema }]),
     ProverModule,
+    TransactionModule,
     initBullMQ(QUEUES.SOURCE_INTENT),
   ],
   providers: [

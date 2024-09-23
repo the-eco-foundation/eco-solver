@@ -5,7 +5,7 @@ import { ConfigSource } from './interfaces/config-source.interface'
 import { EcoConfigType, Solver, SourceIntent } from './eco-config.types'
 import { entries, keys } from 'lodash'
 import { getAddress } from 'viem'
-import { addressKeys } from '../viem/utils'
+import { addressKeys } from '../common/viem/utils'
 
 /**
  * Service class for getting configs for the app
@@ -101,11 +101,6 @@ export class EcoConfigService implements OnModuleInit {
 
   getLoggerConfig(): EcoConfigType['logger'] {
     return this.ecoConfig.get('logger')
-  }
-
-  getSimpleAccount(chainID: number): EcoConfigType['simpleAccounts'][number] {
-    const simpleAccounts = this.ecoConfig.get('simpleAccounts') as EcoConfigType['simpleAccounts']
-    return simpleAccounts.find((account) => account.supportedChainIDs.includes(chainID))
   }
 
   getMongooseUri() {

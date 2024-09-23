@@ -58,7 +58,12 @@ describe('AlchemyService', () => {
     ecoConfigService.getAlchemy.mockReturnValue(alchemyConfig)
     ecoConfigService.getEth.mockReturnValue({
       privateKey: '0xe6058ea158ab94c87d828d0d936337e46b3ccee52d3469ba3d8505b58c8f5e4b',
+      simpleAccount: {
+        walletAddr: '0x123',
+        signerPrivateKey: '0x456',
+      },
       nonce: { update_interval_ms: 1000 },
+      claimant: '0x789',
     })
   })
 

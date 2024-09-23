@@ -3,7 +3,7 @@ import { EcoConfigModule } from '../eco-configs/eco-config.module'
 import { AlchemyService } from './alchemy.service'
 import { SignModule } from '../sign/sign.module'
 import { MultichainSmartAccountService } from './multichain_smart_account.service'
-import { MultichainPublicClientService } from './multichain-public-client.service'
+import { MultichainPublicClientService } from '../common/viem/multichain-public-client.service'
 
 @Module({
   imports: [EcoConfigModule, SignModule],

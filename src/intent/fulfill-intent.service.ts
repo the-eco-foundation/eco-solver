@@ -14,7 +14,8 @@ import { SourceIntentTxHash } from '../common/events/websocket'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { Solver } from '../eco-configs/eco-config.types'
 import { SourceIntentModel } from './schemas/source-intent.schema'
-import { TransactionExecutorService } from '../transaction-executor/transaction-executor.service'
+import { SAClientService } from '../transaction/sa-client.service'
+import { EcoConfigService } from '../eco-configs/eco-config.service'
 
 /**
  * Service class for getting configs for the app
@@ -26,7 +27,8 @@ export class FulfillIntentService {
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
-    private readonly transactionExecutorService: TransactionExecutorService,
+    private readonly saClientService: SAClientService,
+    private readonly ecoConfigService: EcoConfigService,
   ) {}
 
   async executeFulfillIntent(intentHash: SourceIntentTxHash) {
@@ -39,13 +41,16 @@ export class FulfillIntentService {
     }
 
     const { model, solver } = data
-    const smartAccountClient = await this.transactionExecutorService.getClient(solver.chainID)
+    const smartAccountClient = await this.saClientService.getClient(solver.chainID)
 
     // Create transactions for intent targets
     const targetSolveTxs = this.getTransactionsForTargets(data)
 
     // Create fulfill tx
-    const fulfillIntentData = this.getFulfillIntentData(smartAccountClient.smartWalletAddr, model)
+    const fulfillIntentData = this.getFulfillIntentData(
+      this.ecoConfigService.getEth().claimant,
+      model,
+    )
     const fulfillTx = {
       to: solver.solverAddress,
       data: fulfillIntentData,

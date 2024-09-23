@@ -16,6 +16,11 @@ export type EcoConfigType = {
   alchemy: AlchemyConfigType
   eth: {
     privateKey: string
+    simpleAccount: {
+      walletAddr: Hex
+      signerPrivateKey: Hex
+    }
+    claimant: Hex
     nonce: {
       update_interval_ms: number
     }
@@ -35,11 +40,6 @@ export type EcoConfigType = {
     usePino: boolean
     pinoConfig: PinoParams
   }
-  simpleAccounts: {
-    walletAddr: Hex
-    signerPrivateKey: Hex
-    supportedChainIDs: number[]
-  }[]
 }
 
 export type EcoConfigKeys = keyof EcoConfigType
