@@ -13,7 +13,7 @@ export function createSimpleAccountClient(
     name,
     transport,
   }) as SimpleAccountClient
-  client = client.extend(SimpleAccountActions).extend(publicActions) as any
   client.simpleAccountAddress = parameters.simpleAccountAddress
+  client = client.extend(SimpleAccountActions).extend(publicActions) as any
   return client
 }

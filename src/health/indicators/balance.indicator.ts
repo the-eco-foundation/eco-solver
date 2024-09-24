@@ -16,8 +16,13 @@ export class BalanceHealthIndicator extends HealthIndicator {
     super()
   }
   async checkBalances(): Promise<HealthIndicatorResult> {
-    const [solvers, sources] = await Promise.all([this.getSolvers(), this.getSources()])
-    const isHealthy = solvers.every((solver) => {
+    const minEthBalanceWei = this.configService.getEth().simpleAccount.minEthBalanceWei
+    const [accounts, solvers, sources] = await Promise.all([
+      this.getAccount(),
+      this.getSolvers(),
+      this.getSources(),
+    ])
+    let isHealthy = solvers.every((solver) => {
       const tokens = solver.tokens
       return Object.values(tokens).every((token) => {
         if (!token.minBalances) {
@@ -27,11 +32,43 @@ export class BalanceHealthIndicator extends HealthIndicator {
         return BigInt(token.value) >= minBalanceDecimal
       })
     })
-    const results = this.getStatus('balances', isHealthy, { solvers, sources })
+
+    isHealthy =
+      isHealthy &&
+      accounts.every((bal) => {
+        return BigInt(bal.balance) > minEthBalanceWei
+      })
+    const results = this.getStatus('balances', isHealthy, { accounts, solvers, sources })
     if (isHealthy) {
       return results
     }
     throw new HealthCheckError('Balances failed', results)
+  }
+
+  private async getAccount(): Promise<any[]> {
+    const minEthBalanceWei = this.configService.getEth().simpleAccount.minEthBalanceWei
+    const accountBalance: {
+      address: `0x${string}`
+      chainID: number
+      balance: string
+      minEthBalanceWei: number
+    }[] = []
+    const sourceIntents = this.configService.getSourceIntents()
+    for (const sourceIntent of sourceIntents) {
+      const client = await this.simpleAccountClientService.getClient(sourceIntent.chainID)
+      const address = client.account?.address
+      if (address) {
+        const bal = await client.getBalance({ address })
+        accountBalance.push({
+          address,
+          chainID: sourceIntent.chainID,
+          balance: BigInt(bal).toString(),
+          minEthBalanceWei,
+        })
+      }
+    }
+
+    return accountBalance.reverse()
   }
 
   private async getSources(): Promise<any[]> {

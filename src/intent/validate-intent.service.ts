@@ -10,6 +10,8 @@ import { getIntentJobId } from '../common/utils/strings'
 import { Solver } from '../eco-configs/eco-config.types'
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { ProofService } from '../prover/proof.service'
+import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
 
 /**
  * Service class for getting configs for the app
@@ -21,6 +23,7 @@ export class ValidateIntentService implements OnModuleInit {
 
   constructor(
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
+    @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
     private readonly proofService: ProofService,
@@ -52,6 +55,11 @@ export class ValidateIntentService implements OnModuleInit {
     const expiresEarly = !this.validExpirationTime(model, solver)
 
     if (targetsUnsupported || selectorsUnsupported || expiresEarly) {
+      await this.utilsIntentService.updateInvalidIntentModel(this.intentModel, model, {
+        targetsUnsupported,
+        selectorsUnsupported,
+        expiresEarly,
+      })
       this.logger.log(
         EcoLogMessage.fromDefault({
           message: `Intent failed validation ${model.intent.hash}`,
@@ -79,10 +87,18 @@ export class ValidateIntentService implements OnModuleInit {
       )
       return
     }
-
+    const jobId = getIntentJobId('validate', intentHash, model.intent.logIndex)
+    this.logger.debug(
+      EcoLogMessage.fromDefault({
+        message: `validateIntent ${intentHash}`,
+        properties: {
+          jobId,
+        },
+      }),
+    )
     //add to processing queue
     await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.feasable_intent, intentHash, {
-      jobId: getIntentJobId('validate', intentHash, model.intent.logIndex),
+      jobId,
       ...this.intentJobConfig,
     })
   }
@@ -150,7 +166,7 @@ export class ValidateIntentService implements OnModuleInit {
   private async destructureIntent(intentHash: string): Promise<IntentProcessData> {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
     const { model, solver, err } = data ?? {}
-    if (!err || !model || !solver) {
+    if (!model || !solver) {
       if (err) {
         throw err
       }

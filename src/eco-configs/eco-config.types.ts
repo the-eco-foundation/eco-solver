@@ -19,6 +19,7 @@ export type EcoConfigType = {
     simpleAccount: {
       walletAddr: Hex
       signerPrivateKey: Hex
+      minEthBalanceWei: number
     }
     claimant: Hex
     nonce: {

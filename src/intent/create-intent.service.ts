@@ -11,6 +11,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { getIntentJobId } from '../common/utils/strings'
 import { Hex } from 'viem'
+import { UtilsIntentService } from './utils-intent.service'
 
 /**
  * Service class for getting configs for the app
@@ -23,6 +24,7 @@ export class CreateIntentService implements OnModuleInit {
   constructor(
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
+    private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
@@ -46,6 +48,7 @@ export class CreateIntentService implements OnModuleInit {
         'intent.hash': intent.hash,
       })
       if (model) {
+        await this.utilsIntentService.updateDuplicateIntentModel(this.intentModel, model)
         // Record already exists, do nothing and return
         this.logger.debug(
           EcoLogMessage.fromDefault({
@@ -66,9 +69,10 @@ export class CreateIntentService implements OnModuleInit {
         status: 'PENDING',
       })
 
+      const jobId = getIntentJobId('create', intent.hash as Hex, intent.logIndex)
       //add to processing queue
       await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.validate_intent, intent.hash, {
-        jobId: getIntentJobId('create', intent.hash as Hex, intent.logIndex),
+        jobId,
         ...this.intentJobConfig,
       })
 
@@ -78,6 +82,7 @@ export class CreateIntentService implements OnModuleInit {
           properties: {
             intentHash: intent.hash,
             intent: record.intent,
+            jobId,
           },
         }),
       )

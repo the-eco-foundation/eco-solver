@@ -34,14 +34,14 @@ export class FulfillIntentService {
   async executeFulfillIntent(intentHash: SourceIntentTxHash) {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
     const { model, solver, err } = data ?? {}
-    if (!data || !err || !model || !solver) {
+    if (!data || !model || !solver) {
       if (err) {
         throw err
       }
       return
     }
 
-    const smartAccountClient = await this.simpleAccountClientService.getClient(solver.chainID)
+    const simpleAccountClient = await this.simpleAccountClientService.getClient(solver.chainID)
 
     // Create transactions for intent targets
     const targetSolveTxs = this.getTransactionsForTargets(data)
@@ -69,16 +69,16 @@ export class FulfillIntentService {
     )
 
     try {
-      const transactionHash = await smartAccountClient.execute(transactions)
+      const transactionHash = await simpleAccountClient.execute(transactions)
 
-      const receipt = await smartAccountClient.waitForTransactionReceipt({ hash: transactionHash })
+      const receipt = await simpleAccountClient.waitForTransactionReceipt({ hash: transactionHash })
 
       model.status = 'SOLVED'
       model.receipt = receipt as any
 
       this.logger.debug(
         EcoLogMessage.fromDefault({
-          message: `Fulfilled transaction ${receipt}`,
+          message: `Fulfilled transactionHash ${receipt.transactionHash}`,
           properties: {
             userOPHash: receipt,
             destinationChainID: model.intent.destinationChainID,
@@ -102,7 +102,7 @@ export class FulfillIntentService {
         }),
       )
     } finally {
-      await this.updateTransactionReceipt(model)
+      await this.utilsIntentService.updateIntentModel(this.intentModel, model)
     }
   }
 
@@ -189,14 +189,5 @@ export class FulfillIntentService {
         model.intent.hash,
       ],
     })
-  }
-
-  /**
-   * Updates the transaction receipt
-   * @param model
-   * @private
-   */
-  private updateTransactionReceipt(model: SourceIntentModel) {
-    return this.intentModel.updateOne({ 'intent.hash': model.intent.hash }, model)
   }
 }
