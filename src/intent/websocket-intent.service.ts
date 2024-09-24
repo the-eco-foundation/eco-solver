@@ -6,11 +6,11 @@ import { InjectQueue } from '@nestjs/bullmq'
 import { getIntentJobId } from '../common/utils/strings'
 import { SourceIntent } from '../eco-configs/eco-config.types'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { MultichainPublicClientService } from '../alchemy/multichain-public-client.service'
+import { MultichainPublicClientService } from '../transaction/multichain-public-client.service'
 import { IntentSourceAbi } from '../contracts'
-import { WatchContractEventReturnType } from 'viem'
+import { WatchContractEventReturnType, zeroHash } from 'viem'
 import { ViemEventLog } from '../common/events/websocket'
-import { convertBigIntsToStrings } from '../viem/utils'
+import { convertBigIntsToStrings } from '../common/viem/utils'
 
 /**
  * Service class for solving an intent on chain. When this service starts up,
@@ -34,6 +34,15 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
   }
 
   async onApplicationBootstrap() {
+    await this.subscribeWS()
+  }
+
+  async onModuleDestroy() {
+    // close all websockets
+    Object.values(this.unwatch).forEach((unwatch) => unwatch())
+  }
+
+  async subscribeWS() {
     const websocketTasks = this.ecoConfigService.getSourceIntents().map(async (source) => {
       const client = await this.publicClientService.getClient(source.chainID)
       this.unwatch[source.chainID] = client.watchContractEvent({
@@ -49,11 +58,6 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
     await Promise.all(websocketTasks)
   }
 
-  async onModuleDestroy() {
-    // close all websockets
-    Object.values(this.unwatch).forEach((unwatch) => unwatch())
-  }
-
   addJob(source: SourceIntent) {
     return async (logs: ViemEventLog[]) => {
       const logTasks = logs.map((createIntent) => {
@@ -61,17 +65,23 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
         createIntent = convertBigIntsToStrings(createIntent)
         createIntent.sourceChainID = source.chainID
         createIntent.sourceNetwork = source.network
+        const jobId = getIntentJobId(
+          'websocket',
+          createIntent.transactionHash ?? zeroHash,
+          createIntent.logIndex ?? 0,
+        )
         this.logger.debug(
           EcoLogMessage.fromDefault({
             message: `websocket intent`,
             properties: {
-              createIntent: createIntent,
+              createIntent,
+              jobId,
             },
           }),
         )
         //add to processing queue
         return this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.create_intent, createIntent, {
-          jobId: getIntentJobId('websocket', createIntent.transactionHash, createIntent.logIndex),
+          jobId,
           ...this.intentJobConfig,
         })
       })

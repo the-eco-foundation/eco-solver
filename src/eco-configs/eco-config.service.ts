@@ -5,7 +5,7 @@ import { ConfigSource } from './interfaces/config-source.interface'
 import { EcoConfigType, Solver, SourceIntent } from './eco-config.types'
 import { entries, keys } from 'lodash'
 import { getAddress } from 'viem'
-import { addressKeys } from '../viem/utils'
+import { addressKeys } from '../common/viem/utils'
 
 /**
  * Service class for getting configs for the app
@@ -75,7 +75,7 @@ export class EcoConfigService implements OnModuleInit {
     const solvers = this.ecoConfig.get('solvers')
     entries(solvers).forEach(([, solver]: [string, Solver]) => {
       solver.solverAddress = getAddress(solver.solverAddress)
-      solver.targets = addressKeys(solver.targets)
+      solver.targets = addressKeys(solver.targets) ?? {}
     })
     return solvers
   }

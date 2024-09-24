@@ -1,6 +1,5 @@
-import { chains } from '@alchemy/aa-core'
 import { http, HttpTransport, webSocket, WebSocketTransport } from 'viem'
-
+import { chains } from '@alchemy/aa-core'
 /**
  * Merges the two strings into a valid api url
  * @param rpc the rpc endpoint
@@ -12,10 +11,9 @@ export function getAchemyRPCUrl(
   apiKey: string,
   websocketEnabled: boolean = true,
 ): string {
-  const url =
-    websocketEnabled && chain.rpcUrls.alchemy.webSocket
-      ? chain.rpcUrls.alchemy.webSocket[0]
-      : chain.rpcUrls.alchemy.http[0]
+  const url = websocketEnabled
+    ? chain.rpcUrls.alchemy.http[0].replace('https', 'wss')
+    : chain.rpcUrls.alchemy.http[0]
   return url + '/' + apiKey
 }
 

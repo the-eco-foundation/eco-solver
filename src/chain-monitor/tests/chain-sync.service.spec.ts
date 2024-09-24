@@ -1,6 +1,5 @@
 import { createMock, DeepMocked } from '@golevelup/ts-jest'
 import { ChainSyncService } from '../chain-sync.service'
-import { MultichainSmartAccountService } from '../../alchemy/multichain_smart_account.service'
 import { WebsocketIntentService } from '../../intent/websocket-intent.service'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { Test, TestingModule } from '@nestjs/testing'
@@ -10,10 +9,11 @@ import { Model } from 'mongoose'
 import { Solver, SourceIntent } from '../../eco-configs/eco-config.types'
 import { IntentSourceAbi } from '../../contracts'
 import { entries } from 'lodash'
+import { SimpleAccountClientService } from '../../transaction/simple-account-client.service'
 
 describe('ChainSyncService', () => {
   let chainSyncService: ChainSyncService
-  let accountService: DeepMocked<MultichainSmartAccountService>
+  let accountService: DeepMocked<SimpleAccountClientService>
   let websocketIntentService: DeepMocked<WebsocketIntentService>
   let ecoConfigService: DeepMocked<EcoConfigService>
 
@@ -22,8 +22,8 @@ describe('ChainSyncService', () => {
       providers: [
         ChainSyncService,
         {
-          provide: MultichainSmartAccountService,
-          useValue: createMock<MultichainSmartAccountService>(),
+          provide: SimpleAccountClientService,
+          useValue: createMock<SimpleAccountClientService>(),
         },
         { provide: WebsocketIntentService, useValue: createMock<WebsocketIntentService>() },
         { provide: EcoConfigService, useValue: createMock<EcoConfigService>() },
@@ -35,7 +35,7 @@ describe('ChainSyncService', () => {
     }).compile()
 
     chainSyncService = chainMod.get(ChainSyncService)
-    accountService = chainMod.get(MultichainSmartAccountService)
+    accountService = chainMod.get(SimpleAccountClientService)
     websocketIntentService = chainMod.get(WebsocketIntentService)
     ecoConfigService = chainMod.get(EcoConfigService) as DeepMocked<EcoConfigService>
   })
@@ -49,7 +49,7 @@ describe('ChainSyncService', () => {
     it('should start a sync', async () => {
       const mockSyncTxs = jest.fn()
       chainSyncService.syncTxs = mockSyncTxs
-      await chainSyncService.onModuleInit()
+      await chainSyncService.onApplicationBootstrap()
       expect(mockSyncTxs).toHaveBeenCalledTimes(1)
     })
   })
@@ -101,7 +101,6 @@ describe('ChainSyncService', () => {
     beforeEach(() => {
       mockGetContractEvents = jest.fn().mockResolvedValue([])
 
-      // @ts-expect-error stop complaining
       accountService.getClient = jest.fn().mockReturnValue({
         getContractEvents: mockGetContractEvents,
       })

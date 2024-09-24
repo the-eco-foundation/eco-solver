@@ -1,6 +1,4 @@
-import { Network } from 'alchemy-sdk'
-import { Log as EthersLog } from 'alchemy-sdk'
-import { Log, WatchContractEventOnLogsFn } from 'viem'
+import { Hex, Log, WatchContractEventOnLogsFn } from 'viem'
 
 /**
  * {
@@ -20,13 +18,9 @@ import { Log, WatchContractEventOnLogsFn } from 'viem'
   logIndex: 2
 }
  */
-export interface EventLogWS extends EthersLog {
-  sourceNetwork: Network
-  sourceChainID: number
-}
 
 export type ViemEventLogArray = Parameters<WatchContractEventOnLogsFn>[0]
 export type ViemEventLog = Log & { sourceNetwork: string; sourceChainID: number }
 export type ViemRawLog = Log
 // The hash of the log event
-export type SourceIntentTxHash = string
+export type SourceIntentTxHash = Hex

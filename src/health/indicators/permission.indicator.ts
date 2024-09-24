@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus'
+import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
-import { MultichainSmartAccountService } from '../../alchemy/multichain_smart_account.service'
 import { Solver } from '../../eco-configs/eco-config.types'
 import { InboxAbi } from '../../contracts'
-import { Hex } from 'viem'
+import { Hex, zeroAddress } from 'viem'
+import { SimpleAccountClientService } from '../../transaction/simple-account-client.service'
 
 @Injectable()
 export class PermissionHealthIndicator extends HealthIndicator {
@@ -13,7 +13,7 @@ export class PermissionHealthIndicator extends HealthIndicator {
     new Map()
 
   constructor(
-    private readonly accountService: MultichainSmartAccountService,
+    private readonly simpleAccountClientService: SimpleAccountClientService,
     private readonly configService: EcoConfigService,
   ) {
     super()
@@ -34,21 +34,28 @@ export class PermissionHealthIndicator extends HealthIndicator {
     this.solverPermissions.forEach((value, key) => {
       permissionsString[key] = value
     })
-    return this.getStatus('permissions', isHealthy, { permissions: permissionsString })
+
+    const results = this.getStatus('permissions', isHealthy, { permissions: permissionsString })
+    if (isHealthy) {
+      return results
+    }
+    throw new HealthCheckError('Permissions failed', results)
   }
 
   private async loadPermissions(solver: Solver) {
     const key = this.getSolverKey(solver.network, solver.chainID, solver.solverAddress)
-    const client = await this.accountService.getClient(solver.chainID)
-    const account = client.account.address
+    const client = await this.simpleAccountClientService.getClient(solver.chainID)
     const inbox = {
       address: solver.solverAddress,
       abi: InboxAbi,
       functionName: 'solverWhitelist',
-      args: [account],
+      args: [client.simpleAccountAddress],
     }
     const whitelisted = (await client.readContract(inbox)) as boolean
-    this.solverPermissions.set(key, { account, whitelisted })
+    this.solverPermissions.set(key, {
+      account: client.simpleAccountAddress ?? zeroAddress,
+      whitelisted,
+    })
   }
 
   private getSolverKey(network: string, chainID: number, address: Hex): string {

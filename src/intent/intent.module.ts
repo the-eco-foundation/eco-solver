@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common'
 import { EcoConfigModule } from '../eco-configs/eco-config.module'
-import { AlchemyModule } from '../alchemy/alchemy.module'
 import { MongooseModule } from '@nestjs/mongoose'
 import { initBullMQ } from '../bullmq/bullmq.helper'
 import { QUEUES } from '../common/redis/constants'
@@ -14,14 +13,15 @@ import { UtilsIntentService } from './utils-intent.service'
 import { BalanceModule } from '../balance/balance.module'
 import { FulfillIntentService } from './fulfill-intent.service'
 import { ProverModule } from '../prover/prover.module'
+import { TransactionModule } from '../transaction/transaction.module'
 
 @Module({
   imports: [
-    AlchemyModule,
     BalanceModule,
     EcoConfigModule,
     MongooseModule.forFeature([{ name: SourceIntentModel.name, schema: SourceIntentSchema }]),
     ProverModule,
+    TransactionModule,
     initBullMQ(QUEUES.SOURCE_INTENT),
   ],
   providers: [

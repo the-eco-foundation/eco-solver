@@ -2,7 +2,7 @@ import { Network } from 'alchemy-sdk'
 import { Logger } from '@nestjs/common'
 import * as _ from 'lodash'
 import { EcoLogMessage } from '../logging/eco-log-message'
-import { chains } from '@alchemy/aa-core'
+import { Chain } from 'viem'
 
 export class EcoError extends Error {
   // Alchemy Service
@@ -12,7 +12,7 @@ export class EcoError extends Error {
   static AlchemyUnsupportedNetworkIDError(id: number) {
     return new EcoError(`App does not support network ${id}, check your config file`)
   }
-  static AlchemyUnsupportedChainError(chain: chains.Chain) {
+  static AlchemyUnsupportedChainError(chain: Chain) {
     return new EcoError(
       `App does not support chain ${chain.id}:${chain.name}, check your config file`,
     )
@@ -33,6 +33,10 @@ export class EcoError extends Error {
 
   static SourceIntentUnsupportedTargetType(targetType: string) {
     return new EcoError(`Unsupported target type ${targetType}`)
+  }
+
+  static InvalidSimpleAccountConfig() {
+    return new EcoError(`The simple account is invalid`)
   }
 
   static FeasableIntentNoTransactionError = new Error('No transaction data found')

@@ -15,6 +15,8 @@ import { SourceIntentModel } from './schemas/source-intent.schema'
 import { intersectionBy } from 'lodash'
 import { getIntentJobId } from '../common/utils/strings'
 import { Solver } from '../eco-configs/eco-config.types'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
 
 /**
  * Service class for getting configs for the app
@@ -27,6 +29,7 @@ export class FeasableIntentService implements OnModuleInit {
   private fee: bigint
   constructor(
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
+    @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly balanceService: BalanceService,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
@@ -39,24 +42,40 @@ export class FeasableIntentService implements OnModuleInit {
   }
 
   async feasableIntent(intentHash: SourceIntentTxHash) {
+    this.logger.debug(
+      EcoLogMessage.fromDefault({
+        message: `FeasableIntent intent ${intentHash}`,
+      }),
+    )
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
-    if (!data) {
-      if (data.err) {
-        throw data.err
+    const { model, solver, err } = data ?? {}
+    if (!model || !solver) {
+      if (err) {
+        throw err
       }
       return
     }
-    const { model, solver } = data
 
     //check if we have tokens on the solver chain
-    const feasable = await this.validateExecution(model, solver)
-
+    const { feasable, results } = await this.validateExecution(model, solver)
+    const jobId = getIntentJobId('feasable', intentHash, model!.intent.logIndex)
+    this.logger.debug(
+      EcoLogMessage.fromDefault({
+        message: `FeasableIntent intent ${intentHash}`,
+        properties: {
+          feasable,
+          jobId,
+        },
+      }),
+    )
     if (feasable) {
       //add to processing queue
       await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.fulfill_intent, intentHash, {
-        jobId: getIntentJobId('feasable', intentHash, model.intent.logIndex),
+        jobId,
         ...this.intentJobConfig,
       })
+    } else {
+      await this.utilsIntentService.updateInfeasableIntentModel(this.intentModel, model, results)
     }
   }
 
@@ -74,7 +93,7 @@ export class FeasableIntentService implements OnModuleInit {
     model: SourceIntentModel,
     solver: Solver,
     target: AddressLike,
-  ): Promise<boolean> {
+  ): Promise<{ solvent: boolean; profitable: boolean } | undefined> {
     const targetNetwork = solver.network
     switch (tt.transactionDescription.selector) {
       case getERC20Selector('transfer'):
@@ -87,7 +106,7 @@ export class FeasableIntentService implements OnModuleInit {
           .getSourceIntents()
           .find((intent) => intent.network == sourceNetwork)
         if (!source) {
-          return false
+          return
         }
         //check that we make money on the transfer
         const fullfillAmountUSDC = this.convertToUSDC(
@@ -102,9 +121,9 @@ export class FeasableIntentService implements OnModuleInit {
           model.intent.rewardAmounts,
           fullfillAmountUSDC,
         )
-        return solvent && profitable
+        return { solvent, profitable }
       default:
-        return false
+        return
     }
   }
 
@@ -155,11 +174,26 @@ export class FeasableIntentService implements OnModuleInit {
     return amount
   }
 
-  async validateExecution(model: SourceIntentModel, solver: Solver): Promise<boolean> {
+  async validateExecution(
+    model: SourceIntentModel,
+    solver: Solver,
+  ): Promise<{
+    feasable: boolean
+    results: (
+      | false
+      | {
+          solvent: boolean
+          profitable: boolean
+        }
+      | undefined
+    )[]
+  }> {
     const execs = model.intent.targets.map((target, index) => {
       return this.validateEachExecution(model, solver, target, index)
     })
-    return (await Promise.all(execs)).every((e) => e)
+    const results = await Promise.all(execs)
+    const feasable = results.every((e) => e)
+    return { feasable, results }
   }
 
   async validateEachExecution(
@@ -167,7 +201,14 @@ export class FeasableIntentService implements OnModuleInit {
     solver: Solver,
     target: AddressLike,
     index: number,
-  ) {
+  ): Promise<
+    | false
+    | {
+        solvent: boolean
+        profitable: boolean
+      }
+    | undefined
+  > {
     const tt = this.utilsIntentService.getTransactionTargetData(model, solver, target, index)
     if (tt === null) {
       this.logger.error(

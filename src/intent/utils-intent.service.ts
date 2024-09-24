@@ -19,11 +19,19 @@ export interface TransactionTargetData {
 }
 
 export interface IntentProcessData {
-  model: SourceIntentModel
-  solver: Solver
+  model: SourceIntentModel | null
+  solver: Solver | null
   err?: EcoError
 }
 
+type InfeasableResult = (
+  | false
+  | {
+      solvent: boolean
+      profitable: boolean
+    }
+  | undefined
+)[]
 /**
  * Service class for solving an intent on chain
  */
@@ -37,6 +45,47 @@ export class UtilsIntentService implements OnModuleInit {
   ) {}
 
   onModuleInit() {}
+
+  /**
+   * Updates the transaction receipt
+   * @param model
+   * @private
+   */
+  async updateIntentModel(intentModel: Model<SourceIntentModel>, model: SourceIntentModel) {
+    return await intentModel.updateOne({ 'intent.hash': model.intent.hash }, model)
+  }
+
+  async updateDuplicateIntentModel(
+    intentModel: Model<SourceIntentModel>,
+    model: SourceIntentModel,
+  ) {
+    model.status = 'DUPLICATE'
+    return await this.updateIntentModel(intentModel, model)
+  }
+
+  async updateInvalidIntentModel(
+    intentModel: Model<SourceIntentModel>,
+    model: SourceIntentModel,
+    invalidCause: {
+      targetsUnsupported: boolean
+      selectorsUnsupported: boolean
+      expiresEarly: boolean
+    },
+  ) {
+    model.status = 'INVALID'
+    model.receipt = invalidCause as any
+    return await this.updateIntentModel(intentModel, model)
+  }
+
+  async updateInfeasableIntentModel(
+    intentModel: Model<SourceIntentModel>,
+    model: SourceIntentModel,
+    infeasable: InfeasableResult,
+  ) {
+    model.status = 'INFEASABLE'
+    model.receipt = infeasable as any
+    return await this.updateIntentModel(intentModel, model)
+  }
 
   selectorsSupported(model: SourceIntentModel, solver: Solver): boolean {
     if (model.intent.targets.length !== model.intent.data.length) {
@@ -81,7 +130,7 @@ export class UtilsIntentService implements OnModuleInit {
           properties: {
             intentHash: model.intent.hash,
             sourceNetwork: model.event.sourceNetwork,
-            unsupportedSelector: tx.signature,
+            unsupportedSelector: tx?.signature,
           },
         }),
       )
@@ -106,7 +155,6 @@ export class UtilsIntentService implements OnModuleInit {
           },
         }),
       )
-      return
     }
     return targetsSupported
   }
@@ -117,7 +165,7 @@ export class UtilsIntentService implements OnModuleInit {
         'intent.hash': intentHash,
       })
       if (!model) {
-        return { model: null, solver: null, err: EcoError.SourceIntentDataNotFound(intentHash) }
+        return { model, solver: null, err: EcoError.SourceIntentDataNotFound(intentHash) }
       }
 
       const solver = this.ecoConfigService.getSolver(model.intent.destinationChainID as number)
@@ -131,7 +179,7 @@ export class UtilsIntentService implements OnModuleInit {
             },
           }),
         )
-        return null
+        return
       }
       return { model, solver }
     } catch (e) {

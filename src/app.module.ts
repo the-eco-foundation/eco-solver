@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common'
 import { EcoConfigModule } from './eco-configs/eco-config.module'
-import { AlchemyModule } from './alchemy/alchemy.module'
 import { ChainMonitorModule } from './chain-monitor/chain-monitor.module'
 import { EcoConfigService } from './eco-configs/eco-config.service'
 import { LoggerModule } from 'nestjs-pino'
-import { SolverModule } from './solver/solver.module'
 import { MongooseModule } from '@nestjs/mongoose'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { IntentModule } from './intent/intent.module'
@@ -16,7 +14,6 @@ import { HealthModule } from './health/health.module'
 
 @Module({
   imports: [
-    AlchemyModule,
     BalanceModule,
     ChainMonitorModule,
     EcoConfigModule,
@@ -25,7 +22,6 @@ import { HealthModule } from './health/health.module'
       delimiter: '.',
     }),
     HealthModule,
-    SolverModule,
     IntentModule,
     SignModule,
     SourceIntentModel,

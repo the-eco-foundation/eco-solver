@@ -10,7 +10,6 @@ export class MultichainPublicClientService extends ViemMultichainClientService<
   protected override async createInstanceClient(
     configs: PublicClientConfig,
   ): Promise<PublicClient> {
-    //@ts-expect-error client mismatch on property definition
     return createPublicClient(configs)
   }
 }

@@ -2,10 +2,10 @@ import { NonceManagerSource } from 'viem'
 import type { Address } from 'abitype'
 import { Model, QueryOptions } from 'mongoose'
 import type { Client } from 'viem/_types/clients/createClient'
-import { SmartAccountClient } from '@alchemy/aa-core'
 import { Injectable } from '@nestjs/common'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { getAtomicNonceKey } from './sign.helper'
+import { SimpleAccountClient } from '../transaction/smart-wallets/simple-account'
 
 export type AtomicKeyParams = {
   address: Address
@@ -13,7 +13,7 @@ export type AtomicKeyParams = {
 }
 
 export type AtomicKeyClientParams = Pick<AtomicKeyParams, 'address'> & {
-  client: SmartAccountClient
+  client: SimpleAccountClient
 }
 
 export type AtomicGetParameters = AtomicKeyParams & { client: Client }
@@ -70,7 +70,7 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
       const nonceNum = await client.getTransactionCount({ address, blockTag: 'pending' })
       return {
         nonceNum,
-        chainID: client.chain.id,
+        chainID: client.chain?.id,
         address: address,
       }
     })
@@ -79,7 +79,7 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
       const updatedNonces = await Promise.all(nonceSyncs)
       const updates = updatedNonces.map(async (nonce) => {
         const { address, chainID } = nonce
-        const key = getAtomicNonceKey({ address, chainId: chainID })
+        const key = getAtomicNonceKey({ address, chainId: chainID ?? 0 })
         const query = { key }
         const updates = { $set: { nonce: nonce.nonceNum, chainID, address } }
         const options = { upsert: true, new: true }
@@ -132,7 +132,7 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
     const updateResponse = await this.model
       .findOneAndUpdate(query, { $set: updates }, options)
       .exec()
-    return updateResponse.nonce
+    return updateResponse?.nonce ?? 0
   }
 
   protected async getSyncParams(): Promise<AtomicKeyClientParams[]> {

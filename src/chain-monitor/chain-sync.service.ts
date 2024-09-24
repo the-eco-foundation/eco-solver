@@ -1,16 +1,16 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { SourceIntentModel } from '../intent/schemas/source-intent.schema'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { SourceIntent } from '../eco-configs/eco-config.types'
-import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
 import { IntentSourceAbi } from '../contracts'
 import { entries } from 'lodash'
 import { BlockTag } from 'viem'
 import { WebsocketIntentService } from '../intent/websocket-intent.service'
 import { ViemEventLog } from '../common/events/websocket'
+import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
 
 /**
  * Service class for syncing any missing transactions for all the source intent contracts.
@@ -19,20 +19,20 @@ import { ViemEventLog } from '../common/events/websocket'
  * gap in transactions that may have been missed while the serivce was down.
  */
 @Injectable()
-export class ChainSyncService implements OnModuleInit {
+export class ChainSyncService implements OnApplicationBootstrap {
   private logger = new Logger(ChainSyncService.name)
 
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
-    private readonly accountService: MultichainSmartAccountService,
+    private readonly simpleAccountClientService: SimpleAccountClientService,
     private readonly websocketIntentService: WebsocketIntentService,
     private ecoConfigService: EcoConfigService,
   ) {}
 
-  async onModuleInit() {
+  async onApplicationBootstrap() {
     this.logger.debug(
       EcoLogMessage.fromDefault({
-        message: `ChainSyncService:onModuleInit`,
+        message: `ChainSyncService:OnApplicationBootstrap`,
       }),
     )
     await this.syncTxs()
@@ -73,7 +73,7 @@ export class ChainSyncService implements OnModuleInit {
    * @returns
    */
   async getMissingTxs(source: SourceIntent): Promise<ViemEventLog[]> {
-    const client = await this.accountService.getClient(source.chainID)
+    const client = await this.simpleAccountClientService.getClient(source.chainID)
     const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(([chainID]) =>
       Number.parseInt(chainID),
     )

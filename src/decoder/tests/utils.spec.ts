@@ -17,7 +17,7 @@ describe('Decoder Utils Test', () => {
   })
   describe('getSelectorHash', () => {
     it('should return throw if the input is empty', () => {
-      expect(() => getSelectorHash(null)).toThrow('Data is too short')
+      expect(() => getSelectorHash(undefined)).toThrow('Data is too short')
       expect(() => getSelectorHash('')).toThrow('Data is too short')
     })
 

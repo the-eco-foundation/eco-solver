@@ -16,6 +16,12 @@ export type EcoConfigType = {
   alchemy: AlchemyConfigType
   eth: {
     privateKey: string
+    simpleAccount: {
+      walletAddr: Hex
+      signerPrivateKey: Hex
+      minEthBalanceWei: number
+    }
+    claimant: Hex
     nonce: {
       update_interval_ms: number
     }

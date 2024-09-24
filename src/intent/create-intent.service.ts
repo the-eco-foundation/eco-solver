@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { EventLogWS } from '../common/events/websocket'
+import { ViemEventLog } from '../common/events/websocket'
 import { QUEUES } from '../common/redis/constants'
 import { JobsOptions, Queue } from 'bullmq'
 import { InjectQueue } from '@nestjs/bullmq'
@@ -10,6 +10,8 @@ import { SourceIntentModel } from './schemas/source-intent.schema'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { getIntentJobId } from '../common/utils/strings'
+import { Hex } from 'viem'
+import { UtilsIntentService } from './utils-intent.service'
 
 /**
  * Service class for getting configs for the app
@@ -22,6 +24,7 @@ export class CreateIntentService implements OnModuleInit {
   constructor(
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
+    private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
@@ -29,7 +32,7 @@ export class CreateIntentService implements OnModuleInit {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
   }
 
-  async createIntent(intentWs: EventLogWS) {
+  async createIntent(intentWs: ViemEventLog) {
     this.logger.debug(
       EcoLogMessage.fromDefault({
         message: `createIntent ${intentWs.transactionHash}`,
@@ -38,13 +41,14 @@ export class CreateIntentService implements OnModuleInit {
         },
       }),
     )
-    const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics, intentWs.logIndex)
+    const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics, intentWs.logIndex ?? 0)
     try {
       //check db if the intent is already filled
       const model = await this.intentModel.findOne({
         'intent.hash': intent.hash,
       })
       if (model) {
+        await this.utilsIntentService.updateDuplicateIntentModel(this.intentModel, model)
         // Record already exists, do nothing and return
         this.logger.debug(
           EcoLogMessage.fromDefault({
@@ -58,16 +62,17 @@ export class CreateIntentService implements OnModuleInit {
         return
       }
       //create db record
-      const record = await this.intentModel.create<SourceIntentModel>({
+      const record = await this.intentModel.create({
         event: intentWs,
         intent: intent,
         receipt: null,
         status: 'PENDING',
       })
 
+      const jobId = getIntentJobId('create', intent.hash as Hex, intent.logIndex)
       //add to processing queue
       await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.validate_intent, intent.hash, {
-        jobId: getIntentJobId('create', intent.hash as string, intent.logIndex),
+        jobId,
         ...this.intentJobConfig,
       })
 
@@ -77,6 +82,7 @@ export class CreateIntentService implements OnModuleInit {
           properties: {
             intentHash: intent.hash,
             intent: record.intent,
+            jobId,
           },
         }),
       )

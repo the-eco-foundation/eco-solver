@@ -1,22 +1,28 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus'
+import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
-import { MultichainSmartAccountService } from '../../alchemy/multichain_smart_account.service'
-import { erc20Abi } from 'viem'
+import { erc20Abi, Hex } from 'viem'
+import { Network } from 'alchemy-sdk'
+import { SimpleAccountClientService } from '../../transaction/simple-account-client.service'
 
 type TokenType = { decimal: number; value: string; minBalances?: number }
 @Injectable()
 export class BalanceHealthIndicator extends HealthIndicator {
   private logger = new Logger(BalanceHealthIndicator.name)
   constructor(
-    private readonly accountService: MultichainSmartAccountService,
+    private readonly simpleAccountClientService: SimpleAccountClientService,
     private readonly configService: EcoConfigService,
   ) {
     super()
   }
   async checkBalances(): Promise<HealthIndicatorResult> {
-    const [solvers, sources] = await Promise.all([this.getSolvers(), this.getSources()])
-    const isHealthy = solvers.every((solver) => {
+    const minEthBalanceWei = this.configService.getEth().simpleAccount.minEthBalanceWei
+    const [accounts, solvers, sources] = await Promise.all([
+      this.getAccount(),
+      this.getSolvers(),
+      this.getSources(),
+    ])
+    let isHealthy = solvers.every((solver) => {
       const tokens = solver.tokens
       return Object.values(tokens).every((token) => {
         if (!token.minBalances) {
@@ -26,15 +32,58 @@ export class BalanceHealthIndicator extends HealthIndicator {
         return BigInt(token.value) >= minBalanceDecimal
       })
     })
-    return this.getStatus('balances', isHealthy, { solvers, sources })
+
+    isHealthy =
+      isHealthy &&
+      accounts.every((bal) => {
+        return BigInt(bal.balance) > minEthBalanceWei
+      })
+    const results = this.getStatus('balances', isHealthy, { accounts, solvers, sources })
+    if (isHealthy) {
+      return results
+    }
+    throw new HealthCheckError('Balances failed', results)
+  }
+
+  private async getAccount(): Promise<any[]> {
+    const minEthBalanceWei = this.configService.getEth().simpleAccount.minEthBalanceWei
+    const accountBalance: {
+      address: `0x${string}`
+      chainID: number
+      balance: string
+      minEthBalanceWei: number
+    }[] = []
+    const sourceIntents = this.configService.getSourceIntents()
+    for (const sourceIntent of sourceIntents) {
+      const client = await this.simpleAccountClientService.getClient(sourceIntent.chainID)
+      const address = client.account?.address
+      if (address) {
+        const bal = await client.getBalance({ address })
+        accountBalance.push({
+          address,
+          chainID: sourceIntent.chainID,
+          balance: BigInt(bal).toString(),
+          minEthBalanceWei,
+        })
+      }
+    }
+
+    return accountBalance.reverse()
   }
 
   private async getSources(): Promise<any[]> {
-    const sources = []
+    const sources: Array<{
+      accountAddress: `0x${string}` | undefined
+      tokens: Record<string, TokenType>
+      network: Network
+      chainID: number
+      sourceAddress: Hex
+      provers: Hex[]
+    }> = []
     const sourceIntents = this.configService.getSourceIntents()
     for (const sourceIntent of sourceIntents) {
-      const client = await this.accountService.getClient(sourceIntent.chainID)
-      const accountAddress = client.account.address
+      const client = await this.simpleAccountClientService.getClient(sourceIntent.chainID)
+      const accountAddress = client.simpleAccountAddress
 
       const balances = await this.getBalanceCalls(sourceIntent.chainID, sourceIntent.tokens)
 
@@ -46,20 +95,25 @@ export class BalanceHealthIndicator extends HealthIndicator {
   }
 
   private async getSolvers(): Promise<{ tokens: Record<string, TokenType> }[]> {
-    const solvers = []
+    const solvers: Array<{
+      accountAddress: `0x${string}` | undefined
+      tokens: Record<string, TokenType>
+      solverAddress: Hex
+      network: Network
+      chainID: number
+    }> = []
     const solverConfig = this.configService.getSolvers()
     await Promise.all(
       Object.entries(solverConfig).map(async ([, solver]) => {
-        const client = await this.accountService.getClient(solver.chainID)
-        const accountAddress = client.account.address
-        const tokens = Object.keys(solver.targets)
+        const client = await this.simpleAccountClientService.getClient(solver.chainID)
+        const accountAddress = client.simpleAccountAddress
+        const tokens = Object.keys(solver.targets) as Hex[]
         const balances = await this.getBalanceCalls(solver.chainID, tokens)
         const mins = Object.values(solver.targets).map((target) => target.minBalance)
         const sourceBalancesString = this.joinBalance(balances, tokens, mins)
 
         solvers.push({
           ...solver,
-          targets: undefined, //remove targets
           accountAddress,
           tokens: sourceBalancesString,
         })
@@ -68,9 +122,9 @@ export class BalanceHealthIndicator extends HealthIndicator {
     return solvers
   }
 
-  private async getBalanceCalls(chainID: number, tokens: string[]) {
-    const client = await this.accountService.getClient(chainID)
-    const accountAddress = client.account.address
+  private async getBalanceCalls(chainID: number, tokens: Hex[]) {
+    const client = await this.simpleAccountClientService.getClient(chainID)
+    const accountAddress = client.simpleAccountAddress
 
     const balanceCalls = tokens.map((token) => {
       return [
@@ -89,7 +143,6 @@ export class BalanceHealthIndicator extends HealthIndicator {
     })
 
     return await client.multicall({
-      //@ts-expect-error client mismatch on property definition
       contracts: balanceCalls.flat(),
     })
   }
