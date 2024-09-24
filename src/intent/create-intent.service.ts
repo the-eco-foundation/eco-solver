@@ -10,6 +10,7 @@ import { SourceIntentModel } from './schemas/source-intent.schema'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { getIntentJobId } from '../common/utils/strings'
+import { Hex } from 'viem'
 
 /**
  * Service class for getting configs for the app
@@ -58,7 +59,7 @@ export class CreateIntentService implements OnModuleInit {
         return
       }
       //create db record
-      const record = await this.intentModel.create<SourceIntentModel>({
+      const record = await this.intentModel.create({
         event: intentWs,
         intent: intent,
         receipt: null,
@@ -67,7 +68,7 @@ export class CreateIntentService implements OnModuleInit {
 
       //add to processing queue
       await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.validate_intent, intent.hash, {
-        jobId: getIntentJobId('create', intent.hash as string, intent.logIndex),
+        jobId: getIntentJobId('create', intent.hash as Hex, intent.logIndex),
         ...this.intentJobConfig,
       })
 

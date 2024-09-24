@@ -50,6 +50,7 @@ export class MultichainSmartAccountService extends ViemMultichainClientService<
   }
 
   private getSigner(): LocalAccountSigner<any> {
-    return this.signerService.getSigner()
+    // @ts-expect-error -- ingore before deleete
+    return this.signerService.getAccount()
   }
 }

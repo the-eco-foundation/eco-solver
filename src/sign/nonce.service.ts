@@ -51,7 +51,7 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnApplica
     const paramsAsync = entries(this.ecoConfigService.getSolvers()).map(async ([chainId]) => {
       const client = await this.smartAccountService.getClient(parseInt(chainId))
 
-      const address = client.account.address
+      const address = client.account?.address
       return { address, client } as AtomicKeyClientParams
     })
 

@@ -2,7 +2,8 @@ import { Injectable, Logger } from '@nestjs/common'
 import { HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { MultichainSmartAccountService } from '../../alchemy/multichain_smart_account.service'
-import { erc20Abi } from 'viem'
+import { erc20Abi, Hex } from 'viem'
+import { Network } from 'alchemy-sdk'
 
 type TokenType = { decimal: number; value: string; minBalances?: number }
 @Injectable()
@@ -30,11 +31,18 @@ export class BalanceHealthIndicator extends HealthIndicator {
   }
 
   private async getSources(): Promise<any[]> {
-    const sources = []
+    const sources: Array<{
+      accountAddress: `0x${string}` | undefined
+      tokens: Record<string, TokenType>
+      network: Network
+      chainID: number
+      sourceAddress: Hex
+      provers: Hex[]
+    }> = []
     const sourceIntents = this.configService.getSourceIntents()
     for (const sourceIntent of sourceIntents) {
       const client = await this.accountService.getClient(sourceIntent.chainID)
-      const accountAddress = client.account.address
+      const accountAddress = client.account?.address
 
       const balances = await this.getBalanceCalls(sourceIntent.chainID, sourceIntent.tokens)
 
@@ -46,12 +54,18 @@ export class BalanceHealthIndicator extends HealthIndicator {
   }
 
   private async getSolvers(): Promise<{ tokens: Record<string, TokenType> }[]> {
-    const solvers = []
+    const solvers: Array<{
+      accountAddress: `0x${string}` | undefined
+      tokens: Record<string, TokenType>
+      solverAddress: Hex
+      network: Network
+      chainID: number
+    }> = []
     const solverConfig = this.configService.getSolvers()
     await Promise.all(
       Object.entries(solverConfig).map(async ([, solver]) => {
         const client = await this.accountService.getClient(solver.chainID)
-        const accountAddress = client.account.address
+        const accountAddress = client.account?.address
         const tokens = Object.keys(solver.targets)
         const balances = await this.getBalanceCalls(solver.chainID, tokens)
         const mins = Object.values(solver.targets).map((target) => target.minBalance)
@@ -59,7 +73,6 @@ export class BalanceHealthIndicator extends HealthIndicator {
 
         solvers.push({
           ...solver,
-          targets: undefined, //remove targets
           accountAddress,
           tokens: sourceBalancesString,
         })
@@ -70,7 +83,7 @@ export class BalanceHealthIndicator extends HealthIndicator {
 
   private async getBalanceCalls(chainID: number, tokens: string[]) {
     const client = await this.accountService.getClient(chainID)
-    const accountAddress = client.account.address
+    const accountAddress = client.account?.address
 
     const balanceCalls = tokens.map((token) => {
       return [

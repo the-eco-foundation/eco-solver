@@ -6,7 +6,7 @@ import { getDestinationNetworkAddressKey } from '../common/utils/strings'
 import { EventLogWS } from '../common/events/websocket'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { decodeTransferLog } from '../common/utils/ws.helpers'
-import { erc20Abi, Hex } from 'viem'
+import { erc20Abi, Hex, zeroAddress } from 'viem'
 import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
 type TockenBalance = { decimals: bigint; balance: bigint }
 
@@ -39,7 +39,12 @@ export class BalanceService implements OnApplicationBootstrap {
    * @returns
    */
   async getTokenBalance(chainID: number, tokenAddress: string) {
-    return this.tokenBalances.get(getDestinationNetworkAddressKey(chainID, tokenAddress))
+    return (
+      this.tokenBalances.get(getDestinationNetworkAddressKey(chainID, tokenAddress)) ?? {
+        balance: 0n,
+        decimals: 0n,
+      }
+    )
   }
 
   /**
@@ -80,7 +85,10 @@ export class BalanceService implements OnApplicationBootstrap {
     )
   }
 
-  private async loadERC20TokenBalance(chainID: number, tokenAddress: Hex): Promise<TockenBalance> {
+  private async loadERC20TokenBalance(
+    chainID: number,
+    tokenAddress: Hex,
+  ): Promise<TockenBalance | undefined> {
     const key = getDestinationNetworkAddressKey(chainID, tokenAddress)
     if (!this.tokenBalances.has(key)) {
       const client = await this.accountService.getClient(chainID)
@@ -90,12 +98,11 @@ export class BalanceService implements OnApplicationBootstrap {
       }
 
       const [{ result: balance }, { result: decimals }] = await client.multicall({
-        //@ts-expect-error client mismatch on property definition
         contracts: [
           {
             ...erc20,
             functionName: 'balanceOf',
-            args: [client.account.address],
+            args: [client.account?.address ?? zeroAddress],
           },
           {
             ...erc20,
@@ -104,7 +111,7 @@ export class BalanceService implements OnApplicationBootstrap {
         ],
       })
 
-      this.tokenBalances.set(key, { balance, decimals: BigInt(decimals) })
+      this.tokenBalances.set(key, { balance: balance ?? 0n, decimals: BigInt(decimals ?? 0) })
     }
     return this.tokenBalances.get(key)
   }

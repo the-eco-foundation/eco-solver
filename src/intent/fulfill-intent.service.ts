@@ -33,26 +33,26 @@ export class FulfillIntentService {
 
   async executeFulfillIntent(intentHash: SourceIntentTxHash) {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
-    if (!data) {
-      if (data.err) {
-        throw data.err
+    const { model, solver, err } = data ?? {}
+    if (!err || !model || !solver) {
+      if (err) {
+        throw err
       }
       return
     }
-
-    const { model, solver } = data
+   
     const smartAccountClient = await this.saClientService.getClient(solver.chainID)
 
     // Create transactions for intent targets
-    const targetSolveTxs = this.getTransactionsForTargets(data)
+    const targetSolveTxs = this.getTransactionsForTargets(data!)
 
     // Create fulfill tx
     const fulfillIntentData = this.getFulfillIntentData(
       this.ecoConfigService.getEth().claimant,
-      model,
+      model!,
     )
     const fulfillTx = {
-      to: solver.solverAddress,
+      to: solver!.solverAddress,
       data: fulfillIntentData,
     }
 
@@ -71,12 +71,12 @@ export class FulfillIntentService {
     try {
       const transactionHash = await smartAccountClient.execute(transactions)
 
-      const publicClient = createPublicClient({
-        chain: smartAccountClient.walletClient.chain,
-        transport: smartAccountClient.walletClient.transport as any,
-      })
+      // const publicClient = createPublicClient({
+      //   chain: smartAccountClient.walletClient.chain,
+      //   transport: smartAccountClient.walletClient.transport as any,
+      // })
 
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: transactionHash })
+      const receipt = await smartAccountClient.waitForTransactionReceipt({ hash: transactionHash })
 
       model.status = 'SOLVED'
       model.receipt = receipt as any
@@ -143,6 +143,9 @@ export class FulfillIntentService {
    */
   private getTransactionsForTargets(intentProcessData: IntentProcessData) {
     const { model, solver } = intentProcessData
+    if (!model || !solver) {
+      return []
+    }
 
     // Create transactions for intent targets
     return model.intent.targets.flatMap((target, index) => {

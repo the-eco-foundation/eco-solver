@@ -36,7 +36,7 @@ export class BalanceWebsocketService implements OnModuleInit {
           this.alchemyService
             .getAlchemy(solver.network)
             .ws.on(
-              getTransferLogFilter(address, null, instanceAddress) as AlchemyEventType,
+              getTransferLogFilter(address, undefined, instanceAddress) as AlchemyEventType,
               this.addJob(solver.network, solver.chainID),
             )
         }

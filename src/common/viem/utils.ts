@@ -1,10 +1,10 @@
-import { getAddress } from 'viem'
+import { getAddress, Hex } from 'viem'
 /**
  * Lowercase all top-level keys of the given `object` to lowercase.
  *
  * @returns {Object}
  */
-export function addressKeys(obj: Record<string, any>): Record<string, any> | undefined {
+export function addressKeys(obj: Record<Hex, any>): Record<Hex, any> | undefined {
   if (!obj) {
     return undefined
   }

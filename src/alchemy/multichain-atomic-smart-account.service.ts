@@ -46,6 +46,6 @@ export class MultichainAtomicSmartAccountService extends ViemMultichainClientSer
   }
 
   private getSigner(): LocalAccountSigner<any> {
-    return this.atomicSignerService.getSigner()
+    return this.atomicSignerService.getAccount() as any
   }
 }

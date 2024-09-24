@@ -1,28 +1,27 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { privateKeyAndNonceToAccountSigner } from './sign.helper'
-import { LocalAccountSigner } from '@alchemy/aa-core'
-import { Hex } from 'viem'
-import { jsonRpc } from 'viem/nonce'
+import { Hex, PrivateKeyAccount } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
 
 @Injectable()
 export class SignerService implements OnModuleInit {
-  private signer: LocalAccountSigner<any>
+  private account: PrivateKeyAccount
   constructor(readonly ecoConfigService: EcoConfigService) {}
 
   async onModuleInit() {
-    this.signer = this.buildSigner()
+    this.account = this.buildAccount()
   }
 
-  getSigner() {
-    return this.signer
+  getAccount() {
+    return this.account
   }
 
-  getPrivateKey(): Hex {
-    return `0x${this.ecoConfigService.getEth().privateKey}`
+  protected buildAccount(): PrivateKeyAccount {
+    return privateKeyToAccount(this.getPrivateKey()) //{ nonceManager?: NonceManager}
+    // return privateKeyAndNonceToAccountSigner(jsonRpc(), this.getPrivateKey())
   }
 
-  protected buildSigner(): LocalAccountSigner<any> {
-    return privateKeyAndNonceToAccountSigner(jsonRpc(), this.getPrivateKey())
+  private getPrivateKey(): Hex {
+    return this.ecoConfigService.getEth().simpleAccount.signerPrivateKey
   }
 }

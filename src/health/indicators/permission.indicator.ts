@@ -4,7 +4,7 @@ import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { MultichainSmartAccountService } from '../../alchemy/multichain_smart_account.service'
 import { Solver } from '../../eco-configs/eco-config.types'
 import { InboxAbi } from '../../contracts'
-import { Hex } from 'viem'
+import { Hex, zeroAddress } from 'viem'
 
 @Injectable()
 export class PermissionHealthIndicator extends HealthIndicator {
@@ -40,7 +40,7 @@ export class PermissionHealthIndicator extends HealthIndicator {
   private async loadPermissions(solver: Solver) {
     const key = this.getSolverKey(solver.network, solver.chainID, solver.solverAddress)
     const client = await this.accountService.getClient(solver.chainID)
-    const account = client.account.address
+    const account = client.account?.address
     const inbox = {
       address: solver.solverAddress,
       abi: InboxAbi,
@@ -48,7 +48,7 @@ export class PermissionHealthIndicator extends HealthIndicator {
       args: [account],
     }
     const whitelisted = (await client.readContract(inbox)) as boolean
-    this.solverPermissions.set(key, { account, whitelisted })
+    this.solverPermissions.set(key, { account: account ?? zeroAddress, whitelisted })
   }
 
   private getSolverKey(network: string, chainID: number, address: Hex): string {

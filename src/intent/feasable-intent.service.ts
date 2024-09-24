@@ -40,13 +40,13 @@ export class FeasableIntentService implements OnModuleInit {
 
   async feasableIntent(intentHash: SourceIntentTxHash) {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
-    if (!data) {
-      if (data.err) {
-        throw data.err
+    const { model, solver, err } = data ?? {}
+    if (!err || !model || !solver) {
+      if (err) {
+        throw err
       }
       return
     }
-    const { model, solver } = data
 
     //check if we have tokens on the solver chain
     const feasable = await this.validateExecution(model, solver)
@@ -54,7 +54,7 @@ export class FeasableIntentService implements OnModuleInit {
     if (feasable) {
       //add to processing queue
       await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.fulfill_intent, intentHash, {
-        jobId: getIntentJobId('feasable', intentHash, model.intent.logIndex),
+        jobId: getIntentJobId('feasable', intentHash, model!.intent.logIndex),
         ...this.intentJobConfig,
       })
     }

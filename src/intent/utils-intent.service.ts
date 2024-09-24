@@ -19,8 +19,8 @@ export interface TransactionTargetData {
 }
 
 export interface IntentProcessData {
-  model: SourceIntentModel
-  solver: Solver
+  model: SourceIntentModel | null
+  solver: Solver | null
   err?: EcoError
 }
 
@@ -81,7 +81,7 @@ export class UtilsIntentService implements OnModuleInit {
           properties: {
             intentHash: model.intent.hash,
             sourceNetwork: model.event.sourceNetwork,
-            unsupportedSelector: tx.signature,
+            unsupportedSelector: tx?.signature,
           },
         }),
       )
@@ -106,7 +106,6 @@ export class UtilsIntentService implements OnModuleInit {
           },
         }),
       )
-      return
     }
     return targetsSupported
   }
@@ -117,7 +116,7 @@ export class UtilsIntentService implements OnModuleInit {
         'intent.hash': intentHash,
       })
       if (!model) {
-        return { model: null, solver: null, err: EcoError.SourceIntentDataNotFound(intentHash) }
+        return { model, solver: null, err: EcoError.SourceIntentDataNotFound(intentHash) }
       }
 
       const solver = this.ecoConfigService.getSolver(model.intent.destinationChainID as number)
@@ -131,7 +130,7 @@ export class UtilsIntentService implements OnModuleInit {
             },
           }),
         )
-        return null
+        return
       }
       return { model, solver }
     } catch (e) {

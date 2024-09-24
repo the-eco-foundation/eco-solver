@@ -44,7 +44,9 @@ export class ValidateIntentService implements OnModuleInit {
     )
 
     const { model, solver } = await this.destructureIntent(intentHash)
-
+    if (!model || !solver) {
+      return
+    }
     const targetsUnsupported = !this.supportedTargets(model, solver)
     const selectorsUnsupported = !this.supportedSelectors(model, solver)
     const expiresEarly = !this.validExpirationTime(model, solver)
@@ -144,14 +146,15 @@ export class ValidateIntentService implements OnModuleInit {
 
     return true
   }
+
   private async destructureIntent(intentHash: string): Promise<IntentProcessData> {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
-    if (!data) {
-      if (data.err) {
-        throw data.err
+    const { model, solver, err } = data ?? {}
+    if (!err || !model || !solver) {
+      if (err) {
+        throw err
       }
-      return
     }
-    return data
+    return data!
   }
 }

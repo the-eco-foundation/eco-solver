@@ -24,11 +24,11 @@ export class ViemMultichainClientService<T, V> implements OnModuleInit {
     if (!this.supportedNetworks.includes(id)) {
       throw EcoError.AlchemyUnsupportedNetworkIDError(id)
     }
-    return await this.clientForChain(id)
+    return await this.clientForChain(id)!
   }
 
   private async clientForChain(chainID: number): Promise<T> {
-    return await this.loadInstance(chainID)
+    return await this.loadInstance(chainID)!
   }
 
   private setChainConfigs() {
@@ -42,7 +42,7 @@ export class ViemMultichainClientService<T, V> implements OnModuleInit {
       const client = await this.createInstanceClient(await this.getChainConfig(chainID))
       this.instances.set(chainID, client)
     }
-    return this.instances.get(chainID)
+    return this.instances.get(chainID)!
   }
 
   protected async createInstanceClient(configs: V): Promise<T> {

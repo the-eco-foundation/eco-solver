@@ -70,7 +70,7 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
       const nonceNum = await client.getTransactionCount({ address, blockTag: 'pending' })
       return {
         nonceNum,
-        chainID: client.chain.id,
+        chainID: client.chain?.id,
         address: address,
       }
     })
@@ -79,7 +79,7 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
       const updatedNonces = await Promise.all(nonceSyncs)
       const updates = updatedNonces.map(async (nonce) => {
         const { address, chainID } = nonce
-        const key = getAtomicNonceKey({ address, chainId: chainID })
+        const key = getAtomicNonceKey({ address, chainId: chainID ?? 0 })
         const query = { key }
         const updates = { $set: { nonce: nonce.nonceNum, chainID, address } }
         const options = { upsert: true, new: true }
@@ -132,7 +132,7 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
     const updateResponse = await this.model
       .findOneAndUpdate(query, { $set: updates }, options)
       .exec()
-    return updateResponse.nonce
+    return updateResponse?.nonce ?? 0
   }
 
   protected async getSyncParams(): Promise<AtomicKeyClientParams[]> {

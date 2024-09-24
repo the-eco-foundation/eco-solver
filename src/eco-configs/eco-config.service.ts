@@ -75,7 +75,7 @@ export class EcoConfigService implements OnModuleInit {
     const solvers = this.ecoConfig.get('solvers')
     entries(solvers).forEach(([, solver]: [string, Solver]) => {
       solver.solverAddress = getAddress(solver.solverAddress)
-      solver.targets = addressKeys(solver.targets)
+      solver.targets = addressKeys(solver.targets) ?? {}
     })
     return solvers
   }

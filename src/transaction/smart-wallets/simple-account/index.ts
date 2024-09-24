@@ -1,2 +1,2 @@
-export * from './simple-account'
-export * from './simple-account-config'
+export * from './simple-account.client'
+export * from './simple-account.config'

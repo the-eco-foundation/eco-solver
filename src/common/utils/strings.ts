@@ -1,3 +1,5 @@
+import { Hex } from "viem"
+
 export function getRandomString() {
   return Math.random().toString(36).slice(2)
 }
@@ -14,6 +16,6 @@ export function getDestinationNetworkAddressKey(chainID: number, tokenAddress: s
  * @param logIndex the transaction index of the intent to fulfill. Necessary if multiple intents are in the same transaction
  * @returns
  */
-export function getIntentJobId(serviceName: string, intentHash: string, logIndex: number): string {
+export function getIntentJobId(serviceName: string, intentHash: Hex | undefined, logIndex: number = 0): string {
   return `${serviceName}-${intentHash}-${logIndex}`
 }
