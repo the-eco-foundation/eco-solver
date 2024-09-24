@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common'
 import { EcoConfigModule } from './eco-configs/eco-config.module'
-import { AlchemyModule } from './alchemy/alchemy.module'
 import { ChainMonitorModule } from './chain-monitor/chain-monitor.module'
 import { EcoConfigService } from './eco-configs/eco-config.service'
 import { LoggerModule } from 'nestjs-pino'
@@ -15,7 +14,6 @@ import { HealthModule } from './health/health.module'
 
 @Module({
   imports: [
-    AlchemyModule,
     BalanceModule,
     ChainMonitorModule,
     EcoConfigModule,

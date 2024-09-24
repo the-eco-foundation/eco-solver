@@ -1,16 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus'
+import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
-import { MultichainSmartAccountService } from '../../alchemy/multichain_smart_account.service'
 import { erc20Abi, Hex } from 'viem'
 import { Network } from 'alchemy-sdk'
+import { SimpleAccountClientService } from '../../transaction/simple-account-client.service'
 
 type TokenType = { decimal: number; value: string; minBalances?: number }
 @Injectable()
 export class BalanceHealthIndicator extends HealthIndicator {
   private logger = new Logger(BalanceHealthIndicator.name)
   constructor(
-    private readonly accountService: MultichainSmartAccountService,
+    private readonly simpleAccountClientService: SimpleAccountClientService,
     private readonly configService: EcoConfigService,
   ) {
     super()
@@ -27,7 +27,11 @@ export class BalanceHealthIndicator extends HealthIndicator {
         return BigInt(token.value) >= minBalanceDecimal
       })
     })
-    return this.getStatus('balances', isHealthy, { solvers, sources })
+    const results = this.getStatus('balances', isHealthy, { solvers, sources })
+    if (isHealthy) {
+      return results
+    }
+    throw new HealthCheckError('Balances failed', results)
   }
 
   private async getSources(): Promise<any[]> {
@@ -41,8 +45,8 @@ export class BalanceHealthIndicator extends HealthIndicator {
     }> = []
     const sourceIntents = this.configService.getSourceIntents()
     for (const sourceIntent of sourceIntents) {
-      const client = await this.accountService.getClient(sourceIntent.chainID)
-      const accountAddress = client.account?.address
+      const client = await this.simpleAccountClientService.getClient(sourceIntent.chainID)
+      const accountAddress = client.simpleAccountAddress
 
       const balances = await this.getBalanceCalls(sourceIntent.chainID, sourceIntent.tokens)
 
@@ -64,9 +68,9 @@ export class BalanceHealthIndicator extends HealthIndicator {
     const solverConfig = this.configService.getSolvers()
     await Promise.all(
       Object.entries(solverConfig).map(async ([, solver]) => {
-        const client = await this.accountService.getClient(solver.chainID)
-        const accountAddress = client.account?.address
-        const tokens = Object.keys(solver.targets)
+        const client = await this.simpleAccountClientService.getClient(solver.chainID)
+        const accountAddress = client.simpleAccountAddress
+        const tokens = Object.keys(solver.targets) as Hex[]
         const balances = await this.getBalanceCalls(solver.chainID, tokens)
         const mins = Object.values(solver.targets).map((target) => target.minBalance)
         const sourceBalancesString = this.joinBalance(balances, tokens, mins)
@@ -81,9 +85,9 @@ export class BalanceHealthIndicator extends HealthIndicator {
     return solvers
   }
 
-  private async getBalanceCalls(chainID: number, tokens: string[]) {
-    const client = await this.accountService.getClient(chainID)
-    const accountAddress = client.account?.address
+  private async getBalanceCalls(chainID: number, tokens: Hex[]) {
+    const client = await this.simpleAccountClientService.getClient(chainID)
+    const accountAddress = client.simpleAccountAddress
 
     const balanceCalls = tokens.map((token) => {
       return [
@@ -102,7 +106,6 @@ export class BalanceHealthIndicator extends HealthIndicator {
     })
 
     return await client.multicall({
-      //@ts-expect-error client mismatch on property definition
       contracts: balanceCalls.flat(),
     })
   }

@@ -3,7 +3,7 @@ import { QUEUES } from '../../common/redis/constants'
 import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
 import { EcoLogMessage } from '../../common/logging/eco-log-message'
-import { EventLogWS, SourceIntentTxHash } from '../../common/events/websocket'
+import { ViemEventLog, SourceIntentTxHash } from '../../common/events/websocket'
 import { FeasableIntentService } from '../../intent/feasable-intent.service'
 import { ValidateIntentService } from '../../intent/validate-intent.service'
 import { CreateIntentService } from '../../intent/create-intent.service'
@@ -37,7 +37,7 @@ export class SolveIntentProcessor extends WorkerHost {
 
     switch (job.name) {
       case QUEUES.SOURCE_INTENT.jobs.create_intent:
-        return await this.createIntentService.createIntent(job.data as EventLogWS)
+        return await this.createIntentService.createIntent(job.data as ViemEventLog)
       case QUEUES.SOURCE_INTENT.jobs.validate_intent:
         return await this.validateIntentService.validateIntent(job.data as SourceIntentTxHash)
       case QUEUES.SOURCE_INTENT.jobs.feasable_intent:

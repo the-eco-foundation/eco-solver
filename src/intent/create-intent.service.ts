@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { EventLogWS } from '../common/events/websocket'
+import { ViemEventLog } from '../common/events/websocket'
 import { QUEUES } from '../common/redis/constants'
 import { JobsOptions, Queue } from 'bullmq'
 import { InjectQueue } from '@nestjs/bullmq'
@@ -30,7 +30,7 @@ export class CreateIntentService implements OnModuleInit {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
   }
 
-  async createIntent(intentWs: EventLogWS) {
+  async createIntent(intentWs: ViemEventLog) {
     this.logger.debug(
       EcoLogMessage.fromDefault({
         message: `createIntent ${intentWs.transactionHash}`,
@@ -39,7 +39,7 @@ export class CreateIntentService implements OnModuleInit {
         },
       }),
     )
-    const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics, intentWs.logIndex)
+    const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics, intentWs.logIndex ?? 0)
     try {
       //check db if the intent is already filled
       const model = await this.intentModel.findOne({

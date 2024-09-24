@@ -1,9 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
-import { EcoConfigService } from '../../eco-configs/eco-config.service'
-import { Chain, createClient, extractChain } from 'viem'
-import { EcoError } from '../errors/eco-error'
-import { ChainsSupported } from '../utils/chains'
-import { getTransport } from '../../alchemy/utils'
+import { EcoConfigService } from '../eco-configs/eco-config.service'
+import { createClient, extractChain } from 'viem'
+import { chains } from '@alchemy/aa-core'
+import { EcoError } from '../common/errors/eco-error'
+import { ChainsSupported } from '../common/utils/chains'
+import { getTransport } from '../common/alchemy/utils'
 
 @Injectable()
 export class ViemMultichainClientService<T, V> implements OnModuleInit {
@@ -59,7 +60,7 @@ export class ViemMultichainClientService<T, V> implements OnModuleInit {
     const chain = extractChain({
       chains: ChainsSupported,
       id: chainID,
-    })
+    }) as chains.Chain
 
     if (this.supportedChainIds.includes(chainID) && chain) {
       return await this.buildChainConfig(chain)
@@ -68,7 +69,7 @@ export class ViemMultichainClientService<T, V> implements OnModuleInit {
     }
   }
 
-  protected async buildChainConfig(chain: Chain): Promise<V> {
+  protected async buildChainConfig(chain: chains.Chain): Promise<V> {
     const rpcTransport = getTransport(chain, this.apiKey, true)
     return {
       transport: rpcTransport,

@@ -6,7 +6,7 @@ import { InjectQueue } from '@nestjs/bullmq'
 import { getIntentJobId } from '../common/utils/strings'
 import { SourceIntent } from '../eco-configs/eco-config.types'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { MultichainPublicClientService } from '../common/viem/multichain-public-client.service'
+import { MultichainPublicClientService } from '../transaction/multichain-public-client.service'
 import { IntentSourceAbi } from '../contracts'
 import { WatchContractEventReturnType, zeroHash } from 'viem'
 import { ViemEventLog } from '../common/events/websocket'
@@ -34,6 +34,15 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
   }
 
   async onApplicationBootstrap() {
+    await this.subscribeWS()
+  }
+
+  async onModuleDestroy() {
+    // close all websockets
+    Object.values(this.unwatch).forEach((unwatch) => unwatch())
+  }
+
+  async subscribeWS() {
     const websocketTasks = this.ecoConfigService.getSourceIntents().map(async (source) => {
       const client = await this.publicClientService.getClient(source.chainID)
       this.unwatch[source.chainID] = client.watchContractEvent({
@@ -47,11 +56,6 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
     })
 
     await Promise.all(websocketTasks)
-  }
-
-  async onModuleDestroy() {
-    // close all websockets
-    Object.values(this.unwatch).forEach((unwatch) => unwatch())
   }
 
   addJob(source: SourceIntent) {
@@ -71,7 +75,11 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
         )
         //add to processing queue
         return this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.create_intent, createIntent, {
-          jobId: getIntentJobId('websocket', createIntent.transactionHash ?? zeroHash, createIntent.logIndex ?? 0),
+          jobId: getIntentJobId(
+            'websocket',
+            createIntent.transactionHash ?? zeroHash,
+            createIntent.logIndex ?? 0,
+          ),
           ...this.intentJobConfig,
         })
       })

@@ -2,10 +2,10 @@ import { NonceManagerSource } from 'viem'
 import type { Address } from 'abitype'
 import { Model, QueryOptions } from 'mongoose'
 import type { Client } from 'viem/_types/clients/createClient'
-import { SmartAccountClient } from '@alchemy/aa-core'
 import { Injectable } from '@nestjs/common'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { getAtomicNonceKey } from './sign.helper'
+import { SimpleAccountClient } from '../transaction/smart-wallets/simple-account'
 
 export type AtomicKeyParams = {
   address: Address
@@ -13,7 +13,7 @@ export type AtomicKeyParams = {
 }
 
 export type AtomicKeyClientParams = Pick<AtomicKeyParams, 'address'> & {
-  client: SmartAccountClient
+  client: SimpleAccountClient
 }
 
 export type AtomicGetParameters = AtomicKeyParams & { client: Client }

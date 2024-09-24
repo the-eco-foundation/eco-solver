@@ -12,15 +12,7 @@
   resolved "https://registry.yarnpkg.com/@adraffy/ens-normalize/-/ens-normalize-1.10.1.tgz#63430d04bd8c5e74f8d7d049338f1cd9d4f02069"
   integrity sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==
 
-"@alchemy/aa-accounts@^3.19.0":
-  version "3.19.0"
-  resolved "https://registry.yarnpkg.com/@alchemy/aa-accounts/-/aa-accounts-3.19.0.tgz#ad433eaecf53dcb0ebd5c793c44f217fccc60d72"
-  integrity sha512-cdR8H9LveeUyBWFkmoqU7hZnFoqmdyPQDYZRtFr9aF+3zWAQYYJ/13Vz7aoVQ4lZ57+JQj7fN5vSVn2gFI47yA==
-  dependencies:
-    "@alchemy/aa-core" "^3.18.2"
-    viem "2.8.6"
-
-"@alchemy/aa-core@^3.18.2", "@alchemy/aa-core@^3.19.0":
+"@alchemy/aa-core@^3.19.0":
   version "3.19.0"
   resolved "https://registry.yarnpkg.com/@alchemy/aa-core/-/aa-core-3.19.0.tgz#e59c0f1832de2b9e6b120022d49f995da3dc34fd"
   integrity sha512-gVSesLsXORMuiA3w/w+4eQikzrikpj1XN2Sbrcik0v25AKH5QrHn0HddhyrN1aCFW2NoXjyhwxlySiTDVfTgxQ==

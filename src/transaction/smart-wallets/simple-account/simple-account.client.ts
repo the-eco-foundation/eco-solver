@@ -23,12 +23,11 @@ export type SimpleAccountClient<
     chain,
     account,
     rpcSchema extends RpcSchema ? [...WalletRpcSchema, ...rpcSchema] : WalletRpcSchema
-  >
-  & PublicActions<transport, chain>
-  & SimpleAccountActions
-  & {
-    simpleAccountAddress: Hex
-  }
+  > &
+    PublicActions<transport, chain> &
+    SimpleAccountActions & {
+      simpleAccountAddress: Hex
+    }
 >
 
 export function SimpleAccountActions<
@@ -45,7 +44,7 @@ export type SimpleAccountActions = {
   execute: (args: ExecuteSimpleAccountArgs) => Promise<Hex>
 }
 
-type ExecuteSimpleAccountArgs =  { to: Hex; data: Hex; value?: bigint }[] 
+type ExecuteSimpleAccountArgs = { to: Hex; data: Hex; value?: bigint }[]
 
 async function execute<chain extends Chain | undefined, account extends Account | undefined>(
   client: SimpleAccountClient<Transport, chain, account>,

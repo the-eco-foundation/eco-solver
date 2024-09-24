@@ -1,29 +1,30 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Network } from 'alchemy-sdk'
-import { EventLogWS } from '../../common/events/websocket'
+import { ViemEventLog } from '../../common/events/websocket'
+import { Hex } from 'viem'
 
 @Schema()
-export class SourceIntentEventModel implements EventLogWS {
+export class SourceIntentEventModel implements ViemEventLog {
   @Prop({ required: true })
   sourceChainID: number
   @Prop({ required: true })
   sourceNetwork: Network
-  @Prop({ required: true })
-  blockNumber: number
-  @Prop({ required: true })
-  blockHash: string
+  @Prop({ required: true, type: BigInt })
+  blockNumber: bigint
+  @Prop({ required: true, type: String })
+  blockHash: Hex
   @Prop({ required: true })
   transactionIndex: number
   @Prop({ required: true })
   removed: boolean
-  @Prop({ required: true, type: String, lowercase: true })
-  address: string
+  @Prop({ required: true, type: String })
+  address: Hex
   @Prop({ required: true })
-  data: string
+  data: Hex
   @Prop({ required: true })
-  topics: string[]
+  topics: [] | [Hex, ...Hex[]]
   @Prop({ required: true })
-  transactionHash: string
+  transactionHash: Hex
   @Prop({ required: true })
   logIndex: number
 }

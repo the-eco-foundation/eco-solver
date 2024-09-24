@@ -4,7 +4,7 @@
  * @param data the hex encoded data
  * @returns
  */
-export function getSelectorHash(data: string): string {
+export function getSelectorHash(data: string | undefined): string {
   if (!data || data.length < 10) {
     throw new Error('Data is too short')
   }

@@ -4,7 +4,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
 import { EcoLogMessage } from '../../common/logging/eco-log-message'
 import { BalanceService } from '../../balance/balance.service'
-import { EventLogWS } from '../../common/events/websocket'
+import { ViemEventLog } from '../../common/events/websocket'
 
 @Injectable()
 @Processor(QUEUES.ETH_SOCKET.queue)
@@ -34,7 +34,7 @@ export class EthWebsocketProcessor extends WorkerHost {
             },
           }),
         )
-        return this.balanceService.updateBalance(job.data as EventLogWS)
+        return this.balanceService.updateBalance(job.data as ViemEventLog)
       default:
         this.logger.error(
           EcoLogMessage.fromDefault({

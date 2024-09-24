@@ -26,7 +26,6 @@
     "postinstall": "yarn typechain"
   },
   "dependencies": {
-    "@alchemy/aa-accounts": "^3.19.0",
     "@alchemy/aa-core": "^3.19.0",
     "@aws-sdk/client-secrets-manager": "^3.592.0",
     "@liaoliaots/nestjs-redis-health": "^9.0.4",

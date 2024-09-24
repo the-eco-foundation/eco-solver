@@ -3,11 +3,11 @@ import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { isSupportedTokenType } from '../common/utils/fragments'
 import { Solver } from '../eco-configs/eco-config.types'
 import { getDestinationNetworkAddressKey } from '../common/utils/strings'
-import { EventLogWS } from '../common/events/websocket'
+import { ViemEventLog } from '../common/events/websocket'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { decodeTransferLog } from '../common/utils/ws.helpers'
-import { erc20Abi, Hex, zeroAddress } from 'viem'
-import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
+import { erc20Abi, Hex } from 'viem'
+import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
 type TockenBalance = { decimals: bigint; balance: bigint }
 
 /**
@@ -21,7 +21,7 @@ export class BalanceService implements OnApplicationBootstrap {
 
   constructor(
     private readonly ecoConfig: EcoConfigService,
-    private readonly accountService: MultichainSmartAccountService,
+    private readonly simpleAccountClientService: SimpleAccountClientService,
   ) {}
 
   async onApplicationBootstrap() {
@@ -51,7 +51,7 @@ export class BalanceService implements OnApplicationBootstrap {
    * Updates the token balance of the solver, called from {@link EthWebsocketProcessor}
    * @returns
    */
-  updateBalance(balanceEvent: EventLogWS) {
+  updateBalance(balanceEvent: ViemEventLog) {
     this.logger.debug(
       EcoLogMessage.fromDefault({
         message: `updateBalance ${balanceEvent.transactionHash}`,
@@ -79,7 +79,7 @@ export class BalanceService implements OnApplicationBootstrap {
         const [tokenAddress, targetContract] = target
         if (isSupportedTokenType(targetContract.contractType)) {
           //load the balance in the local mapping
-          await this.loadERC20TokenBalance(solver.chainID, tokenAddress as Hex)
+          return await this.loadERC20TokenBalance(solver.chainID, tokenAddress as Hex)
         }
       }),
     )
@@ -91,7 +91,7 @@ export class BalanceService implements OnApplicationBootstrap {
   ): Promise<TockenBalance | undefined> {
     const key = getDestinationNetworkAddressKey(chainID, tokenAddress)
     if (!this.tokenBalances.has(key)) {
-      const client = await this.accountService.getClient(chainID)
+      const client = await this.simpleAccountClientService.getClient(chainID)
       const erc20 = {
         address: tokenAddress,
         abi: erc20Abi,
@@ -102,7 +102,7 @@ export class BalanceService implements OnApplicationBootstrap {
           {
             ...erc20,
             functionName: 'balanceOf',
-            args: [client.account?.address ?? zeroAddress],
+            args: [client.simpleAccountAddress],
           },
           {
             ...erc20,

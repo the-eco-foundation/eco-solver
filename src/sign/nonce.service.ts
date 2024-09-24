@@ -9,7 +9,7 @@ import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { entries } from 'lodash'
 import { AtomicKeyClientParams, AtomicNonceService } from './atomic.nonce.service'
 import { Hex, sha256 } from 'viem'
-import { MultichainSmartAccountService } from '../alchemy/multichain_smart_account.service'
+import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
 
 /**
  * TODO this class needs to be assigned to an EAO, a userOp gets its nonce throught the alchemy sdk
@@ -22,7 +22,7 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnApplica
   constructor(
     @InjectModel(Nonce.name) private nonceModel: Model<Nonce>,
     @InjectQueue(QUEUES.SIGNER.queue) private readonly signerQueue: Queue,
-    private readonly smartAccountService: MultichainSmartAccountService,
+    private readonly simpleAccountClientService: SimpleAccountClientService,
     private readonly ecoConfigService: EcoConfigService,
   ) {
     super(nonceModel)
@@ -49,9 +49,9 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnApplica
 
   protected override async getSyncParams(): Promise<AtomicKeyClientParams[]> {
     const paramsAsync = entries(this.ecoConfigService.getSolvers()).map(async ([chainId]) => {
-      const client = await this.smartAccountService.getClient(parseInt(chainId))
+      const client = await this.simpleAccountClientService.getClient(parseInt(chainId))
 
-      const address = client.account?.address
+      const address = client.simpleAccountAddress
       return { address, client } as AtomicKeyClientParams
     })
 

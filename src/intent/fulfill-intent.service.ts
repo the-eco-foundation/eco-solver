@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
-import { createPublicClient, encodeFunctionData, erc20Abi, Hex } from 'viem'
+import { encodeFunctionData, erc20Abi, Hex } from 'viem'
 import {
   IntentProcessData,
   TransactionTargetData,
@@ -14,7 +14,7 @@ import { SourceIntentTxHash } from '../common/events/websocket'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { Solver } from '../eco-configs/eco-config.types'
 import { SourceIntentModel } from './schemas/source-intent.schema'
-import { SAClientService } from '../transaction/sa-client.service'
+import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 
 /**
@@ -27,32 +27,32 @@ export class FulfillIntentService {
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
-    private readonly saClientService: SAClientService,
+    private readonly simpleAccountClientService: SimpleAccountClientService,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
   async executeFulfillIntent(intentHash: SourceIntentTxHash) {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
     const { model, solver, err } = data ?? {}
-    if (!err || !model || !solver) {
+    if (!data || !err || !model || !solver) {
       if (err) {
         throw err
       }
       return
     }
-   
-    const smartAccountClient = await this.saClientService.getClient(solver.chainID)
+
+    const smartAccountClient = await this.simpleAccountClientService.getClient(solver.chainID)
 
     // Create transactions for intent targets
-    const targetSolveTxs = this.getTransactionsForTargets(data!)
+    const targetSolveTxs = this.getTransactionsForTargets(data)
 
     // Create fulfill tx
     const fulfillIntentData = this.getFulfillIntentData(
       this.ecoConfigService.getEth().claimant,
-      model!,
+      model,
     )
     const fulfillTx = {
-      to: solver!.solverAddress,
+      to: solver.solverAddress,
       data: fulfillIntentData,
     }
 
@@ -70,11 +70,6 @@ export class FulfillIntentService {
 
     try {
       const transactionHash = await smartAccountClient.execute(transactions)
-
-      // const publicClient = createPublicClient({
-      //   chain: smartAccountClient.walletClient.chain,
-      //   transport: smartAccountClient.walletClient.transport as any,
-      // })
 
       const receipt = await smartAccountClient.waitForTransactionReceipt({ hash: transactionHash })
 
