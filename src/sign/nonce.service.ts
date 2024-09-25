@@ -32,7 +32,6 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnApplica
     super(nonceModel)
   }
   async onApplicationBootstrap() {
-    // console.log('accountService', (await this.smartAccountService.getClient(84532)).account.address) //// <<<-------
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
     this.syncQueue()
   }
