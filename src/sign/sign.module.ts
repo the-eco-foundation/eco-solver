@@ -15,6 +15,11 @@ import { NonceService } from './nonce.service'
     initBullMQ(QUEUES.SIGNER),
   ],
   providers: [SignerService, NonceService, AtomicSignerService],
-  exports: [AtomicSignerService, SignerService, NonceService, MongooseModule],
+  exports: [
+    AtomicSignerService,
+    SignerService,
+    NonceService,
+    MongooseModule, //add SignModule to the rest of the modules that import intents
+  ],
 })
 export class SignModule {}
