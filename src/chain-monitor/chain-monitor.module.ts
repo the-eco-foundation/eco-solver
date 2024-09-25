@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common'
 import { EcoConfigModule } from '../eco-configs/eco-config.module'
-import { SourceIntentModel, SourceIntentSchema } from '../intent/schemas/source-intent.schema'
-import { MongooseModule } from '@nestjs/mongoose'
 import { IntentModule } from '../intent/intent.module'
 import { ChainSyncService } from './chain-sync.service'
 import { TransactionModule } from '../transaction/transaction.module'
+import { MongooseModule } from '@nestjs/mongoose'
+import { SourceIntentModel, SourceIntentSchema } from '../intent/schemas/source-intent.schema'
 
 @Module({
   imports: [

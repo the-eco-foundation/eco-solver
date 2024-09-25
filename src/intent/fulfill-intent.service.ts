@@ -61,7 +61,7 @@ export class FulfillIntentService {
 
     this.logger.debug(
       EcoLogMessage.fromDefault({
-        message: `Fullfilling batch transaction`,
+        message: `Fulfilling batch transaction`,
         properties: {
           batch: transactions,
         },
@@ -101,6 +101,7 @@ export class FulfillIntentService {
           },
         }),
       )
+
       // Throw error to retry job
       throw e
     } finally {

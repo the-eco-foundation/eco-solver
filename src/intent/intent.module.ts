@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common'
 import { EcoConfigModule } from '../eco-configs/eco-config.module'
-import { MongooseModule } from '@nestjs/mongoose'
 import { initBullMQ } from '../bullmq/bullmq.helper'
 import { QUEUES } from '../common/redis/constants'
 import { SourceIntentModel, SourceIntentSchema } from './schemas/source-intent.schema'
@@ -13,6 +12,7 @@ import { BalanceModule } from '../balance/balance.module'
 import { FulfillIntentService } from './fulfill-intent.service'
 import { ProverModule } from '../prover/prover.module'
 import { TransactionModule } from '../transaction/transaction.module'
+import { MongooseModule } from '@nestjs/mongoose'
 
 @Module({
   imports: [

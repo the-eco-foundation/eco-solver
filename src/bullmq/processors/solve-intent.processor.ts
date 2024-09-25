@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq'
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq'
 import { QUEUES } from '../../common/redis/constants'
 import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
@@ -16,8 +16,8 @@ export class SolveIntentProcessor extends WorkerHost {
   constructor(
     private readonly createIntentService: CreateIntentService,
     private readonly validateIntentService: ValidateIntentService,
-    private readonly feasableIntentSevice: FeasableIntentService,
-    private readonly fulfillIntentSevice: FulfillIntentService,
+    private readonly feasableIntentService: FeasableIntentService,
+    private readonly fulfillIntentService: FulfillIntentService,
   ) {
     super()
   }
@@ -41,9 +41,9 @@ export class SolveIntentProcessor extends WorkerHost {
       case QUEUES.SOURCE_INTENT.jobs.validate_intent:
         return await this.validateIntentService.validateIntent(job.data as SourceIntentTxHash)
       case QUEUES.SOURCE_INTENT.jobs.feasable_intent:
-        return await this.feasableIntentSevice.feasableIntent(job.data as SourceIntentTxHash)
+        return await this.feasableIntentService.feasableIntent(job.data as SourceIntentTxHash)
       case QUEUES.SOURCE_INTENT.jobs.fulfill_intent:
-        return await this.fulfillIntentSevice.executeFulfillIntent(job.data as SourceIntentTxHash)
+        return await this.fulfillIntentService.executeFulfillIntent(job.data as SourceIntentTxHash)
       default:
         this.logger.error(
           EcoLogMessage.fromDefault({
@@ -52,5 +52,18 @@ export class SolveIntentProcessor extends WorkerHost {
         )
         return Promise.reject('Invalid job type')
     }
+  }
+
+  @OnWorkerEvent('failed')
+  onJobFailed(job: Job<any, any, string>, error: Error) {
+    this.logger.error(
+      EcoLogMessage.fromDefault({
+        message: `SolveIntentProcessor: Error processing job`,
+        properties: {
+          job,
+          error,
+        },
+      }),
+    )
   }
 }
