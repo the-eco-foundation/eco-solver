@@ -38,6 +38,7 @@ import { MongooseModule } from '@nestjs/mongoose'
     ValidateIntentService,
     FeasableIntentService,
     FulfillIntentService,
+    MongooseModule, //add SourceIntentModel to the rest of the modules that import intents
   ],
 })
 export class IntentModule {}
