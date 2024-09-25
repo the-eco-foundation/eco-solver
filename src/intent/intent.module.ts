@@ -41,6 +41,7 @@ import { SourceIntentController } from './intent.controller'
     ValidateIntentService,
     FeasableIntentService,
     FulfillIntentService,
+    MongooseModule,
   ],
 })
 export class IntentModule {}
