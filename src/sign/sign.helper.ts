@@ -5,12 +5,12 @@ import { AtomicKeyParams } from './atomic.nonce.service'
 
 export function privateKeyAndNonceToAccountSigner(
   atomicNonceSource: NonceManagerSource,
-  key: Hex,
+  privateKey: Hex,
 ): PrivateKeyAccount {
   const nonceManager = createNonceManager({
     source: atomicNonceSource,
   })
-  return privateKeyToAccount(key, { nonceManager })
+  return privateKeyToAccount(privateKey, { nonceManager })
 }
 
 export function getAtomicNonceKey(params: AtomicKeyParams) {

@@ -17,11 +17,10 @@ export class SignerService implements OnModuleInit {
   }
 
   protected buildAccount(): PrivateKeyAccount {
-    return privateKeyToAccount(this.getPrivateKey()) //{ nonceManager?: NonceManager}
-    // return privateKeyAndNonceToAccountSigner(jsonRpc(), this.getPrivateKey())
+    return privateKeyToAccount(this.getPrivateKey())
   }
 
-  private getPrivateKey(): Hex {
+  protected getPrivateKey(): Hex {
     return this.ecoConfigService.getEth().simpleAccount.signerPrivateKey
   }
 }

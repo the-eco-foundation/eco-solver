@@ -3,11 +3,6 @@ export default {
     region: 'us-east-2',
     secretID: 'eco-solver-secrets',
   },
-  eth: {
-    nonce: {
-      update_interval_ms: 5 * 60 * 1000, //5 mins
-    },
-  },
   redis: {
     options: {
       single: {

@@ -5,20 +5,17 @@ import { initBullMQ } from '../bullmq/bullmq.helper'
 import { QUEUES } from '../common/redis/constants'
 import { EcoConfigModule } from '../eco-configs/eco-config.module'
 import { SignerService } from './signer.service'
+import { AtomicSignerService } from './atomic-signer.service'
+import { SignerProcessor } from '../bullmq/processors/signer.processor'
+import { NonceService } from './nonce.service'
 
 @Module({
   imports: [
-    // forwardRef(() => AlchemyModule),
     EcoConfigModule,
     MongooseModule.forFeature([{ name: Nonce.name, schema: NonceSchema }]),
     initBullMQ(QUEUES.SIGNER),
   ],
-  providers: [
-    SignerService,
-    // SignerProcessor,
-    // NonceService,
-    // AtomicSignerService,
-  ],
-  exports: [SignerService],
+  providers: [SignerService, SignerProcessor, NonceService, AtomicSignerService],
+  exports: [AtomicSignerService, SignerService],
 })
 export class SignModule {}

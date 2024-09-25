@@ -1,4 +1,4 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common'
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Nonce } from './schemas/nonce.schema'
@@ -8,8 +8,11 @@ import { InjectQueue } from '@nestjs/bullmq'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { entries } from 'lodash'
 import { AtomicKeyClientParams, AtomicNonceService } from './atomic.nonce.service'
-import { Hex, sha256 } from 'viem'
-import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
+import { createPublicClient, extractChain, Hex, sha256 } from 'viem'
+import { ChainsSupported } from '../common/utils/chains'
+import { chains } from '@alchemy/aa-core'
+import { getTransport } from '../common/alchemy/utils'
+import { SignerService } from './signer.service'
 
 /**
  * TODO this class needs to be assigned to an EAO, a userOp gets its nonce throught the alchemy sdk
@@ -17,12 +20,13 @@ import { SimpleAccountClientService } from '../transaction/simple-account-client
  */
 @Injectable()
 export class NonceService extends AtomicNonceService<Nonce> implements OnApplicationBootstrap {
+  protected logger = new Logger(NonceService.name)
   private intentJobConfig: JobsOptions
 
   constructor(
     @InjectModel(Nonce.name) private nonceModel: Model<Nonce>,
     @InjectQueue(QUEUES.SIGNER.queue) private readonly signerQueue: Queue,
-    private readonly simpleAccountClientService: SimpleAccountClientService,
+    private readonly signerService: SignerService,
     private readonly ecoConfigService: EcoConfigService,
   ) {
     super(nonceModel)
@@ -30,7 +34,7 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnApplica
   async onApplicationBootstrap() {
     // console.log('accountService', (await this.smartAccountService.getClient(84532)).account.address) //// <<<-------
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
-    // this.syncQueue()
+    this.syncQueue()
   }
 
   async syncQueue() {
@@ -48,10 +52,18 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnApplica
   }
 
   protected override async getSyncParams(): Promise<AtomicKeyClientParams[]> {
-    const paramsAsync = entries(this.ecoConfigService.getSolvers()).map(async ([chainId]) => {
-      const client = await this.simpleAccountClientService.getClient(parseInt(chainId))
-
-      const address = client.simpleAccountAddress
+    const address = this.signerService.getAccount().address
+    const apiKey = this.ecoConfigService.getAlchemy().apiKey
+    const paramsAsync = entries(this.ecoConfigService.getSolvers()).map(async ([chainIdString]) => {
+      const chainID = parseInt(chainIdString)
+      const chain = extractChain({
+        chains: ChainsSupported,
+        id: chainID,
+      }) as chains.Chain
+      const client = createPublicClient({
+        chain,
+        transport: getTransport(chain, apiKey, true),
+      } as any)
       return { address, client } as AtomicKeyClientParams
     })
 
