@@ -35,6 +35,12 @@ export default {
       intentJobConfig: {
         removeOnComplete: false,
         removeOnFail: false,
+
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2_000,
+        },
       },
     },
   },
