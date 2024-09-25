@@ -17,8 +17,7 @@ export class SignerService implements OnModuleInit {
   }
 
   protected buildAccount(): PrivateKeyAccount {
-    return privateKeyToAccount(this.getPrivateKey()) //{ nonceManager?: NonceManager}
-    // return privateKeyAndNonceToAccountSigner(jsonRpc(), this.getPrivateKey())
+    return privateKeyToAccount(this.getPrivateKey())
   }
 
   private getPrivateKey(): Hex {
