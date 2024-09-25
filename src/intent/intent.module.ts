@@ -14,6 +14,7 @@ import { BalanceModule } from '../balance/balance.module'
 import { FulfillIntentService } from './fulfill-intent.service'
 import { ProverModule } from '../prover/prover.module'
 import { TransactionModule } from '../transaction/transaction.module'
+import { SourceIntentController } from './intent.controller'
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import { TransactionModule } from '../transaction/transaction.module'
     UtilsIntentService,
     SolveIntentProcessor,
   ],
-  // controllers: [SourceIntentController],
+  controllers: [SourceIntentController],
   exports: [
     WebsocketIntentService,
     CreateIntentService,
