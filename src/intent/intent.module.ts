@@ -40,6 +40,7 @@ import { TransactionModule } from '../transaction/transaction.module'
     ValidateIntentService,
     FeasableIntentService,
     FulfillIntentService,
+    MongooseModule,
   ],
 })
 export class IntentModule {}
