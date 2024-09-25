@@ -37,9 +37,11 @@ export abstract class AtomicNonceService<T extends { nonce: number }>
     if (params.length === 0) {
       return
     }
+
     const nonceSyncs = params.map(async (param: AtomicKeyClientParams) => {
       const { address, client } = param
       const nonceNum = await client.getTransactionCount({ address, blockTag: 'pending' })
+
       return {
         nonceNum,
         chainID: client.chain?.id,

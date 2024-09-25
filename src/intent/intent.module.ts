@@ -4,7 +4,6 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { initBullMQ } from '../bullmq/bullmq.helper'
 import { QUEUES } from '../common/redis/constants'
 import { SourceIntentModel, SourceIntentSchema } from './schemas/source-intent.schema'
-import { SolveIntentProcessor } from '../bullmq/processors/solve-intent.processor'
 import { ValidateIntentService } from './validate-intent.service'
 import { FeasableIntentService } from './feasable-intent.service'
 import { CreateIntentService } from './create-intent.service'
@@ -14,7 +13,6 @@ import { BalanceModule } from '../balance/balance.module'
 import { FulfillIntentService } from './fulfill-intent.service'
 import { ProverModule } from '../prover/prover.module'
 import { TransactionModule } from '../transaction/transaction.module'
-import { SourceIntentController } from './intent.controller'
 
 @Module({
   imports: [
@@ -32,9 +30,8 @@ import { SourceIntentController } from './intent.controller'
     WebsocketIntentService,
     FulfillIntentService,
     UtilsIntentService,
-    SolveIntentProcessor,
   ],
-  controllers: [SourceIntentController],
+  // controllers: [SourceIntentController],
   exports: [
     WebsocketIntentService,
     CreateIntentService,

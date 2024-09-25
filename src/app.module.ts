@@ -11,6 +11,7 @@ import { BalanceModule } from './balance/balance.module'
 import { SignModule } from './sign/sign.module'
 import { ProverModule } from './prover/prover.module'
 import { HealthModule } from './health/health.module'
+import { ProcessorModule } from './bullmq/processors/processor.module'
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { HealthModule } from './health/health.module'
     IntentModule,
     SignModule,
     SourceIntentModel,
+    ProcessorModule,
     MongooseModule.forRootAsync({
       imports: [EcoConfigModule],
       inject: [EcoConfigService],

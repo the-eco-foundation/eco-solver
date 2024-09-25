@@ -29,7 +29,7 @@ export class FulfillIntentService {
     private readonly utilsIntentService: UtilsIntentService,
     private readonly simpleAccountClientService: SimpleAccountClientService,
     private readonly ecoConfigService: EcoConfigService,
-  ) { }
+  ) {}
 
   async executeFulfillIntent(intentHash: SourceIntentTxHash) {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)

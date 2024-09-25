@@ -61,7 +61,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
       return
     }
 
-    // return this.websocketIntentService.addJob(source)(createIntentLogs)
+    return this.websocketIntentService.addJob(source)(createIntentLogs)
   }
 
   /**

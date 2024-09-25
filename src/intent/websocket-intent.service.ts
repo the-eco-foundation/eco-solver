@@ -27,7 +27,7 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     private readonly publicClientService: MultichainPublicClientService,
     private readonly ecoConfigService: EcoConfigService,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
@@ -86,34 +86,5 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
         })
       }
     }
-
-    // return async (logs: ViemEventLog[]) => {
-    //   const logTasks = logs.map((createIntent) => {
-    //     //bigint as it cant serialize to json
-    //     createIntent = convertBigIntsToStrings(createIntent)
-    //     createIntent.sourceChainID = source.chainID
-    //     createIntent.sourceNetwork = source.network
-    //     const jobId = getIntentJobId(
-    //       'websocket',
-    //       createIntent.transactionHash ?? zeroHash,
-    //       createIntent.logIndex ?? 0,
-    //     )
-    //     this.logger.debug(
-    //       EcoLogMessage.fromDefault({
-    //         message: `websocket intent`,
-    //         properties: {
-    //           createIntent,
-    //           jobId,
-    //         },
-    //       }),
-    //     )
-    //     //add to processing queue
-    //     return this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.create_intent, createIntent, {
-    //       jobId,
-    //       ...this.intentJobConfig,
-    //     })
-    //   })
-    //   await Promise.all(logTasks)
-    // }
   }
 }
