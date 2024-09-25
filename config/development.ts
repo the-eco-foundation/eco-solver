@@ -32,7 +32,7 @@ export default {
     {
       network: 'opt-sepolia',
       chainID: 11155420,
-      sourceAddress: '0x6B79cD3fE2Eccd3a69c52e621a81d26E75983787',
+      sourceAddress: '0xc135737F2a05b0f65c33DAb7C60e63E3E2008c6c',
       tokens: [
         '0x5fd84259d66Cd46123540766Be93DFE6D43130D7', //usdc
         '0x8327Db9040811545C13331A453aBe9C7AA1aCDf8',
@@ -42,13 +42,24 @@ export default {
         '0xd3F4Bef596a04e2be4fbeB17Dd70f02F717c5a6c',
         '0x93551e3F61F8E3EE73DDc096BddbC1ADc52f5A3a',
       ],
-      provers: ['0x99b07fF401E2c73826f3043AdaB2ef37e53d4f23'],
+      provers: ['0x7c6a40F388dfd4cf1a8456978c55227f3E968AB7'],
+    },
+    {
+      network: 'base-sepolia',
+      chainID: 84532,
+      sourceAddress: '0xc135737F2a05b0f65c33DAb7C60e63E3E2008c6c',
+      tokens: [
+        '0xAb1D243b07e99C91dE9E4B80DFc2B07a8332A2f7', //usdc
+        '0x8bDa9F5C33FBCB04Ea176ea5Bc1f5102e934257f',
+        '0x93551e3F61F8E3EE73DDc096BddbC1ADc52f5A3a',
+      ],
+      provers: ['0x7c6a40F388dfd4cf1a8456978c55227f3E968AB7'],
     },
   ],
   solvers: {
     //base sepolia
     84532: {
-      solverAddress: '0xe547628e5F7AEf5FEd847491b36Bf8bbF30E93E1',
+      solverAddress: '0x0C190D5A0a77168BDF87D0E0AE3f066F8e0E6ea4',
       targets: {
         //base sepolia USDC
         '0xAb1D243b07e99C91dE9E4B80DFc2B07a8332A2f7': {
@@ -72,7 +83,7 @@ export default {
     },
     //op sepolia
     11155420: {
-      solverAddress: '0x3487f465E285a4eC20a526903f89C74b172fE845', //todo update to real address
+      solverAddress: '0x0C190D5A0a77168BDF87D0E0AE3f066F8e0E6ea4', //todo update to real address
       targets: {
         //op sepolia USDC
         '0x5fd84259d66Cd46123540766Be93DFE6D43130D7': {
