@@ -20,7 +20,7 @@ export class SignerService implements OnModuleInit {
     return privateKeyToAccount(this.getPrivateKey())
   }
 
-  private getPrivateKey(): Hex {
+  protected getPrivateKey(): Hex {
     return this.ecoConfigService.getEth().simpleAccount.signerPrivateKey
   }
 }

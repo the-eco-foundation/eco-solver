@@ -75,7 +75,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
   async getMissingTxs(source: SourceIntent): Promise<ViemEventLog[]> {
     const client = await this.simpleAccountClientService.getClient(source.chainID)
     const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(([chainID]) =>
-      Number.parseInt(chainID),
+      BigInt(chainID),
     )
     const lastRecordedTx = await this.getLastRecordedTx(source)
     const fromBlock: bigint =
@@ -87,12 +87,14 @@ export class ChainSyncService implements OnApplicationBootstrap {
       abi: IntentSourceAbi,
       eventName: 'IntentCreated',
       args: {
+        // restrict by acceptable chains, chain ids must be bigints
         _destinationChain: solverSupportedChains,
       },
       fromBlock,
       toBlock,
     })
 
+    //todo clean out already fulfilled intents
     if (createIntentLogs.length === 0) {
       this.logger.log(
         EcoLogMessage.fromDefault({
