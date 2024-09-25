@@ -60,9 +60,9 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
 
   addJob(source: SourceIntent) {
     return async (logs: ViemEventLog[]) => {
-      const logTasks = logs.map((createIntent) => {
-        //bigint as it cant serialize to json
-        createIntent = convertBigIntsToStrings(createIntent)
+      for (const log of logs) {
+        // bigint as it can't serialize to JSON
+        const createIntent = convertBigIntsToStrings(log)
         createIntent.sourceChainID = source.chainID
         createIntent.sourceNetwork = source.network
         const jobId = getIntentJobId(
@@ -79,13 +79,12 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
             },
           }),
         )
-        //add to processing queue
-        return this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.create_intent, createIntent, {
+        // add to processing queue
+        await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.create_intent, createIntent, {
           jobId,
           ...this.intentJobConfig,
         })
-      })
-      await Promise.all(logTasks)
+      }
     }
   }
 }
