@@ -12,6 +12,7 @@ import { Model } from 'mongoose'
 import { getIntentJobId } from '../common/utils/strings'
 import { Hex } from 'viem'
 import { UtilsIntentService } from './utils-intent.service'
+import { ValidSmartWalletService } from '../solver/filters/valid-smart-wallet.service'
 
 /**
  * Service class for getting configs for the app
@@ -24,6 +25,7 @@ export class CreateIntentService implements OnModuleInit {
   constructor(
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
+    private readonly validSmartWalletService: ValidSmartWalletService,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
@@ -41,6 +43,7 @@ export class CreateIntentService implements OnModuleInit {
         },
       }),
     )
+
     const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics, intentWs.logIndex ?? 0)
     try {
       //check db if the intent is already filled
@@ -61,20 +64,26 @@ export class CreateIntentService implements OnModuleInit {
         )
         return
       }
+      const isBendWallet = await this.validSmartWalletService.validateSmartWallet(
+        intent.creator as Hex,
+        intentWs.sourceChainID,
+      )
       //create db record
       const record = await this.intentModel.create({
         event: intentWs,
         intent: intent,
         receipt: null,
-        status: 'PENDING',
+        status: isBendWallet ? 'PENDING' : 'NON-BEND-WALLET',
       })
 
       const jobId = getIntentJobId('create', intent.hash as Hex, intent.logIndex)
-      //add to processing queue
-      await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.validate_intent, intent.hash, {
-        jobId,
-        ...this.intentJobConfig,
-      })
+      if (isBendWallet) {
+        //add to processing queue
+        await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.validate_intent, intent.hash, {
+          jobId,
+          ...this.intentJobConfig,
+        })
+      }
 
       this.logger.debug(
         EcoLogMessage.fromDefault({
@@ -82,7 +91,8 @@ export class CreateIntentService implements OnModuleInit {
           properties: {
             intentHash: intent.hash,
             intent: record.intent,
-            jobId,
+            ...(isBendWallet ? { jobId } : {}),
+            isBendWallet,
           },
         }),
       )
