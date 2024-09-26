@@ -13,6 +13,7 @@ import { FulfillIntentService } from './fulfill-intent.service'
 import { ProverModule } from '../prover/prover.module'
 import { TransactionModule } from '../transaction/transaction.module'
 import { MongooseModule } from '@nestjs/mongoose'
+import { SourceIntentController } from './intent.controller'
 
 @Module({
   imports: [
@@ -31,7 +32,7 @@ import { MongooseModule } from '@nestjs/mongoose'
     FulfillIntentService,
     UtilsIntentService,
   ],
-  // controllers: [SourceIntentController],
+  controllers: [SourceIntentController],
   exports: [
     WebsocketIntentService,
     CreateIntentService,

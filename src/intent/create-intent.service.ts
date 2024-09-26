@@ -47,19 +47,19 @@ export class CreateIntentService implements OnModuleInit {
       const model = await this.intentModel.findOne({
         'intent.hash': intent.hash,
       })
-      if (model) {
-        await this.utilsIntentService.updateDuplicateIntentModel(this.intentModel, model)
-        // Record already exists, do nothing and return
-        this.logger.debug(
-          EcoLogMessage.fromDefault({
-            message: `Record for intent already exists ${intent.hash}`,
-            properties: {
-              intentHash: intent.hash,
-              intent: intent,
-            },
-          }),
-        )
-        return
+      if (model && false) {
+        // await this.utilsIntentService.updateDuplicateIntentModel(this.intentModel, model)
+        // // Record already exists, do nothing and return
+        // this.logger.debug(
+        //   EcoLogMessage.fromDefault({
+        //     message: `Record for intent already exists ${intent.hash}`,
+        //     properties: {
+        //       intentHash: intent.hash,
+        //       intent: intent,
+        //     },
+        //   }),
+        // )
+        // return
       }
       //create db record
       const record = await this.intentModel.create({

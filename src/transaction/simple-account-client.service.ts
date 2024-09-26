@@ -8,6 +8,7 @@ import { EcoError } from '../common/errors/eco-error'
 import { createSimpleAccountClient } from './smart-wallets/simple-account/create.simple.account'
 import { chains } from '@alchemy/aa-core'
 import { SignerService } from '../sign/signer.service'
+import { AtomicSignerService } from '../sign/atomic-signer.service'
 
 @Injectable()
 export class SimpleAccountClientService extends ViemMultichainClientService<
@@ -16,7 +17,7 @@ export class SimpleAccountClientService extends ViemMultichainClientService<
 > {
   constructor(
     readonly ecoConfigService: EcoConfigService,
-    private readonly signerService: SignerService,
+    private readonly signerService: AtomicSignerService,
   ) {
     super(ecoConfigService)
   }

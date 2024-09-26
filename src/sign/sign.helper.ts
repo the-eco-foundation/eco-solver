@@ -1,7 +1,8 @@
 import { Hex, NonceManagerSource, PrivateKeyAccount } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { createNonceManager } from 'viem/nonce'
+import { createNonceManager, jsonRpc } from 'viem/nonce'
 import { AtomicKeyParams } from './atomic.nonce.service'
+
 
 export function privateKeyAndNonceToAccountSigner(
   atomicNonceSource: NonceManagerSource,
