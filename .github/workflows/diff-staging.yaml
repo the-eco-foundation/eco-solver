@@ -3,7 +3,7 @@ name: Compare deployed vs proposed
 on:
   pull_request:
     branches:
-      - release-staging-not
+      - release-staging
 
 env:
   APPNAME: solver
