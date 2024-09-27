@@ -9,6 +9,7 @@ import { MongoDBHealthIndicator } from './indicators/mongodb.indicator'
 import { EcoConfigModule } from '../eco-configs/eco-config.module'
 import { PermissionHealthIndicator } from './indicators/permission.indicator'
 import { TransactionModule } from '../transaction/transaction.module'
+import { GitCommitHealthIndicator } from './indicators/git-commit.indicator'
 
 @Module({
   imports: [EcoConfigModule, TransactionModule, RedisHealthModule, TerminusModule],
@@ -17,6 +18,7 @@ import { TransactionModule } from '../transaction/transaction.module'
     HealthService,
     BalanceHealthIndicator,
     EcoRedisHealthIndicator,
+    GitCommitHealthIndicator,
     PermissionHealthIndicator,
     MongoDBHealthIndicator,
   ],
