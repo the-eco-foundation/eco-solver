@@ -1,10 +1,9 @@
-name: Build Push to Amazon ECR and EKS
+name: Build Push to Amazon ECR
 
 on:
   push:
     branches:
       - release-staging
-
 jobs:
   deploy:
     uses: eco/workflows/.github/workflows/deploy-to-eks.yml@v20231102
@@ -14,5 +13,5 @@ jobs:
       aws-region: us-east-2
       ecr-repository: eco-solver
       ghenv: staging
-      ghsha: 3054dfde37a20fa16fd4e8816b751fbf47360a6b
+      ghsha: 9e2e6048a53b3e61d9e5dc6a95093703dee8658e
       targetenv: staging
