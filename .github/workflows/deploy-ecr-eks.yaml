@@ -9,7 +9,7 @@ jobs:
   deploy:
     uses: eco/workflows/.github/workflows/deploy-to-eks.yml@v20231102
     with:
-      appname: solver
+      appname: solver-staging
       assumed-role: arn:aws:iam::027715947294:role/solver-eks-actions-bend-staging
       aws-region: us-east-2
       ecr-repository: eco-solver
