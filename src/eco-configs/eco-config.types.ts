@@ -41,6 +41,9 @@ export type EcoConfigType = {
     usePino: boolean
     pinoConfig: PinoParams
   }
+  monitor: {
+    baseUrl: string
+  }
 }
 
 export type EcoConfigKeys = keyof EcoConfigType
@@ -83,6 +86,7 @@ export type MongoAuthType = {
  */
 export type AlchemyConfigType = {
   apiKey: string
+  authToken: string
   networks: AlchemyNetwork[]
 }
 

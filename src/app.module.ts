@@ -12,6 +12,7 @@ import { SignModule } from './sign/sign.module'
 import { ProverModule } from './prover/prover.module'
 import { HealthModule } from './health/health.module'
 import { ProcessorModule } from './bullmq/processors/processor.module'
+import { MonitorModule } from './monitors/monitor.module'
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ProcessorModule } from './bullmq/processors/processor.module'
       },
     }),
     ProverModule,
+    MonitorModule,
     ...getPino(),
   ],
   controllers: [],
