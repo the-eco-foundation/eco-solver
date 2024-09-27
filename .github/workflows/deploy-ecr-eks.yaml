@@ -10,9 +10,9 @@ jobs:
     uses: eco/workflows/.github/workflows/deploy-to-eks.yml@v20231102
     with:
       appname: solver
-      assumed-role: arn:aws:iam::027715947294:role/solver-eks-actions-bend-staging
+      assumed-role: arn:aws:iam::027715947294:role/solver-eks-actions-beam-staging
       aws-region: us-east-2
       ecr-repository: eco-solver
       ghenv: staging
-      ghsha: 
+      ghsha: 3054dfde37a20fa16fd4e8816b751fbf47360a6b
       targetenv: staging
