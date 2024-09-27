@@ -46,6 +46,16 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
     const websocketTasks = this.ecoConfigService.getSourceIntents().map(async (source) => {
       const client = await this.publicClientService.getClient(source.chainID)
       this.unwatch[source.chainID] = client.watchContractEvent({
+        onError: (error) => {
+          this.logger.error(
+            EcoLogMessage.fromDefault({
+              message: `websocket error`,
+              properties: {
+                error,
+              },
+            }),
+          )
+        },
         address: source.sourceAddress,
         abi: IntentSourceAbi,
         eventName: 'IntentCreated',
