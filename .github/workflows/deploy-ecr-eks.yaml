@@ -3,7 +3,7 @@ name: Build Push to Amazon ECR and EKS
 on:
   push:
     branches:
-      - release-staging-not-active
+      - release-staging
 
 jobs:
   deploy:
