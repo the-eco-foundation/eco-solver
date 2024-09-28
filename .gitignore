@@ -65,6 +65,7 @@ dump.rdb
 config/*
 !config/default.ts
 !config/development.ts
+!config/staging.ts
 !config/preproduction.ts
 !config/production.ts
 !config/test.ts
