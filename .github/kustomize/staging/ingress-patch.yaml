@@ -3,15 +3,15 @@
   value:
     cert-manager.io/cluster-issuer: "letsencrypt-beam-staging"
 
-- op: add
-  path: "/metadata/annotations"
-  value:
-    nginx.org/client-max-body-size: "50m"
+# - op: add
+#   path: "/metadata/annotations"
+#   value:
+#     nginx.org/client-max-body-size: "50m"
 
-- op: add
-  path: "/metadata/annotations"
-  value:
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+# - op: add
+#   path: "/metadata/annotations"
+#   value:
+#     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
 
 - op: add
   path: /spec/rules/0/host
