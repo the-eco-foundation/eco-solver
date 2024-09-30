@@ -13,6 +13,7 @@ import { FulfillIntentService } from './fulfill-intent.service'
 import { ProverModule } from '../prover/prover.module'
 import { TransactionModule } from '../transaction/transaction.module'
 import { MongooseModule } from '@nestjs/mongoose'
+import { BullModule } from '@nestjs/bullmq'
 import { SolverModule } from '../solver/solver.module'
 
 @Module({
@@ -41,6 +42,7 @@ import { SolverModule } from '../solver/solver.module'
     FeasableIntentService,
     FulfillIntentService,
     MongooseModule, //add SourceIntentModel to the rest of the modules that import intents
+    BullModule, //add queues to the rest of the modules that import intents
   ],
 })
 export class IntentModule {}
