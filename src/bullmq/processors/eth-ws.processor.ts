@@ -4,7 +4,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
 import { EcoLogMessage } from '../../common/logging/eco-log-message'
 import { BalanceService } from '../../balance/balance.service'
-import { ViemEventLog } from '../../common/events/websocket'
+import { ViemEventLog } from '../../common/events/viem'
 
 @Injectable()
 @Processor(QUEUES.ETH_SOCKET.queue)

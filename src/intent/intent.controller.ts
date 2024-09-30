@@ -1,17 +1,17 @@
 import { Controller, Get } from '@nestjs/common'
-import { WebsocketIntentService } from './websocket-intent.service'
+import { WatchIntentService } from './watch-intent.service'
 import { Network } from 'alchemy-sdk'
 import { ValidateIntentService } from './validate-intent.service'
 import { SourceIntent } from '../eco-configs/eco-config.types'
 import { Logger } from '@nestjs/common'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { ViemEventLog } from '../common/events/websocket'
+import { ViemEventLog } from '../common/events/viem'
 
 @Controller('intent')
 export class SourceIntentController {
   private logger = new Logger(SourceIntentController.name)
   constructor(
-    private readonly wsService: WebsocketIntentService,
+    private readonly watchIntentService: WatchIntentService,
     private readonly validateService: ValidateIntentService,
   ) {}
 
@@ -33,7 +33,7 @@ export class SourceIntentController {
       }),
     )
 
-    return await this.wsService.addJob(si)(intent)
+    return await this.watchIntentService.addJob(si)(intent)
     // return this.wsService.addJob(Network.OPT_SEPOLIA)(intent)
   }
 

@@ -9,18 +9,18 @@ import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { MultichainPublicClientService } from '../transaction/multichain-public-client.service'
 import { IntentSourceAbi } from '../contracts'
 import { WatchContractEventReturnType, zeroHash } from 'viem'
-import { ViemEventLog } from '../common/events/websocket'
+import { ViemEventLog } from '../common/events/viem'
 import { convertBigIntsToStrings } from '../common/viem/utils'
 
 /**
  * Service class for solving an intent on chain. When this service starts up,
- * it creates websockets for all the supported prover contracts and listens for
+ * it creates a listener for all the supported prover contracts and listens for
  * events on them. When a new event is detected, it will publish that event to the
  * eventbus.
  */
 @Injectable()
-export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleDestroy {
-  private logger = new Logger(WebsocketIntentService.name)
+export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestroy {
+  private logger = new Logger(WatchIntentService.name)
   private intentJobConfig: JobsOptions
   private unwatch: Record<string, WatchContractEventReturnType> = {}
   constructor(
@@ -34,22 +34,22 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
   }
 
   async onApplicationBootstrap() {
-    await this.subscribeWS()
+    await this.subscribe()
   }
 
   async onModuleDestroy() {
-    // close all websockets
+    // close all clients
     Object.values(this.unwatch).forEach((unwatch) => unwatch())
   }
 
-  async subscribeWS() {
-    const websocketTasks = this.ecoConfigService.getSourceIntents().map(async (source) => {
+  async subscribe() {
+    const subscribeTasks = this.ecoConfigService.getSourceIntents().map(async (source) => {
       const client = await this.publicClientService.getClient(source.chainID)
       this.unwatch[source.chainID] = client.watchContractEvent({
         onError: (error) => {
           this.logger.error(
             EcoLogMessage.fromDefault({
-              message: `websocket error`,
+              message: `rpc client error`,
               properties: {
                 error,
               },
@@ -65,7 +65,7 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
       })
     })
 
-    await Promise.all(websocketTasks)
+    await Promise.all(subscribeTasks)
   }
 
   addJob(source: SourceIntent) {
@@ -76,13 +76,13 @@ export class WebsocketIntentService implements OnApplicationBootstrap, OnModuleD
         createIntent.sourceChainID = source.chainID
         createIntent.sourceNetwork = source.network
         const jobId = getIntentJobId(
-          'websocket',
+          'watchintent',
           createIntent.transactionHash ?? zeroHash,
           createIntent.logIndex ?? 0,
         )
         this.logger.debug(
           EcoLogMessage.fromDefault({
-            message: `websocket intent`,
+            message: `watch intent`,
             properties: {
               createIntent,
               jobId,

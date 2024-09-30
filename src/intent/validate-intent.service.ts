@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { SourceIntentTxHash } from '../common/events/websocket'
+import { SourceIntentTxHash } from '../common/events/viem'
 import { IntentProcessData, UtilsIntentService } from './utils-intent.service'
 import { QUEUES } from '../common/redis/constants'
 import { JobsOptions, Queue } from 'bullmq'

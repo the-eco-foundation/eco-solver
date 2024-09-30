@@ -38,7 +38,7 @@ export class SimpleAccountClientService extends ViemMultichainClientService<
 
     return {
       chain: chain as Chain,
-      transport: getTransport(chain, this.apiKey, true),
+      transport: getTransport(chain, this.apiKey),
       simpleAccountAddress: simpleAccountConfig.walletAddr,
       account: this.signerService.getAccount(),
     }

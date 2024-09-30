@@ -8,9 +8,9 @@ import { SourceIntent } from '../eco-configs/eco-config.types'
 import { IntentSourceAbi } from '../contracts'
 import { entries } from 'lodash'
 import { BlockTag } from 'viem'
-import { WebsocketIntentService } from '../intent/websocket-intent.service'
-import { ViemEventLog } from '../common/events/websocket'
+import { ViemEventLog } from '../common/events/viem'
 import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
+import { WatchIntentService } from '../intent/watch-intent.service'
 
 /**
  * Service class for syncing any missing transactions for all the source intent contracts.
@@ -25,7 +25,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly simpleAccountClientService: SimpleAccountClientService,
-    private readonly websocketIntentService: WebsocketIntentService,
+    private readonly watchIntentService: WatchIntentService,
     private ecoConfigService: EcoConfigService,
   ) {}
 
@@ -61,7 +61,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
       return
     }
 
-    return this.websocketIntentService.addJob(source)(createIntentLogs)
+    return this.watchIntentService.addJob(source)(createIntentLogs)
   }
 
   /**

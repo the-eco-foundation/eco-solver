@@ -6,7 +6,7 @@ import { SourceIntentModel, SourceIntentSchema } from './schemas/source-intent.s
 import { ValidateIntentService } from './validate-intent.service'
 import { FeasableIntentService } from './feasable-intent.service'
 import { CreateIntentService } from './create-intent.service'
-import { WebsocketIntentService } from './websocket-intent.service'
+import { WatchIntentService } from './watch-intent.service'
 import { UtilsIntentService } from './utils-intent.service'
 import { BalanceModule } from '../balance/balance.module'
 import { FulfillIntentService } from './fulfill-intent.service'
@@ -29,13 +29,13 @@ import { SolverModule } from '../solver/solver.module'
     CreateIntentService,
     ValidateIntentService,
     FeasableIntentService,
-    WebsocketIntentService,
+    WatchIntentService,
     FulfillIntentService,
     UtilsIntentService,
   ],
   // controllers: [SourceIntentController],
   exports: [
-    WebsocketIntentService,
+    WatchIntentService,
     CreateIntentService,
     ValidateIntentService,
     FeasableIntentService,

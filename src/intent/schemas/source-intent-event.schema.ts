@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Network } from 'alchemy-sdk'
-import { ViemEventLog } from '../../common/events/websocket'
+import { ViemEventLog } from '../../common/events/viem'
 import { Hex } from 'viem'
 
 @Schema()

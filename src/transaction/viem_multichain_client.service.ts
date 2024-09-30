@@ -70,7 +70,7 @@ export class ViemMultichainClientService<T, V> implements OnModuleInit {
   }
 
   protected async buildChainConfig(chain: chains.Chain): Promise<V> {
-    const rpcTransport = getTransport(chain, this.apiKey, true)
+    const rpcTransport = getTransport(chain, this.apiKey)
     return {
       transport: rpcTransport,
       chain: chain,

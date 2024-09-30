@@ -1,6 +1,6 @@
 import { createMock, DeepMocked } from '@golevelup/ts-jest'
 import { ChainSyncService } from '../chain-sync.service'
-import { WebsocketIntentService } from '../../intent/websocket-intent.service'
+import { WatchIntentService } from '../../intent/watch-intent.service'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { Test, TestingModule } from '@nestjs/testing'
 import { getModelToken } from '@nestjs/mongoose'
@@ -14,7 +14,7 @@ import { SimpleAccountClientService } from '../../transaction/simple-account-cli
 describe('ChainSyncService', () => {
   let chainSyncService: ChainSyncService
   let accountService: DeepMocked<SimpleAccountClientService>
-  let websocketIntentService: DeepMocked<WebsocketIntentService>
+  let watchIntentService: DeepMocked<WatchIntentService>
   let ecoConfigService: DeepMocked<EcoConfigService>
 
   beforeEach(async () => {
@@ -25,7 +25,7 @@ describe('ChainSyncService', () => {
           provide: SimpleAccountClientService,
           useValue: createMock<SimpleAccountClientService>(),
         },
-        { provide: WebsocketIntentService, useValue: createMock<WebsocketIntentService>() },
+        { provide: WatchIntentService, useValue: createMock<WatchIntentService>() },
         { provide: EcoConfigService, useValue: createMock<EcoConfigService>() },
         {
           provide: getModelToken(SourceIntentModel.name),
@@ -36,7 +36,7 @@ describe('ChainSyncService', () => {
 
     chainSyncService = chainMod.get(ChainSyncService)
     accountService = chainMod.get(SimpleAccountClientService)
-    websocketIntentService = chainMod.get(WebsocketIntentService)
+    watchIntentService = chainMod.get(WatchIntentService)
     ecoConfigService = chainMod.get(EcoConfigService) as DeepMocked<EcoConfigService>
   })
 
@@ -168,7 +168,7 @@ describe('ChainSyncService', () => {
       })
       const mockProcessJob = jest.fn()
       const mockAddJob = jest.fn(() => mockProcessJob)
-      websocketIntentService.addJob = mockAddJob as any
+      watchIntentService.addJob = mockAddJob as any
       mockGetContractEvents.mockResolvedValueOnce(logs)
       ecoConfigService.getSourceIntents.mockReturnValue([sourceIntent])
 
