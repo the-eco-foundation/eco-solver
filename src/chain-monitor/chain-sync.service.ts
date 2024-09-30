@@ -79,7 +79,9 @@ export class ChainSyncService implements OnApplicationBootstrap {
     )
     const lastRecordedTx = await this.getLastRecordedTx(source)
     const fromBlock: bigint =
-      lastRecordedTx.length > 0 ? BigInt(lastRecordedTx[0].event.blockNumber) : 0n
+      lastRecordedTx.length > 0
+        ? BigInt(lastRecordedTx[0].event.blockNumber) + 1n //start search from next block
+        : 0n
     const toBlock: BlockTag = 'latest'
 
     const createIntentLogs = await client.getContractEvents({

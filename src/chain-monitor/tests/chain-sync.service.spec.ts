@@ -135,7 +135,7 @@ describe('ChainSyncService', () => {
         args: {
           _destinationChain: solverSupportedChains,
         },
-        fromBlock: model.event.blockNumber,
+        fromBlock: model.event.blockNumber + 1n, // we search from the next block
         toBlock: 'latest',
       })
     })
@@ -147,10 +147,12 @@ describe('ChainSyncService', () => {
       await chainSyncService.syncTxsPerSource(sourceIntent)
       expect(mockGetContractEvents).toHaveBeenCalledTimes(1)
       expect(mockLog).toHaveBeenCalledTimes(1)
+      // we search from the next block
+      const searchFromBlock = model.event.blockNumber + 1n
       expect(mockLog).toHaveBeenCalledWith({
-        msg: `No transactions found for source ${sourceIntent.network} to sync from block ${model.event.blockNumber}`,
+        msg: `No transactions found for source ${sourceIntent.network} to sync from block ${searchFromBlock}`,
         chainID: model.event.sourceChainID,
-        fromBlock: model.event.blockNumber,
+        fromBlock: searchFromBlock,
       })
     })
 

@@ -20,6 +20,17 @@ export type EcoConfigType = {
       walletAddr: Hex
       signerPrivateKey: Hex
       minEthBalanceWei: number
+      contracts: {
+        entryPoint: {
+          contractAddress: Hex
+        }
+        paymaster: {
+          contractAddresses: Hex[]
+        }
+        simpleAccountFactory: {
+          contractAddress: Hex
+        }
+      }
     }
     claimant: Hex
     nonce: {

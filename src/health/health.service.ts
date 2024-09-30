@@ -7,6 +7,7 @@ import { EcoRedisHealthIndicator } from './indicators/eco-redis.indicator'
 import { MongoDBHealthIndicator } from './indicators/mongodb.indicator'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { PermissionHealthIndicator } from './indicators/permission.indicator'
+import { GitCommitHealthIndicator } from './indicators/git-commit.indicator'
 
 @Injectable()
 export class HealthService {
@@ -14,14 +15,16 @@ export class HealthService {
 
   constructor(
     private readonly health: HealthCheckService,
-    private readonly redisIndicator: EcoRedisHealthIndicator,
-    private readonly mongoDBHealthIndicator: MongoDBHealthIndicator,
-    private readonly permissionIndicator: PermissionHealthIndicator,
     private readonly balanceIndicator: BalanceHealthIndicator,
+    private readonly gitCommitHealthIndicator: GitCommitHealthIndicator,
+    private readonly permissionIndicator: PermissionHealthIndicator,
+    private readonly mongoDBHealthIndicator: MongoDBHealthIndicator,
+    private readonly redisIndicator: EcoRedisHealthIndicator,
   ) {}
 
   async checkHealth() {
     const healthCheck = await this.health.check([
+      () => this.gitCommitHealthIndicator.gitCommit(),
       () => this.redisIndicator.checkRedis(),
       () => this.mongoDBHealthIndicator.checkMongoDB(),
       () => this.permissionIndicator.checkPermissions(),

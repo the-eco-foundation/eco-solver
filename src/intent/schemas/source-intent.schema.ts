@@ -11,6 +11,7 @@ export type SourceIntentStatus =
   | 'DUPLICATE'
   | 'INVALID'
   | 'INFEASABLE'
+  | 'NON-BEND-WALLET'
 
 @Schema({ timestamps: true })
 export class SourceIntentModel {

@@ -14,6 +14,7 @@ import { ProverModule } from '../prover/prover.module'
 import { TransactionModule } from '../transaction/transaction.module'
 import { MongooseModule } from '@nestjs/mongoose'
 import { BullModule } from '@nestjs/bullmq'
+import { SolverModule } from '../solver/solver.module'
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { BullModule } from '@nestjs/bullmq'
     EcoConfigModule,
     MongooseModule.forFeature([{ name: SourceIntentModel.name, schema: SourceIntentSchema }]),
     ProverModule,
+    SolverModule,
     TransactionModule,
     initBullMQ(QUEUES.SOURCE_INTENT),
   ],
