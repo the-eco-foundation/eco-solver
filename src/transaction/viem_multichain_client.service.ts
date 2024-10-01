@@ -1,17 +1,21 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { createClient, extractChain } from 'viem'
+import { Client, ClientConfig, createClient, extractChain } from 'viem'
 import { chains } from '@alchemy/aa-core'
 import { EcoError } from '../common/errors/eco-error'
 import { ChainsSupported } from '../common/utils/chains'
 import { getTransport } from '../common/alchemy/utils'
 
 @Injectable()
-export class ViemMultichainClientService<T, V> implements OnModuleInit {
+export class ViemMultichainClientService<T extends Client, V extends ClientConfig>
+  implements OnModuleInit
+{
   readonly instances: Map<number, T> = new Map()
 
   protected supportedChainIds: number[] = []
   protected apiKey: string
+  protected pollingInterval: number
+
   constructor(readonly ecoConfigService: EcoConfigService) {}
   onModuleInit() {
     this.setChainConfigs()
@@ -36,6 +40,7 @@ export class ViemMultichainClientService<T, V> implements OnModuleInit {
     const alchemyConfigs = this.ecoConfigService.getAlchemy()
     this.supportedChainIds = alchemyConfigs.networks.map((n) => n.id)
     this.apiKey = alchemyConfigs.apiKey
+    this.pollingInterval = this.ecoConfigService.getEth().pollingInterval
   }
 
   private async loadInstance(chainID: number): Promise<T> {
@@ -74,6 +79,7 @@ export class ViemMultichainClientService<T, V> implements OnModuleInit {
     return {
       transport: rpcTransport,
       chain: chain,
+      pollingInterval: this.pollingInterval,
     } as V
   }
 }

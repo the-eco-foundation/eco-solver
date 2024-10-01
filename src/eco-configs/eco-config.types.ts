@@ -36,6 +36,7 @@ export type EcoConfigType = {
     nonce: {
       update_interval_ms: number
     }
+    pollingInterval: number
   }
   aws: AwsCredentials
   database: {
