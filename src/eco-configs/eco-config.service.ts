@@ -119,8 +119,4 @@ export class EcoConfigService implements OnModuleInit {
   getServer(): EcoConfigType['server'] {
     return this.ecoConfig.get('server')
   }
-
-  getMonitorConfig(): EcoConfigType['monitor'] {
-    return this.ecoConfig.get('monitor')
-  }
 }
