@@ -7,10 +7,10 @@ import { getIntentJobId } from '../common/utils/strings'
 import { SourceIntent } from '../eco-configs/eco-config.types'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { MultichainPublicClientService } from '../transaction/multichain-public-client.service'
-import { IntentSourceAbi } from '../contracts'
+import { IntentCreatedLog, IntentSourceAbi } from '../contracts'
 import { WatchContractEventReturnType, zeroHash } from 'viem'
-import { ViemEventLog } from '../common/events/viem'
 import { convertBigIntsToStrings } from '../common/viem/utils'
+import { entries } from 'lodash'
 
 /**
  * Service class for solving an intent on chain. When this service starts up,
@@ -23,6 +23,7 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
   private logger = new Logger(WatchIntentService.name)
   private intentJobConfig: JobsOptions
   private unwatch: Record<string, WatchContractEventReturnType> = {}
+
   constructor(
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     private readonly publicClientService: MultichainPublicClientService,
@@ -43,6 +44,9 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
   }
 
   async subscribe() {
+    const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(([chainID]) =>
+      BigInt(chainID),
+    )
     const subscribeTasks = this.ecoConfigService.getSourceIntents().map(async (source) => {
       const client = await this.publicClientService.getClient(source.chainID)
       this.unwatch[source.chainID] = client.watchContractEvent({
@@ -59,8 +63,10 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
         address: source.sourceAddress,
         abi: IntentSourceAbi,
         eventName: 'IntentCreated',
-        // restrict by acceptable provers
-        args: { _prover: source.provers },
+        args: {
+          // restrict by acceptable chains, chain ids must be bigints
+          _destinationChain: solverSupportedChains,
+        },
         onLogs: this.addJob(source),
       })
     })
@@ -69,7 +75,7 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
   }
 
   addJob(source: SourceIntent) {
-    return async (logs: ViemEventLog[]) => {
+    return async (logs: IntentCreatedLog[]) => {
       for (const log of logs) {
         // bigint as it can't serialize to JSON
         const createIntent = convertBigIntsToStrings(log)

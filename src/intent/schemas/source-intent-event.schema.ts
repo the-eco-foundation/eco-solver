@@ -5,8 +5,8 @@ import { Hex } from 'viem'
 
 @Schema()
 export class SourceIntentEventModel implements ViemEventLog {
-  @Prop({ required: true })
-  sourceChainID: number
+  @Prop({ required: true, type: BigInt })
+  sourceChainID: bigint
   @Prop({ required: true })
   sourceNetwork: Network
   @Prop({ required: true, type: BigInt })

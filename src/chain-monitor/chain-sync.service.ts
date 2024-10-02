@@ -5,7 +5,7 @@ import { SourceIntentModel } from '../intent/schemas/source-intent.schema'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { SourceIntent } from '../eco-configs/eco-config.types'
-import { IntentSourceAbi } from '../contracts'
+import { IntentCreatedLog, IntentSourceAbi } from '../contracts'
 import { entries } from 'lodash'
 import { BlockTag } from 'viem'
 import { ViemEventLog } from '../common/events/viem'
@@ -72,7 +72,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
    * @param source the source intent to get missing transactions for
    * @returns
    */
-  async getMissingTxs(source: SourceIntent): Promise<ViemEventLog[]> {
+  async getMissingTxs(source: SourceIntent): Promise<IntentCreatedLog[]> {
     const client = await this.simpleAccountClientService.getClient(source.chainID)
     const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(([chainID]) =>
       BigInt(chainID),
@@ -116,7 +116,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
         ...log,
         sourceNetwork: source.network,
         sourceChainID: source.chainID,
-      }
+      } as unknown as IntentCreatedLog 
     })
   }
 

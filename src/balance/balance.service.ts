@@ -1,14 +1,13 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { isSupportedTokenType } from '../common/utils/fragments'
 import { Solver } from '../eco-configs/eco-config.types'
 import { getDestinationNetworkAddressKey } from '../common/utils/strings'
-import { ViemEventLog } from '../common/events/viem'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { decodeTransferLog } from '../common/utils/ws.helpers'
 import { erc20Abi, Hex } from 'viem'
 import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
-type TockenBalance = { decimals: bigint; balance: bigint }
+import { ViemEventLog } from '../common/events/viem'
+import { decodeTransferLog, isSupportedTokenType } from '../contracts'
+type TokenBalance = { decimals: bigint; balance: bigint }
 
 /**
  * Service class for getting configs for the app
@@ -17,7 +16,7 @@ type TockenBalance = { decimals: bigint; balance: bigint }
 export class BalanceService implements OnApplicationBootstrap {
   private logger = new Logger(BalanceService.name)
 
-  private readonly tokenBalances: Map<string, TockenBalance> = new Map()
+  private readonly tokenBalances: Map<string, TokenBalance> = new Map()
 
   constructor(
     private readonly ecoConfig: EcoConfigService,
@@ -65,7 +64,7 @@ export class BalanceService implements OnApplicationBootstrap {
     const key = getDestinationNetworkAddressKey(balanceEvent.sourceChainID, balanceEvent.address)
     const balanceObj = this.tokenBalances.get(key)
     if (balanceObj) {
-      balanceObj.balance = balanceObj.balance + intent[2]
+      balanceObj.balance = balanceObj.balance + intent.args.value
     }
   }
 
@@ -88,7 +87,7 @@ export class BalanceService implements OnApplicationBootstrap {
   private async loadERC20TokenBalance(
     chainID: number,
     tokenAddress: Hex,
-  ): Promise<TockenBalance | undefined> {
+  ): Promise<TokenBalance | undefined> {
     const key = getDestinationNetworkAddressKey(chainID, tokenAddress)
     if (!this.tokenBalances.has(key)) {
       const client = await this.simpleAccountClientService.getClient(chainID)

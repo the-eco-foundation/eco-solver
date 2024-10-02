@@ -2,10 +2,10 @@ import { Controller, Get } from '@nestjs/common'
 import { WatchIntentService } from './watch-intent.service'
 import { Network } from 'alchemy-sdk'
 import { ValidateIntentService } from './validate-intent.service'
-import { SourceIntent } from '../eco-configs/eco-config.types'
 import { Logger } from '@nestjs/common'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { ViemEventLog } from '../common/events/viem'
+import { SourceIntent } from '../eco-configs/eco-config.types'
+import { IntentCreatedLog } from '../contracts'
 
 @Controller('intent')
 export class SourceIntentController {
@@ -18,8 +18,8 @@ export class SourceIntentController {
   @Get()
   async fakeIntent() {
     const si: SourceIntent = {
-      network: (intent[0] as ViemEventLog).sourceNetwork as Network,
-      chainID: (intent[0] as ViemEventLog).sourceChainID,
+      network: (intent[0] as IntentCreatedLog).sourceNetwork as Network,
+      chainID: Number((intent[0] as IntentCreatedLog).sourceChainID),
       sourceAddress: '0x',
       tokens: [],
       provers: [],
@@ -64,7 +64,7 @@ const intent = [
     logIndex: 166,
     sourceNetwork: 'base-mainnet' as Network,
     sourceChainID: 8453,
-  } as unknown as ViemEventLog,
+  } as unknown as IntentCreatedLog,
   {
     blockNumber: 20220263,
     blockHash: '0x97e812234007ea7ec5fd148303eba2f4a66eee559a7513ee05463d1340e1da0f',
@@ -82,5 +82,5 @@ const intent = [
     logIndex: 170,
     sourceNetwork: 'base-mainnet' as Network,
     sourceChainID: 8453,
-  } as unknown as ViemEventLog,
+  } as unknown as IntentCreatedLog,
 ]

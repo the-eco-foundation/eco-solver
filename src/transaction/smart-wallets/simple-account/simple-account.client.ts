@@ -56,7 +56,7 @@ async function execute<chain extends Chain | undefined, account extends Account 
     const data = encodeFunctionData({
       abi: SimpleAccountAbi,
       functionName: 'execute',
-      args: [tx.to, tx.value, tx.data],
+      args: [tx.to, tx.value || 0n, tx.data],
     })
 
     return client.sendTransaction({

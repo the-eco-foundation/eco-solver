@@ -65,7 +65,7 @@ export class BalanceWebsocketService implements OnApplicationBootstrap, OnModule
         transferEvent = convertBigIntsToStrings(transferEvent)
         //add network to the event
         transferEvent.sourceNetwork = network
-        transferEvent.sourceChainID = chainID
+        transferEvent.sourceChainID = BigInt(chainID)
         this.logger.debug(
           EcoLogMessage.fromDefault({
             message: `ws: balance transfer`,

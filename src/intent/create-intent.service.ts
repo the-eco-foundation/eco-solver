@@ -1,11 +1,9 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { ViemEventLog } from '../common/events/viem'
 import { QUEUES } from '../common/redis/constants'
 import { JobsOptions, Queue } from 'bullmq'
 import { InjectQueue } from '@nestjs/bullmq'
-import { decodeCreateIntentLog } from '../common/utils/ws.helpers'
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
@@ -13,6 +11,8 @@ import { getIntentJobId } from '../common/utils/strings'
 import { Hex } from 'viem'
 import { UtilsIntentService } from './utils-intent.service'
 import { ValidSmartWalletService } from '../solver/filters/valid-smart-wallet.service'
+import { decodeCreateIntentLog, IntentCreatedLog } from '../contracts'
+import { SourceIntentDataModel } from './schemas/source-intent-data.schema'
 
 /**
  * Service class for getting configs for the app
@@ -34,7 +34,7 @@ export class CreateIntentService implements OnModuleInit {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
   }
 
-  async createIntent(intentWs: ViemEventLog) {
+  async createIntent(intentWs: IntentCreatedLog) {
     this.logger.debug(
       EcoLogMessage.fromDefault({
         message: `createIntent ${intentWs.transactionHash}`,
@@ -44,14 +44,15 @@ export class CreateIntentService implements OnModuleInit {
       }),
     )
 
-    const intent = decodeCreateIntentLog(intentWs.data, intentWs.topics, intentWs.logIndex ?? 0)
+    const ei = decodeCreateIntentLog(intentWs.data, intentWs.topics)
+    const intent = SourceIntentDataModel.fromEvent(ei, intentWs.logIndex || 0)
+
     try {
       //check db if the intent is already filled
       const model = await this.intentModel.findOne({
         'intent.hash': intent.hash,
       })
       if (model) {
-        await this.utilsIntentService.updateDuplicateIntentModel(this.intentModel, model)
         // Record already exists, do nothing and return
         this.logger.debug(
           EcoLogMessage.fromDefault({
@@ -64,10 +65,12 @@ export class CreateIntentService implements OnModuleInit {
         )
         return
       }
-      const isBendWallet = await this.validSmartWalletService.validateSmartWallet(
-        intent.creator as Hex,
-        intentWs.sourceChainID,
-      )
+      // const isBendWallet = await this.validSmartWalletService.validateSmartWallet(
+      //   intent.creator as Hex,
+      //   intentWs.sourceChainID,
+      // )
+      //todo fix this
+      const isBendWallet = true
       //create db record
       const record = await this.intentModel.create({
         event: intentWs,

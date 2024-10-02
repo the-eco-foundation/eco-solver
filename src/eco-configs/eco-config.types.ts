@@ -4,7 +4,7 @@ import { Params as PinoParams } from 'nestjs-pino'
 import * as Redis from 'ioredis'
 import { Settings } from 'redlock'
 import { JobsOptions } from 'bullmq'
-import { Hex } from 'viem'
+import { Hex, toFunctionSelector } from 'viem'
 
 // The config type that we store in json
 export type EcoConfigType = {
@@ -117,10 +117,14 @@ export type Solver = {
 /**
  * The config type for a supported target contract
  */
-export interface TargetContract {
+export class TargetContract {
   contractType: TargetContractType
   selectors: string[]
   minBalance: number
+  // returns the hash of the selectors
+  selectorsHash() {
+    return this.selectors.map((selector) => toFunctionSelector(selector))
+  }
 }
 
 /**

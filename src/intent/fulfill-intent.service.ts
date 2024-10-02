@@ -7,10 +7,8 @@ import {
   TransactionTargetData,
   UtilsIntentService,
 } from './utils-intent.service'
-import { InboxAbi } from '../contracts'
+import { getERC20Selector, InboxAbi } from '../contracts'
 import { EcoError } from '../common/errors/eco-error'
-import { getERC20Selector } from '../common/utils/ws.helpers'
-import { SourceIntentTxHash } from '../common/events/viem'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { Solver } from '../eco-configs/eco-config.types'
 import { SourceIntentModel } from './schemas/source-intent.schema'
@@ -31,7 +29,7 @@ export class FulfillIntentService {
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
-  async executeFulfillIntent(intentHash: SourceIntentTxHash) {
+  async executeFulfillIntent(intentHash: Hex) {
     const data = await this.utilsIntentService.getProcessIntentData(intentHash)
     const { model, solver, err } = data ?? {}
     if (!data || !model || !solver) {
@@ -118,9 +116,9 @@ export class FulfillIntentService {
    * @returns
    */
   handleErc20(tt: TransactionTargetData, solver: Solver, target: Hex) {
-    switch (tt.transactionDescription.selector) {
+    switch (tt.selector) {
       case getERC20Selector('transfer'):
-        const dstAmount = tt.transactionDescription.args[1]
+        const dstAmount = tt.decodedFunctionData.args?.[1] as bigint
 
         const transferSolverAmount = encodeFunctionData({
           abi: erc20Abi,
@@ -178,7 +176,7 @@ export class FulfillIntentService {
    * @param model
    * @private
    */
-  private getFulfillIntentData(walletAddr: string, model: SourceIntentModel) {
+  private getFulfillIntentData(walletAddr: Hex, model: SourceIntentModel) {
     return encodeFunctionData({
       abi: InboxAbi,
       functionName: 'fulfill',

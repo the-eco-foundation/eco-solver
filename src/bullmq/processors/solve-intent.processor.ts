@@ -3,11 +3,13 @@ import { QUEUES } from '../../common/redis/constants'
 import { Injectable, Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
 import { EcoLogMessage } from '../../common/logging/eco-log-message'
-import { ViemEventLog, SourceIntentTxHash } from '../../common/events/viem'
+import { ViemEventLog } from '../../common/events/viem'
 import { FeasableIntentService } from '../../intent/feasable-intent.service'
 import { ValidateIntentService } from '../../intent/validate-intent.service'
 import { CreateIntentService } from '../../intent/create-intent.service'
 import { FulfillIntentService } from '../../intent/fulfill-intent.service'
+import { Hex } from 'viem'
+import { IntentCreatedLog } from '../../contracts'
 
 @Injectable()
 @Processor(QUEUES.SOURCE_INTENT.queue)
@@ -37,13 +39,13 @@ export class SolveIntentProcessor extends WorkerHost {
 
     switch (job.name) {
       case QUEUES.SOURCE_INTENT.jobs.create_intent:
-        return await this.createIntentService.createIntent(job.data as ViemEventLog)
+        return await this.createIntentService.createIntent(job.data as IntentCreatedLog)
       case QUEUES.SOURCE_INTENT.jobs.validate_intent:
-        return await this.validateIntentService.validateIntent(job.data as SourceIntentTxHash)
+        return await this.validateIntentService.validateIntent(job.data as Hex)
       case QUEUES.SOURCE_INTENT.jobs.feasable_intent:
-        return await this.feasableIntentService.feasableIntent(job.data as SourceIntentTxHash)
+        return await this.feasableIntentService.feasableIntent(job.data as Hex)
       case QUEUES.SOURCE_INTENT.jobs.fulfill_intent:
-        return await this.fulfillIntentService.executeFulfillIntent(job.data as SourceIntentTxHash)
+        return await this.fulfillIntentService.executeFulfillIntent(job.data as Hex)
       default:
         this.logger.error(
           EcoLogMessage.fromDefault({

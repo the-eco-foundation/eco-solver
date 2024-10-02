@@ -1,4 +1,4 @@
-import { Hex, Log, WatchContractEventOnLogsFn } from 'viem'
+import { Log } from 'viem'
 
 /**
  * {
@@ -19,8 +19,4 @@ import { Hex, Log, WatchContractEventOnLogsFn } from 'viem'
 }
  */
 
-export type ViemEventLogArray = Parameters<WatchContractEventOnLogsFn>[0]
-export type ViemEventLog = Log & { sourceNetwork: string; sourceChainID: number }
-export type ViemRawLog = Log
-// The hash of the log event
-export type SourceIntentTxHash = Hex
+export type ViemEventLog = Log & { sourceNetwork: string; sourceChainID: bigint }
