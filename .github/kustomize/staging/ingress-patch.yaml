@@ -18,6 +18,10 @@
   value: solver-lb.staging.bend.eco
 
 - op: add
+  path: /spec/rules/0/host
+  value: solver-lb.staging.bend.eco
+
+- op: add
   path: /spec/rules/0/http/paths/0/backend/service/port
   value:
     number: 3000
