@@ -151,7 +151,7 @@ export class ValidateIntentService implements OnModuleInit {
     // for()<--- sourceIntent needs unique on chainid so change to Record like solvers, and then check that its the right one here
     // add a UnsupportedProver to the status
     // model.intent.prover = solver.prover
-    return false
+    return true
   }
 
   private supportedTargets(model: SourceIntentModel, solver: Solver): boolean {

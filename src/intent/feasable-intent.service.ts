@@ -146,7 +146,7 @@ export class FeasableIntentService implements OnModuleInit {
       if (index < 0) {
         return false
       }
-      sum += this.convertToUSDC(network, token, rewardAmounts[index])
+      sum += this.convertToUSDC(network, token, BigInt(rewardAmounts[index]))
     })
 
     //check if input tokens are acceptable and greater than + fees

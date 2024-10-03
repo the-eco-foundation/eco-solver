@@ -8,7 +8,6 @@ import { SourceIntent } from '../eco-configs/eco-config.types'
 import { IntentCreatedLog, IntentSourceAbi } from '../contracts'
 import { entries } from 'lodash'
 import { BlockTag } from 'viem'
-import { ViemEventLog } from '../common/events/viem'
 import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
 import { WatchIntentService } from '../intent/watch-intent.service'
 
@@ -35,7 +34,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
         message: `ChainSyncService:OnApplicationBootstrap`,
       }),
     )
-    await this.syncTxs()
+    // await this.syncTxs()
   }
 
   /**
@@ -116,7 +115,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
         ...log,
         sourceNetwork: source.network,
         sourceChainID: source.chainID,
-      } as unknown as IntentCreatedLog 
+      } as unknown as IntentCreatedLog
     })
   }
 

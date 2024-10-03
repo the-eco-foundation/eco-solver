@@ -7,7 +7,7 @@ import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { Solver, TargetContract } from '../eco-configs/eco-config.types'
 import { EcoError } from '../common/errors/eco-error'
 import { difference, includes } from 'lodash'
-import { decodeFunctionData, DecodeFunctionDataReturnType, Hex } from 'viem'
+import { decodeFunctionData, DecodeFunctionDataReturnType, Hex, toFunctionSelector } from 'viem'
 import { getERCAbi } from '../contracts'
 import { getFunctionBytes } from '../common/viem/contracts'
 
@@ -121,7 +121,8 @@ export class UtilsIntentService implements OnModuleInit {
       data,
     })
     const selector = getFunctionBytes(data)
-    const supported = tx && includes(targetConfig.selectorsHash(), selector)
+    const supportedSelectors = targetConfig.selectors.map((s) => toFunctionSelector(s))
+    const supported = tx && includes(supportedSelectors, selector)
     if (!supported) {
       this.logger.log(
         EcoLogMessage.fromDefault({

@@ -82,8 +82,8 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
         createIntent.sourceChainID = source.chainID
         createIntent.sourceNetwork = source.network
         const jobId = getIntentJobId(
-          'watchintent',
-          createIntent.transactionHash ?? zeroHash,
+          'watch',
+          createIntent.args._hash ?? zeroHash,
           createIntent.logIndex ?? 0,
         )
         this.logger.debug(
