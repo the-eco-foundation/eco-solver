@@ -13,5 +13,5 @@ jobs:
       aws-region: us-east-2
       ecr-repository: eco-solver
       ghenv: staging
-      ghsha: 1d192ddcdb2caae148b70066cc5be4260982fa37 
+      ghsha: fd7a77f4ca940466d4231d899f898412d9ba37c8 
       targetenv: staging
