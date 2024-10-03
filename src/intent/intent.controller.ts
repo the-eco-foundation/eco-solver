@@ -47,7 +47,7 @@ export class SourceIntentController {
     // })
   }
 }
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const intentSepolia = [
   {
     blockNumber: 17962391,
@@ -86,6 +86,8 @@ const intentSepolia = [
     sourceChainID: 11155420,
   } as unknown as IntentCreatedLog,
 ]
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const intentMainnet = [
   {
     blockNumber: 20220263,
@@ -125,6 +127,7 @@ const intentMainnet = [
   } as unknown as IntentCreatedLog,
 ]
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const intentPreprod = [
   {
     eventName: 'IntentCreated',

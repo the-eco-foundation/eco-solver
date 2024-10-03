@@ -147,6 +147,7 @@ export class ValidateIntentService implements OnModuleInit {
     return true
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private supportedProver(model: SourceIntentModel, solver: Solver): boolean {
     // for()<--- sourceIntent needs unique on chainid so change to Record like solvers, and then check that its the right one here
     // add a UnsupportedProver to the status
