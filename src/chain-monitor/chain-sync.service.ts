@@ -34,7 +34,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
         message: `ChainSyncService:OnApplicationBootstrap`,
       }),
     )
-    // await this.syncTxs()
+    await this.syncTxs()
   }
 
   /**
