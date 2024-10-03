@@ -4,7 +4,7 @@ import {
   Hex,
   prepareEncodeFunctionData,
   PrepareEncodeFunctionDataParameters,
-  slice,
+  slice as vslice,
 } from 'viem'
 
 /**
@@ -21,5 +21,5 @@ export function getSelector<
 
 // Get the first 4 bytes of the data that is the hash of the function signature
 export function getFunctionBytes(data: Hex): Hex {
-  return slice(data, 0, 4)
+  return vslice(data, 0, 4)
 }

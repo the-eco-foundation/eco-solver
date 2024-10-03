@@ -117,7 +117,7 @@ export type Solver = {
 /**
  * The config type for a supported target contract
  */
-export class TargetContract {
+export interface TargetContract {
   contractType: TargetContractType
   selectors: string[]
   minBalance: number
