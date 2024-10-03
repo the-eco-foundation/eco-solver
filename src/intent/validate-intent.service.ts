@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { SourceIntentTxHash } from '../common/events/websocket'
 import { IntentProcessData, UtilsIntentService } from './utils-intent.service'
 import { QUEUES } from '../common/redis/constants'
 import { JobsOptions, Queue } from 'bullmq'
@@ -12,6 +11,7 @@ import { SourceIntentModel } from './schemas/source-intent.schema'
 import { ProofService } from '../prover/proof.service'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
+import { Hex } from 'viem'
 
 /**
  * Service class for getting configs for the app
@@ -36,7 +36,7 @@ export class ValidateIntentService implements OnModuleInit {
   /**
    * @param intentHash the hash of the intent to fulfill
    */
-  async validateIntent(intentHash: SourceIntentTxHash) {
+  async validateIntent(intentHash: Hex) {
     this.logger.debug(
       EcoLogMessage.fromDefault({
         message: `validateIntent ${intentHash}`,
@@ -50,12 +50,14 @@ export class ValidateIntentService implements OnModuleInit {
     if (!model || !solver) {
       return
     }
+    const proverUnsupported = !this.supportedProver(model, solver)
     const targetsUnsupported = !this.supportedTargets(model, solver)
     const selectorsUnsupported = !this.supportedSelectors(model, solver)
     const expiresEarly = !this.validExpirationTime(model, solver)
 
-    if (targetsUnsupported || selectorsUnsupported || expiresEarly) {
+    if (proverUnsupported || targetsUnsupported || selectorsUnsupported || expiresEarly) {
       await this.utilsIntentService.updateInvalidIntentModel(this.intentModel, model, {
+        proverUnsupported,
         targetsUnsupported,
         selectorsUnsupported,
         expiresEarly,
@@ -142,6 +144,14 @@ export class ValidateIntentService implements OnModuleInit {
       )
       return false
     }
+    return true
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private supportedProver(model: SourceIntentModel, solver: Solver): boolean {
+    // for()<--- sourceIntent needs unique on chainid so change to Record like solvers, and then check that its the right one here
+    // add a UnsupportedProver to the status
+    // model.intent.prover = solver.prover
     return true
   }
 

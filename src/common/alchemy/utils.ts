@@ -28,8 +28,8 @@ export function getAchemyRPCUrl(
 export function getTransport(
   chain: chains.Chain,
   apiKey: string,
-  websocketEnabled: boolean = true,
+  websocketEnabled: boolean = false,
 ): WebSocketTransport | HttpTransport {
   const url = getAchemyRPCUrl(chain, apiKey, websocketEnabled)
-  return websocketEnabled ? webSocket(url) : http(url)
+  return websocketEnabled ? webSocket(url, { keepAlive: true, reconnect: true }) : http(url)
 }

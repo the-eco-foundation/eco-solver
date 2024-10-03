@@ -55,9 +55,6 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-#Typings auto gen files
-src/typing/contracts
-
 #Redis
 dump.rdb
 
@@ -65,6 +62,7 @@ dump.rdb
 config/*
 !config/default.ts
 !config/development.ts
+!config/staging.ts
 !config/preproduction.ts
 !config/production.ts
 !config/test.ts

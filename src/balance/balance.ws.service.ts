@@ -4,7 +4,7 @@ import { Network } from 'alchemy-sdk'
 import { JobsOptions, Queue } from 'bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
-import { ViemEventLog } from '../common/events/websocket'
+import { ViemEventLog } from '../common/events/viem'
 import { erc20Abi, Hex, WatchContractEventReturnType, zeroHash } from 'viem'
 import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
 import { convertBigIntsToStrings } from '../common/viem/utils'
@@ -65,7 +65,7 @@ export class BalanceWebsocketService implements OnApplicationBootstrap, OnModule
         transferEvent = convertBigIntsToStrings(transferEvent)
         //add network to the event
         transferEvent.sourceNetwork = network
-        transferEvent.sourceChainID = chainID
+        transferEvent.sourceChainID = BigInt(chainID)
         this.logger.debug(
           EcoLogMessage.fromDefault({
             message: `ws: balance transfer`,

@@ -36,6 +36,7 @@ export type EcoConfigType = {
     nonce: {
       update_interval_ms: number
     }
+    pollingInterval: number
   }
   aws: AwsCredentials
   database: {
@@ -51,9 +52,6 @@ export type EcoConfigType = {
   logger: {
     usePino: boolean
     pinoConfig: PinoParams
-  }
-  monitor: {
-    baseUrl: string
   }
 }
 
@@ -97,7 +95,6 @@ export type MongoAuthType = {
  */
 export type AlchemyConfigType = {
   apiKey: string
-  authToken: string
   networks: AlchemyNetwork[]
 }
 

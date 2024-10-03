@@ -1,6 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { SourceIntentTxHash } from '../common/events/websocket'
 import { JobsOptions, Queue } from 'bullmq'
 import { InjectQueue } from '@nestjs/bullmq'
 import { QUEUES } from '../common/redis/constants'
@@ -8,15 +7,15 @@ import { TransactionTargetData, UtilsIntentService } from './utils-intent.servic
 import { BalanceService } from '../balance/balance.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { EcoError } from '../common/errors/eco-error'
-import { getERC20Selector } from '../common/utils/ws.helpers'
-import { BigNumberish, Network } from 'alchemy-sdk'
-import { AddressLike } from 'ethers'
+import { Network } from 'alchemy-sdk'
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { intersectionBy } from 'lodash'
 import { getIntentJobId } from '../common/utils/strings'
 import { Solver } from '../eco-configs/eco-config.types'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { Hex } from 'viem'
+import { getERC20Selector } from '../contracts'
 
 /**
  * Service class for getting configs for the app
@@ -41,7 +40,7 @@ export class FeasableIntentService implements OnModuleInit {
     this.fee = 1000n
   }
 
-  async feasableIntent(intentHash: SourceIntentTxHash) {
+  async feasableIntent(intentHash: Hex) {
     this.logger.debug(
       EcoLogMessage.fromDefault({
         message: `FeasableIntent intent ${intentHash}`,
@@ -92,14 +91,14 @@ export class FeasableIntentService implements OnModuleInit {
     tt: TransactionTargetData,
     model: SourceIntentModel,
     solver: Solver,
-    target: AddressLike,
+    target: Hex,
   ): Promise<{ solvent: boolean; profitable: boolean } | undefined> {
     const targetNetwork = solver.network
-    switch (tt.transactionDescription.selector) {
+    const amount = tt.decodedFunctionData.args ? (tt.decodedFunctionData.args[1] as bigint) : 0n
+    switch (tt.selector) {
       case getERC20Selector('transfer'):
         //check we have enough tokens to transfer on destination fullfillment
         const balance = await this.balanceService.getTokenBalance(solver.chainID, target as string)
-        const amount = tt.transactionDescription.args[1] as bigint
         const solvent = balance.balance >= amount
         const sourceNetwork = model.event.sourceNetwork
         const source = this.ecoConfigService
@@ -109,15 +108,11 @@ export class FeasableIntentService implements OnModuleInit {
           return
         }
         //check that we make money on the transfer
-        const fullfillAmountUSDC = this.convertToUSDC(
-          targetNetwork,
-          target as string,
-          tt.transactionDescription.args[1] as bigint,
-        )
+        const fullfillAmountUSDC = this.convertToUSDC(targetNetwork, target as string, amount)
         const profitable = this.isProfitableErc20Transfer(
           sourceNetwork,
           source.tokens,
-          model.intent.rewardTokens as string[],
+          model.intent.rewardTokens,
           model.intent.rewardAmounts,
           fullfillAmountUSDC,
         )
@@ -140,9 +135,9 @@ export class FeasableIntentService implements OnModuleInit {
    */
   isProfitableErc20Transfer(
     network: Network,
-    acceptedTokens: string[],
-    rewardTokens: string[],
-    rewardAmounts: BigNumberish[],
+    acceptedTokens: readonly Hex[],
+    rewardTokens: readonly Hex[],
+    rewardAmounts: readonly bigint[],
     fullfillAmountUSDC: bigint,
   ): boolean {
     let sum = 0n
@@ -151,7 +146,7 @@ export class FeasableIntentService implements OnModuleInit {
       if (index < 0) {
         return false
       }
-      sum += this.convertToUSDC(network, token, BigInt(rewardAmounts[index] as number))
+      sum += this.convertToUSDC(network, token, BigInt(rewardAmounts[index]))
     })
 
     //check if input tokens are acceptable and greater than + fees
@@ -199,7 +194,7 @@ export class FeasableIntentService implements OnModuleInit {
   async validateEachExecution(
     model: SourceIntentModel,
     solver: Solver,
-    target: AddressLike,
+    target: Hex,
     index: number,
   ): Promise<
     | false

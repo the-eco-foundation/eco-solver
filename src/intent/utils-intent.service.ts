@@ -6,15 +6,17 @@ import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { Solver, TargetContract } from '../eco-configs/eco-config.types'
 import { EcoError } from '../common/errors/eco-error'
-import { AddressLike, TransactionDescription } from 'ethers'
-import { getFragment } from '../common/utils/fragments'
 import { difference, includes } from 'lodash'
+import { decodeFunctionData, DecodeFunctionDataReturnType, Hex, toFunctionSelector } from 'viem'
+import { getERCAbi } from '../contracts'
+import { getFunctionBytes } from '../common/viem/contracts'
 
 /**
  * Data for a transaction target
  */
 export interface TransactionTargetData {
-  transactionDescription: TransactionDescription
+  decodedFunctionData: DecodeFunctionDataReturnType
+  selector: Hex
   targetConfig: TargetContract
 }
 
@@ -55,18 +57,11 @@ export class UtilsIntentService implements OnModuleInit {
     return await intentModel.updateOne({ 'intent.hash': model.intent.hash }, model)
   }
 
-  async updateDuplicateIntentModel(
-    intentModel: Model<SourceIntentModel>,
-    model: SourceIntentModel,
-  ) {
-    model.status = 'DUPLICATE'
-    return await this.updateIntentModel(intentModel, model)
-  }
-
   async updateInvalidIntentModel(
     intentModel: Model<SourceIntentModel>,
     model: SourceIntentModel,
     invalidCause: {
+      proverUnsupported: boolean
       targetsUnsupported: boolean
       selectorsUnsupported: boolean
       expiresEarly: boolean
@@ -111,18 +106,23 @@ export class UtilsIntentService implements OnModuleInit {
   getTransactionTargetData(
     model: SourceIntentModel,
     solver: Solver,
-    target: AddressLike,
+    target: Hex,
     index: number,
   ): TransactionTargetData | null {
     const data = model.intent.data[index]
-    const targetConfig = solver.targets[target as string]
+    const targetConfig = solver.targets[target as string] as TargetContract
     if (!targetConfig) {
       //shouldn't happen since we do this.targetsSupported(model, solver) before this call
       throw EcoError.SourceIntentTargetConfigNotFound(target as string)
     }
-    const frag = getFragment(targetConfig.contractType)
-    const tx = frag.parseTransaction({ data: data as string })
-    const supported = tx && includes(targetConfig.selectors, tx.signature)
+
+    const tx = decodeFunctionData({
+      abi: getERCAbi(targetConfig.contractType),
+      data,
+    })
+    const selector = getFunctionBytes(data)
+    const supportedSelectors = targetConfig.selectors.map((s) => toFunctionSelector(s))
+    const supported = tx && includes(supportedSelectors, selector)
     if (!supported) {
       this.logger.log(
         EcoLogMessage.fromDefault({
@@ -130,13 +130,13 @@ export class UtilsIntentService implements OnModuleInit {
           properties: {
             intentHash: model.intent.hash,
             sourceNetwork: model.event.sourceNetwork,
-            unsupportedSelector: tx?.signature,
+            unsupportedSelector: selector,
           },
         }),
       )
       return null
     }
-    return { transactionDescription: tx, targetConfig }
+    return { decodedFunctionData: tx, selector, targetConfig }
   }
 
   targetsSupported(model: SourceIntentModel, solver: Solver): boolean {
@@ -168,7 +168,7 @@ export class UtilsIntentService implements OnModuleInit {
         return { model, solver: null, err: EcoError.SourceIntentDataNotFound(intentHash) }
       }
 
-      const solver = this.ecoConfigService.getSolver(model.intent.destinationChainID as number)
+      const solver = this.ecoConfigService.getSolver(model.intent.destinationChainID)
       if (!solver) {
         this.logger.log(
           EcoLogMessage.fromDefault({

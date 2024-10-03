@@ -4,7 +4,10 @@ export function getRandomString() {
   return Math.random().toString(36).slice(2)
 }
 
-export function getDestinationNetworkAddressKey(chainID: number, tokenAddress: string): string {
+export function getDestinationNetworkAddressKey(
+  chainID: number | bigint,
+  tokenAddress: string,
+): string {
   return `${chainID}-${tokenAddress}`
 }
 

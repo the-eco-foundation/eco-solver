@@ -61,7 +61,7 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnApplica
       }) as chains.Chain
       const client = createPublicClient({
         chain,
-        transport: getTransport(chain, apiKey, true),
+        transport: getTransport(chain, apiKey),
       } as any)
       return { address, client } as AtomicKeyClientParams
     })

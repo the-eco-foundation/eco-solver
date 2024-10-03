@@ -81,7 +81,8 @@ export class EcoConfigService implements OnModuleInit {
   }
 
   // Returns the solver for a specific chain or undefined if its not supported
-  getSolver(chainID: number): Solver | undefined {
+  getSolver(chainID: number | bigint): Solver | undefined {
+    chainID = typeof chainID === 'bigint' ? Number(chainID) : chainID
     return this.getSolvers()[chainID]
   }
 
@@ -118,9 +119,5 @@ export class EcoConfigService implements OnModuleInit {
   // Returns the server configs
   getServer(): EcoConfigType['server'] {
     return this.ecoConfig.get('server')
-  }
-
-  getMonitorConfig(): EcoConfigType['monitor'] {
-    return this.ecoConfig.get('monitor')
   }
 }

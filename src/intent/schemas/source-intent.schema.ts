@@ -1,14 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { ContractTransactionReceipt } from 'ethers'
 import { SourceIntentEventModel } from './source-intent-event.schema'
 import { SourceIntentDataModel } from './source-intent-data.schema'
+import { GetTransactionReceiptReturnType } from 'viem'
 
 export type SourceIntentStatus =
   | 'PENDING'
   | 'SOLVED'
   | 'EXPIRED'
   | 'FAILED'
-  | 'DUPLICATE'
   | 'INVALID'
   | 'INFEASABLE'
   | 'NON-BEND-WALLET'
@@ -21,8 +20,8 @@ export class SourceIntentModel {
   @Prop({ required: true })
   intent: SourceIntentDataModel
 
-  @Prop()
-  receipt: ContractTransactionReceipt
+  @Prop({ type: Object })
+  receipt: GetTransactionReceiptReturnType
 
   @Prop({ required: true })
   status: SourceIntentStatus

@@ -5,12 +5,11 @@ import { SourceIntentModel } from '../intent/schemas/source-intent.schema'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { SourceIntent } from '../eco-configs/eco-config.types'
-import { IntentSourceAbi } from '../contracts'
+import { IntentCreatedLog, IntentSourceAbi } from '../contracts'
 import { entries } from 'lodash'
 import { BlockTag } from 'viem'
-import { WebsocketIntentService } from '../intent/websocket-intent.service'
-import { ViemEventLog } from '../common/events/websocket'
 import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
+import { WatchIntentService } from '../intent/watch-intent.service'
 
 /**
  * Service class for syncing any missing transactions for all the source intent contracts.
@@ -25,7 +24,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly simpleAccountClientService: SimpleAccountClientService,
-    private readonly websocketIntentService: WebsocketIntentService,
+    private readonly watchIntentService: WatchIntentService,
     private ecoConfigService: EcoConfigService,
   ) {}
 
@@ -61,7 +60,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
       return
     }
 
-    return this.websocketIntentService.addJob(source)(createIntentLogs)
+    return this.watchIntentService.addJob(source)(createIntentLogs)
   }
 
   /**
@@ -72,7 +71,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
    * @param source the source intent to get missing transactions for
    * @returns
    */
-  async getMissingTxs(source: SourceIntent): Promise<ViemEventLog[]> {
+  async getMissingTxs(source: SourceIntent): Promise<IntentCreatedLog[]> {
     const client = await this.simpleAccountClientService.getClient(source.chainID)
     const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(([chainID]) =>
       BigInt(chainID),
@@ -116,7 +115,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
         ...log,
         sourceNetwork: source.network,
         sourceChainID: source.chainID,
-      }
+      } as unknown as IntentCreatedLog
     })
   }
 
