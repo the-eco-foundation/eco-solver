@@ -25,8 +25,8 @@ export class ValidateIntentService implements OnModuleInit {
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
-    private readonly ecoConfigService: EcoConfigService,
     private readonly proofService: ProofService,
+    private readonly ecoConfigService: EcoConfigService,
   ) {}
 
   onModuleInit() {
@@ -50,7 +50,7 @@ export class ValidateIntentService implements OnModuleInit {
     if (!model || !solver) {
       return
     }
-    const proverUnsupported = !this.supportedProver(model, solver)
+    const proverUnsupported = !this.supportedProver(model)
     const targetsUnsupported = !this.supportedTargets(model, solver)
     const selectorsUnsupported = !this.supportedSelectors(model, solver)
     const expiresEarly = !this.validExpirationTime(model, solver)
@@ -147,12 +147,22 @@ export class ValidateIntentService implements OnModuleInit {
     return true
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private supportedProver(model: SourceIntentModel, solver: Solver): boolean {
-    // for()<--- sourceIntent needs unique on chainid so change to Record like solvers, and then check that its the right one here
-    // add a UnsupportedProver to the status
-    // model.intent.prover = solver.prover
-    return true
+  /**
+   * Checks if the IntentCreated event is using a supported prover. It first finds the source intent contract that is on the
+   * source chain of the event. Then it checks if the prover is supported by the source intent.
+   *
+   * @param model the source intent model
+   * @returns
+   */
+  private supportedProver(model: SourceIntentModel): boolean {
+    const srcSolvers = this.ecoConfigService.getSourceIntents().filter((intent) => {
+      BigInt(intent.chainID) === model.event.sourceChainID
+    })
+    return srcSolvers.some((intent) => {
+      intent.provers.some((prover) => {
+        prover === model.intent.prover
+      })
+    })
   }
 
   private supportedTargets(model: SourceIntentModel, solver: Solver): boolean {
