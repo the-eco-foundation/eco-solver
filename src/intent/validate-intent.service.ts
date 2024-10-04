@@ -21,7 +21,7 @@ import { EcoError } from '../common/errors/eco-error'
  * 2. Supports the targets
  * 3. Supports the selectors
  * 4. Has a valid expiration time
- * 
+ *
  * As well as some structural checks on the intent model
  */
 @Injectable()
