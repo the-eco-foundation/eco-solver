@@ -43,6 +43,11 @@ export class EcoError extends Error {
   static FulfillIntentNoTransactionError = new Error('No transaction data found')
   static FulfillIntentBatchError = new Error('Could not fulfill batch transaction')
 
+  // ValidateIntent Service
+  static ValidateIntentDescructureFailed(err?: Error) {
+    return err || new Error('Desctructuring the intent from the intent hash failed')
+  }
+
   // EcoConfig Service
 
   static isEcoError(error: any): boolean {

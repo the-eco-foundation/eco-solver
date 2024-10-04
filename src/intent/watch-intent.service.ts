@@ -66,6 +66,8 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
         args: {
           // restrict by acceptable chains, chain ids must be bigints
           _destinationChain: solverSupportedChains,
+          // restrict by acceptable prover
+          _prover: source.provers,
         },
         onLogs: this.addJob(source),
       })

@@ -103,7 +103,7 @@ export const IntentSourceAbi = [
         type: 'uint256[]',
       },
       {
-        indexed: true,
+        indexed: false,
         internalType: 'uint256',
         name: '_expiryTime',
         type: 'uint256',
@@ -115,7 +115,7 @@ export const IntentSourceAbi = [
         type: 'bytes32',
       },
       {
-        indexed: false,
+        indexed: true,
         internalType: 'address',
         name: '_prover',
         type: 'address',

@@ -12,9 +12,17 @@ import { ProofService } from '../prover/proof.service'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { Hex } from 'viem'
+import { EcoError } from '../common/errors/eco-error'
 
 /**
- * Service class for getting configs for the app
+ * Service class that acts as the main validation service for intents. It validates that
+ * the solver:
+ * 1. Supports the prover
+ * 2. Supports the targets
+ * 3. Supports the selectors
+ * 4. Has a valid expiration time
+ *
+ * As well as some structural checks on the intent model
  */
 @Injectable()
 export class ValidateIntentService implements OnModuleInit {
@@ -25,8 +33,8 @@ export class ValidateIntentService implements OnModuleInit {
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly utilsIntentService: UtilsIntentService,
-    private readonly ecoConfigService: EcoConfigService,
     private readonly proofService: ProofService,
+    private readonly ecoConfigService: EcoConfigService,
   ) {}
 
   onModuleInit() {
@@ -48,9 +56,45 @@ export class ValidateIntentService implements OnModuleInit {
 
     const { model, solver } = await this.destructureIntent(intentHash)
     if (!model || !solver) {
-      return
+      return false
     }
-    const proverUnsupported = !this.supportedProver(model, solver)
+
+    if (!(await this.assertValidations(model, solver))) {
+      return false
+    }
+
+    const jobId = getIntentJobId('validate', intentHash, model.intent.logIndex)
+    this.logger.debug(
+      EcoLogMessage.fromDefault({
+        message: `validateIntent ${intentHash}`,
+        properties: {
+          intentHash,
+          jobId,
+        },
+      }),
+    )
+    //add to processing queue
+    await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.feasable_intent, intentHash, {
+      jobId,
+      ...this.intentJobConfig,
+    })
+
+    return true
+  }
+
+  /**
+   * Executes all the validations we have on the model and solver
+   *
+   * @param model the source intent model
+   * @param solver the solver for the source chain
+   * @returns true if they all pass, false otherwise
+   */
+  async assertValidations(model: SourceIntentModel, solver: Solver): Promise<boolean> {
+    if (!this.isRewardsEqualSized(model)) {
+      return false
+    }
+
+    const proverUnsupported = !this.supportedProver(model)
     const targetsUnsupported = !this.supportedTargets(model, solver)
     const selectorsUnsupported = !this.supportedSelectors(model, solver)
     const expiresEarly = !this.validExpirationTime(model, solver)
@@ -66,17 +110,101 @@ export class ValidateIntentService implements OnModuleInit {
         EcoLogMessage.fromDefault({
           message: `Intent failed validation ${model.intent.hash}`,
           properties: {
-            intentHash: model.intent.hash,
-            sourceNetwork: model.event.sourceNetwork,
+            model,
+            proverUnsupported,
             targetsUnsupported,
             selectorsUnsupported,
             expiresEarly,
+            ...(expiresEarly && {
+              proofMinDurationSeconds: this.proofService
+                .getProofMinimumDate(solver.chainID)
+                .toUTCString(),
+            }),
           },
         }),
       )
-      return
+      return false
     }
 
+    return true
+  }
+
+  /**
+   * Fetches the intent from the db and its solver and model from configs. Validates
+   * that both are returned without any error
+   *
+   * @param intentHash the hash of the intent to find in the db
+   * @returns
+   */
+  private async destructureIntent(intentHash: Hex): Promise<IntentProcessData> {
+    const data = await this.utilsIntentService.getProcessIntentData(intentHash)
+    const { model, solver, err } = data ?? {}
+    if (!data || !model || !solver) {
+      throw EcoError.ValidateIntentDescructureFailed(err)
+    }
+    return data
+  }
+
+  /**
+   * Checks if the IntentCreated event is using a supported prover. It first finds the source intent contract that is on the
+   * source chain of the event. Then it checks if the prover is supported by the source intent. In the
+   * case that there are multiple matching source intent contracts on the same chain, as long as any of
+   * them support the prover, the function will return true.
+   *
+   * @param model the source intent model
+   * @returns
+   */
+  private supportedProver(model: SourceIntentModel): boolean {
+    const srcSolvers = this.ecoConfigService.getSourceIntents().filter((intent) => {
+      return BigInt(intent.chainID) == model.event.sourceChainID
+    })
+
+    return srcSolvers.some((intent) => {
+      return intent.provers.some((prover) => prover == model.intent.prover)
+    })
+  }
+
+  /**
+   * Checks if the target in the event is supported on its solver
+   *
+   * @param model the source intent model
+   * @param solver the solver for the source chain
+   * @returns
+   */
+  private supportedTargets(model: SourceIntentModel, solver: Solver): boolean {
+    return !!this.utilsIntentService.targetsSupported(model, solver)
+  }
+
+  /**
+   * Checks if the selectors in the event are supported on the solver
+   * @param model the source intent model
+   * @param solver the solver for the source chain
+   * @returns
+   */
+  private supportedSelectors(model: SourceIntentModel, solver: Solver): boolean {
+    //check if the targets support the selectors encoded in the intent data
+    return !!this.utilsIntentService.selectorsSupported(model, solver)
+  }
+
+  /**
+   *
+   * @param model the source intent model
+   * @param solver the solver for the source chain
+   * @returns
+   */
+  private validExpirationTime(model: SourceIntentModel, solver: Solver): boolean {
+    //convert to milliseconds
+    const time = Number.parseInt(`${model.intent.expiryTime as bigint}`) * 1000
+    const expires = new Date(time)
+    return !!this.proofService.isIntentExpirationWithinProofMinimumDate(solver.chainID, expires)
+  }
+
+  /**
+   * Checks if the rewards and amounts arrays are of equal size
+   * @param model the source intent model
+   * @returns
+   */
+  isRewardsEqualSized(model: SourceIntentModel) {
     //check that the rewards and amounts are equal sized
     if (model.intent.rewardTokens.length !== model.intent.rewardAmounts.length) {
       this.logger.log(
@@ -87,100 +215,8 @@ export class ValidateIntentService implements OnModuleInit {
           },
         }),
       )
-      return
-    }
-    const jobId = getIntentJobId('validate', intentHash, model.intent.logIndex)
-    this.logger.debug(
-      EcoLogMessage.fromDefault({
-        message: `validateIntent ${intentHash}`,
-        properties: {
-          jobId,
-        },
-      }),
-    )
-    //add to processing queue
-    await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.feasable_intent, intentHash, {
-      jobId,
-      ...this.intentJobConfig,
-    })
-  }
-
-  private validExpirationTime(model: SourceIntentModel, solver: Solver): boolean {
-    //convert to milliseconds
-    const time = Number.parseInt(`${model.intent.expiryTime as bigint}`) * 1000
-    const expires = new Date(time)
-    const validExipration = this.proofService.isIntentExpirationWithinProofMinimumDate(
-      solver.chainID,
-      expires,
-    )
-    if (!validExipration) {
-      this.logger.log(
-        EcoLogMessage.fromDefault({
-          message: `validateIntent: Expiration time invalid`,
-          properties: {
-            intent: model.intent,
-            proofMinDurationSeconds: this.proofService
-              .getProofMinimumDate(solver.chainID)
-              .toUTCString(),
-          },
-        }),
-      )
       return false
     }
     return true
-  }
-
-  private supportedSelectors(model: SourceIntentModel, solver: Solver): boolean {
-    //check if the targets support the selectors encoded in the intent data
-    const selectorsSupported = this.utilsIntentService.selectorsSupported(model, solver)
-    if (!selectorsSupported) {
-      this.logger.log(
-        EcoLogMessage.fromDefault({
-          message: `validateIntent: Selectors not supported`,
-          properties: {
-            intent: model.intent,
-          },
-        }),
-      )
-      return false
-    }
-    return true
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private supportedProver(model: SourceIntentModel, solver: Solver): boolean {
-    // for()<--- sourceIntent needs unique on chainid so change to Record like solvers, and then check that its the right one here
-    // add a UnsupportedProver to the status
-    // model.intent.prover = solver.prover
-    return true
-  }
-
-  private supportedTargets(model: SourceIntentModel, solver: Solver): boolean {
-    //check if the targets are supported
-    const targetsSupported = this.utilsIntentService.targetsSupported(model, solver)
-    if (!targetsSupported) {
-      this.logger.log(
-        EcoLogMessage.fromDefault({
-          message: `validateIntent: Targets not supported`,
-          properties: {
-            intent: model.intent,
-          },
-        }),
-      )
-      return false
-    }
-
-    return true
-  }
-
-  private async destructureIntent(intentHash: string): Promise<IntentProcessData> {
-    const data = await this.utilsIntentService.getProcessIntentData(intentHash)
-    const { model, solver, err } = data ?? {}
-    if (!model || !solver) {
-      if (err) {
-        throw err
-      }
-    }
-    return data!
   }
 }
