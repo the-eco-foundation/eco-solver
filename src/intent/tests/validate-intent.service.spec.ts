@@ -74,7 +74,7 @@ describe('ValidateIntentService', () => {
 
   describe('on individual validation cases', () => {
     describe('on destructureIntent', () => {
-      it('should throw if get intent returns no data ', async () => {
+      it('should throw if get intent returns no data', async () => {
         utilsIntentService.getProcessIntentData.mockResolvedValueOnce(undefined)
         await expect(validateIntentService['destructureIntent'](zeroHash)).rejects.toThrow(
           'Desctructuring the intent from the intent hash failed',

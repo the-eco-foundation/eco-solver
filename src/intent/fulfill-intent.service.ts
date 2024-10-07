@@ -24,8 +24,8 @@ export class FulfillIntentService {
 
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
-    private readonly utilsIntentService: UtilsIntentService,
     private readonly simpleAccountClientService: SimpleAccountClientService,
+    private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
