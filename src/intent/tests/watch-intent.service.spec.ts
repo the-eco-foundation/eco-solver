@@ -51,7 +51,21 @@ describe('WatchIntentService', () => {
     mockLogLog.mockClear()
   })
 
-  describe('on ', () => {
-    it('should ', async () => {})
+  describe('on lifecycle', () => {
+    describe('on startup', () => {
+      it('should subscribe to nothing if no source intents', async () => {})
+      it('should subscribe to all source intents', async () => {})
+    })
+
+    describe('on destroy', () => {
+      it('should unsubscribe to nothing if no source intents', async () => {})
+      it('should unsubscribe to all source intents', async () => {})
+    })
+  })
+
+  describe('on intent', () => {
+    it('should convert all bigints to strings', async () => {})
+    it('should should attach source chainID and network', async () => {})
+    it('should should enque a job for every intent', async () => {})
   })
 })

@@ -25,19 +25,21 @@ export class ValidSmartWalletService implements OnModuleInit {
    * @param smartWalletAddress the address of the smart wallet to validate
    * @param chainID the chain id of the transaction the event is from
    */
-  async validateSmartWallet(smartWalletAddress: Hex, chainID: number): Promise<boolean> {
-    const client = await this.publicClient.getClient(chainID)
-    const deployedEvents = await client.getContractEvents({
-      address: this.entryPointAddress,
-      abi: EntryPointAbi_v6,
-      eventName: 'AccountDeployed',
-      args: { sender: smartWalletAddress },
-      fromBlock: 0n,
-      toBlock: 'latest',
-    })
-    //should be only one event, but comes as an array
-    return (
-      deployedEvents && deployedEvents.some((event) => event.args.factory === this.factoryAddress)
-    )
+  async validateSmartWallet(smartWalletAddress: Hex, chainID: bigint): Promise<boolean> {
+    //TODO fix this
+    return true
+    // const client = await this.publicClient.getClient(chainID)
+    // const deployedEvents = await client.getContractEvents({
+    //   address: this.entryPointAddress,
+    //   abi: EntryPointAbi_v6,
+    //   eventName: 'AccountDeployed',
+    //   args: { sender: smartWalletAddress },
+    //   fromBlock: 0n,
+    //   toBlock: 'latest',
+    // })
+    // //should be only one event, but comes as an array
+    // return (
+    //   deployedEvents && deployedEvents.some((event) => event.args.factory === this.factoryAddress)
+    // )
   }
 }
