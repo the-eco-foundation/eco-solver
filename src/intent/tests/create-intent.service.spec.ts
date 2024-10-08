@@ -48,7 +48,9 @@ describe('CreateIntentService', () => {
       .overrideProvider(getQueueToken(QUEUES.SOURCE_INTENT.queue))
       .useValue(createMock<Queue>())
       .compile()
-
+    //turn off the services from logging durring testing
+    chainMod.useLogger(false)
+    
     createIntentService = chainMod.get(CreateIntentService)
     validSmartWalletService = chainMod.get(ValidSmartWalletService)
     ecoConfigService = chainMod.get(EcoConfigService)

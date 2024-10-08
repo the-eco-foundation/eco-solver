@@ -34,12 +34,18 @@ export class FeasableIntentService implements OnModuleInit {
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
-  onModuleInit() {
+  async onModuleInit() {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
     //todo get this from config or service per token/chain
     this.fee = 1000n
   }
 
+  /**
+   * Validates that the execution of the intent is feasible. This means that the solver can execute
+   * the transaction and that transaction cost is profitable to the solver.
+   * @param intentHash the intent hash to fetch the intent data from the db with
+   * @returns
+   */
   async feasableIntent(intentHash: Hex) {
     this.logger.debug(
       EcoLogMessage.fromDefault({
@@ -79,6 +85,84 @@ export class FeasableIntentService implements OnModuleInit {
   }
 
   /**
+   * Validates that each target-data pair is feasible for execution.
+   *
+   * @param model the create intent model
+   * @param solver the target solver
+   * @returns
+   */
+  async validateExecution(
+    model: SourceIntentModel,
+    solver: Solver,
+  ): Promise<{
+    feasable: boolean
+    results: (
+      | false
+      | {
+          solvent: boolean
+          profitable: boolean
+        }
+      | undefined
+    )[]
+  }> {
+    const execs = model.intent.targets.map((target, index) => {
+      return this.validateEachExecution(model, solver, target, index)
+    })
+    const results = await Promise.all(execs)
+    const feasable =
+      results.every((e) => e !== false && e !== undefined && e.solvent && e.profitable) &&
+      results.length > 0
+    return { feasable, results }
+  }
+
+  /**
+   * Validates that each target-data pair is feasible for execution. This means that
+   * the solver can execute the transaction and that transaction is profitable to the solver.
+   *
+   * @param model  the create intent model
+   * @param solver the target solver
+   * @param target the target address of the call
+   * @param index the index of the target in the array
+   * @returns
+   */
+  async validateEachExecution(
+    model: SourceIntentModel,
+    solver: Solver,
+    target: Hex,
+    index: number,
+  ): Promise<
+    | false
+    | {
+        solvent: boolean
+        profitable: boolean
+      }
+    | undefined
+  > {
+    const tt = this.utilsIntentService.getTransactionTargetData(model, solver, target, index)
+    if (tt === null) {
+      this.logger.error(
+        EcoLogMessage.withError({
+          message: `feasableIntent: Invalid transaction data`,
+          error: EcoError.FeasableIntentNoTransactionError,
+          properties: {
+            model: model,
+          },
+        }),
+      )
+      return false
+    }
+
+    switch (tt.targetConfig.contractType) {
+      case 'erc20':
+        return await this.handleErc20(tt, model, solver, target)
+      case 'erc721':
+      case 'erc1155':
+      default:
+        return false
+    }
+  }
+
+  /**
    * Checks if the transaction is feasible for an erc20 token transfer.
    *
    * @param tt the transaction target data
@@ -98,8 +182,13 @@ export class FeasableIntentService implements OnModuleInit {
     switch (tt.selector) {
       case getERC20Selector('transfer'):
         //check we have enough tokens to transfer on destination fullfillment
-        const balance = await this.balanceService.getTokenBalance(solver.chainID, target as string)
+        const balance = await this.balanceService.getTokenBalance(solver.chainID, target)
         const solvent = balance.balance >= amount
+        //return here if we dont have enough tokens to fulfill the transfer
+        if (!solvent) {
+          return { solvent, profitable: false }
+        }
+
         const sourceNetwork = model.event.sourceNetwork
         const source = this.ecoConfigService
           .getSourceIntents()
@@ -108,7 +197,7 @@ export class FeasableIntentService implements OnModuleInit {
           return
         }
         //check that we make money on the transfer
-        const fullfillAmountUSDC = this.convertToUSDC(targetNetwork, target as string, amount)
+        const fullfillAmountUSDC = this.convertToUSDC(targetNetwork, target, amount)
         const profitable = this.isProfitableErc20Transfer(
           sourceNetwork,
           source.tokens,
@@ -164,67 +253,8 @@ export class FeasableIntentService implements OnModuleInit {
    * @param amount  the amount of the token to convert to usdc
    * @returns
    */
-  convertToUSDC(network: Network, token: string, amount: bigint): bigint {
+  convertToUSDC(network: Network, token: Hex, amount: bigint): bigint {
     //todo: get the price of the token in usdc instead of assuming 1-1 here
     return amount
-  }
-
-  async validateExecution(
-    model: SourceIntentModel,
-    solver: Solver,
-  ): Promise<{
-    feasable: boolean
-    results: (
-      | false
-      | {
-          solvent: boolean
-          profitable: boolean
-        }
-      | undefined
-    )[]
-  }> {
-    const execs = model.intent.targets.map((target, index) => {
-      return this.validateEachExecution(model, solver, target, index)
-    })
-    const results = await Promise.all(execs)
-    const feasable = results.every((e) => e)
-    return { feasable, results }
-  }
-
-  async validateEachExecution(
-    model: SourceIntentModel,
-    solver: Solver,
-    target: Hex,
-    index: number,
-  ): Promise<
-    | false
-    | {
-        solvent: boolean
-        profitable: boolean
-      }
-    | undefined
-  > {
-    const tt = this.utilsIntentService.getTransactionTargetData(model, solver, target, index)
-    if (tt === null) {
-      this.logger.error(
-        EcoLogMessage.withError({
-          message: `feasableIntent: Invalid transaction data`,
-          error: EcoError.FeasableIntentNoTransactionError,
-          properties: {
-            model: model,
-          },
-        }),
-      )
-      return false
-    }
-
-    switch (tt.targetConfig.contractType) {
-      case 'erc20':
-        return await this.handleErc20(tt, model, solver, target)
-      case 'erc721':
-      case 'erc1155':
-      default:
-        return false
-    }
   }
 }
