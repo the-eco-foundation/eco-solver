@@ -13,10 +13,9 @@ import { convertBigIntsToStrings } from '../common/viem/utils'
 import { entries } from 'lodash'
 
 /**
- * Service class for solving an intent on chain. When this service starts up,
- * it creates a listener for all the supported prover contracts and listens for
- * events on them. When a new event is detected, it will publish that event to the
- * eventbus.
+ * This service subscribes to SourceIntent contracts for IntentCreated events. It subscribes on all
+ * supported chains and prover addresses. When an event is emitted, it mutates the event log, and then
+ * adds it intent queue for processing.
  */
 @Injectable()
 export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestroy {
@@ -40,12 +39,17 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
 
   async onModuleDestroy() {
     // close all clients
-    Object.values(this.unwatch).forEach((unwatch) => unwatch())
+    this.unsubscribe()
   }
 
+  /**
+   * Subscribes to all SourceIntent contracts for IntentCreated events. It subscribes on all supported chains
+   * filtering on the prover addresses and destination chain ids. It loads a mapping of the unsubscribe events to
+   * call {@link onModuleDestroy} to close the clients.
+   */
   async subscribe() {
-    const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(([chainID]) =>
-      BigInt(chainID),
+    const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(([, solver]) =>
+      BigInt(solver.chainID),
     )
     const subscribeTasks = this.ecoConfigService.getSourceIntents().map(async (source) => {
       const client = await this.publicClientService.getClient(source.chainID)
@@ -74,6 +78,13 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
     })
 
     await Promise.all(subscribeTasks)
+  }
+
+  /**
+   * Unsubscribes from all SourceIntent contracts. It closes all clients in {@link onModuleDestroy}
+   */
+  async unsubscribe() {
+    Object.values(this.unwatch).forEach((unwatch) => unwatch())
   }
 
   addJob(source: SourceIntent) {
