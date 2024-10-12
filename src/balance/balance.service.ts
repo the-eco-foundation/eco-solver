@@ -37,7 +37,7 @@ export class BalanceService implements OnApplicationBootstrap {
    * Get the token balance of the solver
    * @returns
    */
-  async getTokenBalance(chainID: number, tokenAddress: string) {
+  async getTokenBalance(chainID: number, tokenAddress: Hex) {
     return (
       this.tokenBalances.get(getDestinationNetworkAddressKey(chainID, tokenAddress)) ?? {
         balance: 0n,

@@ -137,7 +137,7 @@ export class ValidateIntentService implements OnModuleInit {
    * @returns
    */
   private async destructureIntent(intentHash: Hex): Promise<IntentProcessData> {
-    const data = await this.utilsIntentService.getProcessIntentData(intentHash)
+    const data = await this.utilsIntentService.getIntentProcessData(intentHash)
     const { model, solver, err } = data ?? {}
     if (!data || !model || !solver) {
       throw EcoError.ValidateIntentDescructureFailed(err)
