@@ -52,7 +52,7 @@ export class FeasableIntentService implements OnModuleInit {
         message: `FeasableIntent intent ${intentHash}`,
       }),
     )
-    const data = await this.utilsIntentService.getProcessIntentData(intentHash)
+    const data = await this.utilsIntentService.getIntentProcessData(intentHash)
     const { model, solver, err } = data ?? {}
     if (!model || !solver) {
       if (err) {
@@ -106,7 +106,7 @@ export class FeasableIntentService implements OnModuleInit {
     )[]
   }> {
     const execs = model.intent.targets.map((target, index) => {
-      return this.validateEachExecution(model, solver, target, index)
+      return this.validateEachExecution(model, solver, target, model.intent.data[index])
     })
     const results = await Promise.all(execs)
     const feasable =
@@ -122,14 +122,14 @@ export class FeasableIntentService implements OnModuleInit {
    * @param model  the create intent model
    * @param solver the target solver
    * @param target the target address of the call
-   * @param index the index of the target in the array
+   * @param data the data to send to the target
    * @returns
    */
   async validateEachExecution(
     model: SourceIntentModel,
     solver: Solver,
     target: Hex,
-    index: number,
+    data: Hex,
   ): Promise<
     | false
     | {
@@ -138,7 +138,7 @@ export class FeasableIntentService implements OnModuleInit {
       }
     | undefined
   > {
-    const tt = this.utilsIntentService.getTransactionTargetData(model, solver, target, index)
+    const tt = this.utilsIntentService.getTransactionTargetData(model, solver, target, data)
     if (tt === null) {
       this.logger.error(
         EcoLogMessage.withError({

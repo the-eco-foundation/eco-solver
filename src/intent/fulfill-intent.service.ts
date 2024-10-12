@@ -16,7 +16,7 @@ import { SimpleAccountClientService } from '../transaction/simple-account-client
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 
 /**
- * Service class for getting configs for the app
+ * This class fulfills an intent by creating the transactions for the intent targets and the fulfill intent transaction.
  */
 @Injectable()
 export class FulfillIntentService {
@@ -29,8 +29,15 @@ export class FulfillIntentService {
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
+  /**
+   * Executes the fulfill intent process for an intent. It creates the transaction for fulfillment, and posts it
+   * to the chain. It then updates the db model of the intent with the status and receipt.
+   *
+   * @param intentHash the intent hash to fulfill
+   * @returns
+   */
   async executeFulfillIntent(intentHash: Hex) {
-    const data = await this.utilsIntentService.getProcessIntentData(intentHash)
+    const data = await this.utilsIntentService.getIntentProcessData(intentHash)
     const { model, solver, err } = data ?? {}
     if (!data || !model || !solver) {
       if (err) {
@@ -71,6 +78,7 @@ export class FulfillIntentService {
 
       const receipt = await simpleAccountClient.waitForTransactionReceipt({ hash: transactionHash })
 
+      // set the status and receipt for the model
       model.status = 'SOLVED'
       model.receipt = receipt as any
 
@@ -95,7 +103,7 @@ export class FulfillIntentService {
           properties: {
             model: model,
             flatExecuteData: transactions,
-            error: e,
+            errorPassed: e,
           },
         }),
       )
@@ -103,6 +111,7 @@ export class FulfillIntentService {
       // Throw error to retry job
       throw e
     } finally {
+      // Update the db model
       await this.utilsIntentService.updateIntentModel(this.intentModel, model)
     }
   }
@@ -120,13 +129,13 @@ export class FulfillIntentService {
       case getERC20Selector('transfer'):
         const dstAmount = tt.decodedFunctionData.args?.[1] as bigint
 
-        const transferSolverAmount = encodeFunctionData({
+        const transferFunctionData = encodeFunctionData({
           abi: erc20Abi,
           functionName: 'transfer',
           args: [solver.solverAddress, dstAmount],
         })
 
-        return [{ to: target, data: transferSolverAmount }]
+        return [{ to: target, data: transferFunctionData }]
       default:
         return []
     }
@@ -145,7 +154,12 @@ export class FulfillIntentService {
 
     // Create transactions for intent targets
     return model.intent.targets.flatMap((target, index) => {
-      const tt = this.utilsIntentService.getTransactionTargetData(model, solver, target, index)
+      const tt = this.utilsIntentService.getTransactionTargetData(
+        model,
+        solver,
+        target,
+        model.intent.data[index],
+      )
       if (tt === null) {
         this.logger.error(
           EcoLogMessage.withError({

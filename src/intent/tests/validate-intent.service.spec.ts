@@ -75,36 +75,36 @@ describe('ValidateIntentService', () => {
   describe('on individual validation cases', () => {
     describe('on destructureIntent', () => {
       it('should throw if get intent returns no data', async () => {
-        utilsIntentService.getProcessIntentData.mockResolvedValueOnce(undefined)
+        utilsIntentService.getIntentProcessData.mockResolvedValueOnce(undefined)
         await expect(validateIntentService['destructureIntent'](zeroHash)).rejects.toThrow(
           'Desctructuring the intent from the intent hash failed',
         )
       })
 
       it('should throw if solver is undefined', async () => {
-        utilsIntentService.getProcessIntentData.mockResolvedValueOnce({ model: {} } as any)
+        utilsIntentService.getIntentProcessData.mockResolvedValueOnce({ model: {} } as any)
         await expect(validateIntentService['destructureIntent'](zeroHash)).rejects.toThrow(
           'Desctructuring the intent from the intent hash failed',
         )
       })
 
       it('should throw if model is undefined', async () => {
-        utilsIntentService.getProcessIntentData.mockResolvedValueOnce({ solver: {} } as any)
+        utilsIntentService.getIntentProcessData.mockResolvedValueOnce({ solver: {} } as any)
         await expect(validateIntentService['destructureIntent'](zeroHash)).rejects.toThrow(
           'Desctructuring the intent from the intent hash failed',
         )
       })
 
       it('should throw error if its returned', async () => {
-        const msg = 'Error from getProcessIntentData'
-        utilsIntentService.getProcessIntentData.mockResolvedValueOnce({
+        const msg = 'Error from getIntentProcessData'
+        utilsIntentService.getIntentProcessData.mockResolvedValueOnce({
           err: new Error(msg),
         } as any)
         await expect(validateIntentService['destructureIntent'](zeroHash)).rejects.toThrow('Error')
       })
 
       it('should throw generic error in no error returned', async () => {
-        utilsIntentService.getProcessIntentData.mockResolvedValueOnce({} as any)
+        utilsIntentService.getIntentProcessData.mockResolvedValueOnce({} as any)
         await expect(validateIntentService['destructureIntent'](zeroHash)).rejects.toThrow(
           'Desctructuring the intent from the intent hash failed',
         )
@@ -112,7 +112,7 @@ describe('ValidateIntentService', () => {
 
       it('should succeed and return data', async () => {
         const dataIn = { model: {}, solver: {} } as any
-        utilsIntentService.getProcessIntentData.mockResolvedValueOnce(dataIn)
+        utilsIntentService.getIntentProcessData.mockResolvedValueOnce(dataIn)
         const dataOut = await validateIntentService['destructureIntent'](zeroHash)
         expect(dataOut).toBe(dataIn)
       })
