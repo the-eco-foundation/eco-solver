@@ -114,7 +114,8 @@ export class BalanceHealthIndicator extends HealthIndicator {
         const mins = Object.values(solver.targets).map((target) => target.minBalance)
         const sourceBalancesString = this.joinBalance(balances, tokens, mins)
         entries(solver.targets).forEach((target) => {
-          (target[1] as TargetContract & {balance : Object}).balance = sourceBalancesString[target[0]]
+          ;(target[1] as TargetContract & { balance: object }).balance =
+            sourceBalancesString[target[0]]
         })
 
         solvers.push({
