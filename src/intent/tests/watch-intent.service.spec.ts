@@ -68,7 +68,7 @@ describe('WatchIntentService', () => {
       it('should subscribe to all source intents', async () => {
         const mockWatch = jest.fn()
         publicClientService.getClient.mockResolvedValue({
-          watchContractEvent: mockWatch
+          watchContractEvent: mockWatch,
         } as any)
         ecoConfigService.getSourceIntents.mockReturnValue(sources)
         ecoConfigService.getSolvers.mockReturnValue(sources)
@@ -78,9 +78,11 @@ describe('WatchIntentService', () => {
         for (const [index, s] of sources.entries()) {
           const { address, eventName, args } = mockWatch.mock.calls[index][0]
           const partial = { address, eventName, args }
-          expect(partial).toEqual(
-            { address: s.sourceAddress, eventName: 'IntentCreated', args: { _destinationChain: supportedChains, _prover: s.provers } }
-          )
+          expect(partial).toEqual({
+            address: s.sourceAddress,
+            eventName: 'IntentCreated',
+            args: { _destinationChain: supportedChains, _prover: s.provers },
+          })
         }
       })
     })
@@ -95,7 +97,7 @@ describe('WatchIntentService', () => {
       it('should unsubscribe to all source intents', async () => {
         const mockUnwatch = jest.fn()
         publicClientService.getClient.mockResolvedValue({
-          watchContractEvent: () => mockUnwatch
+          watchContractEvent: () => mockUnwatch,
         } as any)
         ecoConfigService.getSourceIntents.mockReturnValue(sources)
         ecoConfigService.getSolvers.mockReturnValue(sources)
@@ -119,23 +121,27 @@ describe('WatchIntentService', () => {
     it('should convert all bigints to strings', async () => {
       expect(mockLogDebug.mock.calls[0][0].createIntent).toEqual(
         expect.objectContaining({
-          args: { _hash: '1', logIndex: '2' }
-        })
+          args: { _hash: '1', logIndex: '2' },
+        }),
       )
-
     })
 
     it('should should attach source chainID and network', async () => {
       expect(mockLogDebug.mock.calls[0][0].createIntent).toEqual(
         expect.objectContaining({
-          sourceChainID: s.chainID, sourceNetwork: s.network
-        })
+          sourceChainID: s.chainID,
+          sourceNetwork: s.network,
+        }),
       )
     })
 
     it('should should enque a job for every intent', async () => {
       expect(mockQueueAdd).toHaveBeenCalledTimes(1)
-      expect(mockQueueAdd).toHaveBeenCalledWith(QUEUES.SOURCE_INTENT.jobs.create_intent, expect.any(Object), { "jobId": "watch-1-0" })
+      expect(mockQueueAdd).toHaveBeenCalledWith(
+        QUEUES.SOURCE_INTENT.jobs.create_intent,
+        expect.any(Object),
+        { jobId: 'watch-1-0' },
+      )
     })
   })
 })
