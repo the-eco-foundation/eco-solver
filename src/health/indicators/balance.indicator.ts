@@ -4,6 +4,7 @@ import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { erc20Abi, Hex } from 'viem'
 import { Network } from 'alchemy-sdk'
 import { SimpleAccountClientService } from '../../transaction/simple-account-client.service'
+import { entries } from 'lodash'
 
 type TokenType = { decimal: number; value: string; minBalances?: number }
 @Injectable()
@@ -111,6 +112,10 @@ export class BalanceHealthIndicator extends HealthIndicator {
         const balances = await this.getBalanceCalls(solver.chainID, tokens)
         const mins = Object.values(solver.targets).map((target) => target.minBalance)
         const sourceBalancesString = this.joinBalance(balances, tokens, mins)
+        entries(solver.targets).forEach((target) => {
+          // @ts-ignore
+          target[1].balance = sourceBalancesString[target[0]]
+        })
 
         solvers.push({
           ...solver,
