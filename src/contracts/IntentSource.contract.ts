@@ -114,12 +114,6 @@ export const IntentSourceAbi = [
         name: 'nonce',
         type: 'bytes32',
       },
-      {
-        indexed: false,
-        internalType: 'address',
-        name: '_prover',
-        type: 'address',
-      },
     ],
     name: 'IntentCreated',
     type: 'event',

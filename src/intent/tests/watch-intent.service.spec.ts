@@ -81,7 +81,7 @@ describe('WatchIntentService', () => {
           expect(partial).toEqual({
             address: s.sourceAddress,
             eventName: 'IntentCreated',
-            args: { _destinationChain: supportedChains}// TODO include in next release of contracts , _prover: s.provers },
+            args: { _destinationChain: supportedChains }, // TODO include in next release of contracts , _prover: s.provers },
           })
         }
       })
