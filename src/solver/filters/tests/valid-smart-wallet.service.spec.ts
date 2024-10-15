@@ -61,9 +61,7 @@ describe('ValidSmartWalletService Tests', () => {
         }
       })
       const result = await validWalletService.validateSmartWallet('0x789', 1n)
-      //todo restore this
-      // expect(result).toEqual(false)
-      expect(result).toEqual(true)
+      expect(result).toEqual(false)
     })
 
     it('should return false if the SA address is from another factory', async () => {
@@ -73,9 +71,7 @@ describe('ValidSmartWalletService Tests', () => {
         }
       })
       const result = await validWalletService.validateSmartWallet('0x789', 1n)
-      //todo restore this
-      // expect(result).toEqual(false)
-      expect(result).toEqual(true)
+      expect(result).toEqual(false)
     })
 
     it('should return true if the SA is from our factory', async () => {
