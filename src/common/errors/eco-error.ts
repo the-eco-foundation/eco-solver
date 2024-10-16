@@ -45,7 +45,7 @@ export class EcoError extends Error {
   }
 
   // Viem
-    
+
   static UnsupportedChainError(chain: Chain) {
     return new EcoError(
       `App does not support chain ${chain.id}:${chain.name}, check your config file`,

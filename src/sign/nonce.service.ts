@@ -9,10 +9,9 @@ import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { entries } from 'lodash'
 import { AtomicKeyClientParams, AtomicNonceService } from './atomic.nonce.service'
 import { createPublicClient, extractChain, Hex, sha256 } from 'viem'
-import { ChainsSupported } from '../common/utils/chains'
-import { chains } from '@alchemy/aa-core'
 import { SignerService } from './signer.service'
-import { getTransport } from '../common/viem/transport'
+import { getTransport } from '../common/chains/transport'
+import { ChainsSupported } from '../common/chains/supported'
 
 /**
  * TODO this class needs to be assigned to an EAO, a userOp gets its nonce throught the alchemy sdk
@@ -58,7 +57,7 @@ export class NonceService extends AtomicNonceService<Nonce> implements OnApplica
       const chain = extractChain({
         chains: ChainsSupported,
         id: chainID,
-      }) as chains.Chain
+      })
       const client = createPublicClient({
         chain,
         transport: getTransport(chain, apiKey),

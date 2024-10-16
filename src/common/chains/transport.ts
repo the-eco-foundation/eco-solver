@@ -1,4 +1,5 @@
-import { http, HttpTransport, webSocket, WebSocketTransport } from 'viem'
+import { Chain, http, HttpTransport, webSocket, WebSocketTransport } from 'viem'
+import { getRpcUrl } from '../viem/utils'
 
 /**
  * Returns a transport for the chain with the given api key
@@ -9,10 +10,10 @@ import { http, HttpTransport, webSocket, WebSocketTransport } from 'viem'
  * @returns the websocket or http transport
  */
 export function getTransport(
-  chain: chains.Chain,
+  chain: Chain,
   apiKey: string,
   websocketEnabled: boolean = false,
 ): WebSocketTransport | HttpTransport {
-  const url = getAchemyRPCUrl(chain, apiKey, websocketEnabled)
-  return websocketEnabled ? webSocket(url, { keepAlive: true, reconnect: true }) : http(url)
+  const { url, isWebsocket } = getRpcUrl(chain, apiKey, websocketEnabled)
+  return isWebsocket ? webSocket(url, { keepAlive: true, reconnect: true }) : http(url)
 }

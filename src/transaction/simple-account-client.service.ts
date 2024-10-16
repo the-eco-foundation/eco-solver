@@ -4,8 +4,8 @@ import { ViemMultichainClientService } from './viem_multichain_client.service'
 import { SimpleAccountClient, SimpleAccountClientConfig } from './smart-wallets/simple-account'
 import { EcoError } from '../common/errors/eco-error'
 import { createSimpleAccountClient } from './smart-wallets/simple-account/create.simple.account'
-import { chains } from '@alchemy/aa-core'
 import { SignerService } from '../sign/signer.service'
+import { Chain } from 'viem'
 
 @Injectable()
 export class SimpleAccountClientService extends ViemMultichainClientService<
@@ -25,9 +25,7 @@ export class SimpleAccountClientService extends ViemMultichainClientService<
     return createSimpleAccountClient(configs)
   }
 
-  protected override async buildChainConfig(
-    chain: chains.Chain,
-  ): Promise<SimpleAccountClientConfig> {
+  protected override async buildChainConfig(chain: Chain): Promise<SimpleAccountClientConfig> {
     const base = await super.buildChainConfig(chain)
     const simpleAccountConfig = this.ecoConfigService.getEth().simpleAccount
 
