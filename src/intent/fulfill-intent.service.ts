@@ -7,13 +7,14 @@ import {
   TransactionTargetData,
   UtilsIntentService,
 } from './utils-intent.service'
-import { getERC20Selector, InboxAbi } from '../contracts'
+import { getERC20Selector, InboxAbi, PROOF_HYPERLANE, PROOF_STORAGE } from '../contracts'
 import { EcoError } from '../common/errors/eco-error'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { Solver } from '../eco-configs/eco-config.types'
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
+import { ProofService } from '../prover/proof.service'
 
 /**
  * This class fulfills an intent by creating the transactions for the intent targets and the fulfill intent transaction.
@@ -25,6 +26,7 @@ export class FulfillIntentService {
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly simpleAccountClientService: SimpleAccountClientService,
+    private readonly proofService: ProofService,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
@@ -52,14 +54,7 @@ export class FulfillIntentService {
     const targetSolveTxs = this.getTransactionsForTargets(data)
 
     // Create fulfill tx
-    const fulfillIntentData = this.getFulfillIntentData(
-      this.ecoConfigService.getEth().claimant,
-      model,
-    )
-    const fulfillTx = {
-      to: solver.solverAddress,
-      data: fulfillIntentData,
-    }
+    const fulfillTx = this.getFulfillIntentTx(solver.solverAddress, model)
 
     // Combine all transactions
     const transactions = [...targetSolveTxs, fulfillTx]
@@ -190,19 +185,33 @@ export class FulfillIntentService {
    * @param model
    * @private
    */
-  private getFulfillIntentData(walletAddr: Hex, model: SourceIntentModel) {
-    return encodeFunctionData({
+  private getFulfillIntentTx(solverAddress: Hex, model: SourceIntentModel) {
+    const walletAddr = this.ecoConfigService.getEth().claimant
+    const proof = this.proofService.getProofType(model.intent.prover)
+    const functionName = proof === PROOF_STORAGE ? 'fulfillStorage' : 'fulfillHyperInstant'
+    const encodeProverAddress = proof === PROOF_HYPERLANE ? model.intent.prover : undefined
+    const args = [
+      model.event.sourceChainID,
+      model.intent.targets,
+      model.intent.data,
+      model.intent.expiryTime,
+      model.intent.nonce,
+      walletAddr,
+      model.intent.hash,
+    ]
+    if (encodeProverAddress) {
+      args.push(encodeProverAddress)
+    }
+    const fulfillIntentData = encodeFunctionData({
       abi: InboxAbi,
-      functionName: 'fulfill',
-      args: [
-        model.event.sourceChainID,
-        model.intent.targets,
-        model.intent.data,
-        model.intent.expiryTime,
-        model.intent.nonce,
-        walletAddr,
-        model.intent.hash,
-      ],
+      functionName,
+      // @ts-expect-error we dynamically set the args
+      args,
     })
+
+    return {
+      to: solverAddress,
+      data: fulfillIntentData,
+    }
   }
 }
