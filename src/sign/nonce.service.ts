@@ -11,8 +11,8 @@ import { AtomicKeyClientParams, AtomicNonceService } from './atomic.nonce.servic
 import { createPublicClient, extractChain, Hex, sha256 } from 'viem'
 import { ChainsSupported } from '../common/utils/chains'
 import { chains } from '@alchemy/aa-core'
-import { getTransport } from '../common/alchemy/utils'
 import { SignerService } from './signer.service'
+import { getTransport } from '../common/viem/transport'
 
 /**
  * TODO this class needs to be assigned to an EAO, a userOp gets its nonce throught the alchemy sdk

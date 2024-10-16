@@ -4,7 +4,7 @@ import { Client, ClientConfig, createClient, extractChain } from 'viem'
 import { chains } from '@alchemy/aa-core'
 import { EcoError } from '../common/errors/eco-error'
 import { ChainsSupported } from '../common/utils/chains'
-import { getTransport } from '../common/alchemy/utils'
+import { getTransport } from '../common/viem/transport'
 
 @Injectable()
 export class ViemMultichainClientService<T extends Client, V extends ClientConfig>
@@ -70,7 +70,7 @@ export class ViemMultichainClientService<T extends Client, V extends ClientConfi
     if (this.supportedChainIds.includes(chainID) && chain) {
       return await this.buildChainConfig(chain)
     } else {
-      throw EcoError.AlchemyUnsupportedChainError(chain[0])
+      throw EcoError.UnsupportedChainError(chain[0])
     }
   }
 

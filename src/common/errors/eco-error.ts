@@ -12,11 +12,7 @@ export class EcoError extends Error {
   static AlchemyUnsupportedNetworkIDError(id: number) {
     return new EcoError(`App does not support network ${id}, check your config file`)
   }
-  static AlchemyUnsupportedChainError(chain: Chain) {
-    return new EcoError(
-      `App does not support chain ${chain.id}:${chain.name}, check your config file`,
-    )
-  }
+
   static AlchemyServiceProviderError(network: string) {
     return new EcoError(`Could not create alchemy provider ${network}`)
   }
@@ -46,6 +42,14 @@ export class EcoError extends Error {
   // ValidateIntent Service
   static ValidateIntentDescructureFailed(err?: Error) {
     return err || new Error('Desctructuring the intent from the intent hash failed')
+  }
+
+  // Viem
+    
+  static UnsupportedChainError(chain: Chain) {
+    return new EcoError(
+      `App does not support chain ${chain.id}:${chain.name}, check your config file`,
+    )
   }
 
   // EcoConfig Service
