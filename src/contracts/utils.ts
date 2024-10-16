@@ -1,4 +1,4 @@
-import { Abi } from 'viem'
+import { Abi, AbiStateMutability, ContractFunctionName, Hex } from 'viem'
 import { TargetContractType } from '../eco-configs/eco-config.types'
 import { ERC20Abi } from './ERC20.contract'
 import { EcoError } from '../common/errors/eco-error'
@@ -16,4 +16,16 @@ export function getERCAbi(targetType: TargetContractType): Abi {
     default:
       throw EcoError.SourceIntentUnsupportedTargetType(targetType)
   }
+}
+
+/**
+ * The type for a call to a contract, used for typing multicall mappings
+ */
+export type ViemCall<
+  abi extends Abi,
+  mutability extends AbiStateMutability = AbiStateMutability,
+> = {
+  address: Hex
+  abi: abi
+  functionName: ContractFunctionName<abi, mutability>
 }

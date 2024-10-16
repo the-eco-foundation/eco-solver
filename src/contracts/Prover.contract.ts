@@ -194,6 +194,19 @@ export const ProverAbi = [
     type: 'function',
   },
   {
+    inputs: [],
+    name: 'PROOF_TYPE',
+    outputs: [
+      {
+        internalType: 'enum IProver.ProofType',
+        name: '',
+        type: 'uint8',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [
       {
         internalType: 'uint64',
@@ -387,6 +400,19 @@ export const ProverAbi = [
         internalType: 'bytes32',
         name: '',
         type: 'bytes32',
+      },
+    ],
+    stateMutability: 'pure',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getProofType',
+    outputs: [
+      {
+        internalType: 'enum IProver.ProofType',
+        name: '',
+        type: 'uint8',
       },
     ],
     stateMutability: 'pure',
@@ -835,3 +861,13 @@ export const ProverAbi = [
     type: 'function',
   },
 ] as const
+
+export const PROOF_STORAGE = 0
+export const PROOF_HYPERLANE = 1
+
+export type ProofType = typeof PROOF_STORAGE | typeof PROOF_HYPERLANE
+
+export const Proofs = {
+  Storage: PROOF_STORAGE,
+  Hyperlane: PROOF_HYPERLANE,
+}
