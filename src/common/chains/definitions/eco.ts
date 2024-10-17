@@ -4,11 +4,11 @@ import { chainConfig } from 'viem/op-stack'
 // settlement chain
 const sourceId = 84532 //base sepolia
 
-export const ecoTest = /*#__PURE__*/ defineChain({
+export const ecoSepolia = /*#__PURE__*/ defineChain({
   ...chainConfig,
   id: 471923,
   name: 'Eco Test',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: { name: 'Sepolia Ether', symbol: 'ETH', decimals: 18 },
   rpcUrls: {
     default: {
       http: ['https://eco-testnet.rpc.caldera.xyz/http'],

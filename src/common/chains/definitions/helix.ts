@@ -4,7 +4,7 @@ import { chainConfig } from 'viem/op-stack'
 // settlement chain
 const sourceId = 8453 //base mainnet
 
-export const helixTest = /*#__PURE__*/ defineChain({
+export const helix = /*#__PURE__*/ defineChain({
   ...chainConfig,
   id: 8921733,
   name: 'Helix Test',
@@ -50,5 +50,4 @@ export const helixTest = /*#__PURE__*/ defineChain({
     },
   },
   sourceId,
-  testnet: true,
 })
