@@ -11,7 +11,7 @@ import { SourceIntentModel } from './schemas/source-intent.schema'
 import { ProofService } from '../prover/proof.service'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
-import { Hex } from 'viem'
+import { getAddress, Hex } from 'viem'
 import { EcoError } from '../common/errors/eco-error'
 
 /**
@@ -160,7 +160,7 @@ export class ValidateIntentService implements OnModuleInit {
     })
 
     return srcSolvers.some((intent) => {
-      return intent.provers.some((prover) => prover == model.intent.prover)
+      return intent.provers.some((prover) => getAddress(prover) == getAddress(model.intent.prover))
     })
   }
 
