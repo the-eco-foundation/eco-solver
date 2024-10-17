@@ -40,7 +40,7 @@ export class SourceIntentDataModel implements SourceIntentViemType {
     rewardAmounts: readonly bigint[],
     expiryTime: bigint,
     nonce: Hex,
-    // prover: Hex, //TODO fix this
+    prover: Hex,
     logIndex: number,
   ) {
     if (targets.length !== data.length) {
@@ -56,7 +56,7 @@ export class SourceIntentDataModel implements SourceIntentViemType {
     this.expiryTime = expiryTime
     this.hasBeenWithdrawn = false
     this.nonce = nonce
-    // this.prover = getAddress(prover as string)
+    this.prover = getAddress(prover as string)
     this.logIndex = logIndex
   }
 
@@ -75,7 +75,7 @@ export class SourceIntentDataModel implements SourceIntentViemType {
       e._rewardAmounts,
       e._expiryTime,
       e.nonce,
-      // e._prover,
+      e._prover,
       logIndex,
     )
   }

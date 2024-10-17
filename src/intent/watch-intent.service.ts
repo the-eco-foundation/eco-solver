@@ -70,8 +70,7 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
         args: {
           // restrict by acceptable chains, chain ids must be bigints
           _destinationChain: solverSupportedChains,
-          // TODO redeploy once we are using the new contract addressess with the new abi restrict by acceptable prover
-          // _prover: source.provers,
+          _prover: source.provers,
         },
         onLogs: this.addJob(source),
       })
