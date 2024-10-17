@@ -1,8 +1,9 @@
-import { entries, keys } from 'lodash'
 import { Chain, getAddress, Hex } from 'viem'
 
 /**
- * Gets the url for a chain with the given api key, either websocket or http
+ * Gets the url for a chain with the given api key, either websocket or http. It tries
+ * to find a non default rpc url if it exists and returns the first one it finds,
+ * otherwise it returns the default one.
  *
  * @param chain the chain to get the url for
  * @param apiKey the api key if it is required
@@ -37,14 +38,9 @@ export function getRpcUrl(
  *
  * @returns {Object}
  */
-export function addressKeys(obj: Record<Hex, any>): Record<Hex, any> | undefined {
-  if (!obj) {
-    return undefined
-  }
-
+export function addressKeys(obj: Record<Hex, any>): Record<Hex, any> {
   return Object.entries(obj).reduce((carry, [key, value]) => {
     carry[getAddress(key)] = value
-
     return carry
   }, {})
 }

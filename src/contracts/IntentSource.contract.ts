@@ -1,4 +1,4 @@
-import { ContractFunctionReturnType, decodeEventLog, Hex, Log } from 'viem'
+import { ContractFunctionReturnType, decodeEventLog, Hex, Log, Prettify } from 'viem'
 import { ExtractAbiEvent } from 'abitype'
 import { Network } from 'alchemy-sdk'
 
@@ -358,21 +358,20 @@ export const IntentSourceAbi = [
 export type IntentSource = typeof IntentSourceAbi
 
 // Define the type for the IntentSource struct in the contract, and add the hash and logIndex fields
-export type SourceIntentViemType = ContractFunctionReturnType<
-  IntentSource,
-  'pure' | 'view',
-  'getIntent',
-  [Hex]
-> & { hash: Hex; logIndex: number }
+export type SourceIntentViemType = Prettify<
+  ContractFunctionReturnType<IntentSource, 'pure' | 'view', 'getIntent', [Hex]> & {
+    hash: Hex
+    logIndex: number
+  }
+>
 
 // Define the type for the IntentCreated event log
-export type IntentCreatedLog = Log<
-  bigint,
-  number,
-  false,
-  ExtractAbiEvent<typeof IntentSourceAbi, 'IntentCreated'>,
-  true
-> & { sourceNetwork: Network; sourceChainID: bigint }
+export type IntentCreatedLog = Prettify<
+  Log<bigint, number, false, ExtractAbiEvent<typeof IntentSourceAbi, 'IntentCreated'>, true> & {
+    sourceNetwork: Network
+    sourceChainID: bigint
+  }
+>
 
 export function decodeCreateIntentLog(data: Hex, topics: [signature: Hex, ...args: Hex[]] | []) {
   return decodeEventLog({

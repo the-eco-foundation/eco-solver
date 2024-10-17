@@ -1,4 +1,4 @@
-import { Hex, NonceManagerSource, PublicClient } from 'viem'
+import { Hex, NonceManagerSource, Prettify, PublicClient } from 'viem'
 import type { Address } from 'abitype'
 import { Model, QueryOptions } from 'mongoose'
 import type { Client } from 'viem/_types/clients/createClient'
@@ -11,11 +11,13 @@ export type AtomicKeyParams = {
   chainId: number
 }
 
-export type AtomicKeyClientParams = Pick<AtomicKeyParams, 'address'> & {
-  client: PublicClient
-}
+export type AtomicKeyClientParams = Prettify<
+  Pick<AtomicKeyParams, 'address'> & {
+    client: PublicClient
+  }
+>
 
-export type AtomicGetParameters = AtomicKeyParams & { client: Client }
+export type AtomicGetParameters = Prettify<AtomicKeyParams & { client: Client }>
 
 /** An atomic JSON-RPC source for a nonce manager. It initializes the nonce
  * to the current RPC returned transaction count, then it stores and increments
