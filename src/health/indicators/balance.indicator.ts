@@ -166,8 +166,8 @@ export class BalanceHealthIndicator extends HealthIndicator {
     while (
       balances.length > 0 &&
       ([{ result: decimal as unknown }, { result: value as unknown }] = [
-        balances.pop(),
-        balances.pop(),
+        balances.shift(),
+        balances.shift(),
       ])
     ) {
       sourceBalancesString[tokens[i]] = {

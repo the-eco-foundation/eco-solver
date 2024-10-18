@@ -29,8 +29,6 @@ export class ValidSmartWalletService implements OnModuleInit {
    * @param chainID the chain id of the transaction the event is from
    */
   async validateSmartWallet(smartWalletAddress: Hex, chainID: bigint): Promise<boolean> {
-    //TODO fix this
-    // return true
     const client = await this.publicClient.getClient(Number(chainID))
     try {
       const deployedEvents = await client.getContractEvents({

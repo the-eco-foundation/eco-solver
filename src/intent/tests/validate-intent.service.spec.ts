@@ -121,9 +121,9 @@ describe('ValidateIntentService', () => {
     describe('on supportedProver', () => {
       const sourceChainID = 1n
       const chainID = sourceChainID
-      const prover = '0x2'
+      const prover = '0xcf25397DC87C750eEF006101172FFbeAeA98Aa76'
       const unsupportedChain = 2n
-      const unsupportedProver = '0x3'
+      const unsupportedProver = '0x26D2C47c5659aC8a1c4A29A052Fa7B2ccD45Ca43'
       it('should fail if no source intent exists with the models source chain id', async () => {
         const model = { event: { sourceChainID } } as any
         ecoConfigService.getSourceIntents.mockReturnValueOnce([])

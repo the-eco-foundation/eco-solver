@@ -65,6 +65,9 @@ export class EcoConfigService implements OnModuleInit {
         return getAddress(token)
       })
       intent.sourceAddress = getAddress(intent.sourceAddress)
+      intent.provers = intent.provers.map((prover) => {
+        return getAddress(prover)
+      })
       return intent
     })
     return intents

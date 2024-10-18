@@ -96,7 +96,7 @@ export class ProofService implements OnModuleInit {
     let proof: ProofType = 0,
       i = 0
     const proofObj: Record<Hex, ProofType> = {}
-    while (proofs.length > 0 && ([{ result: proof }] = [proofs.pop()])) {
+    while (proofs.length > 0 && ([{ result: proof }] = [proofs.shift()])) {
       proofObj[provers[i]] = proof
       i++
     }

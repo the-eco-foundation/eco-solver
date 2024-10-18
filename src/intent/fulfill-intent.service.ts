@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
-import { encodeFunctionData, erc20Abi, Hex } from 'viem'
+import { encodeAbiParameters, encodeFunctionData, erc20Abi, Hex, pad } from 'viem'
 import {
   IntentProcessData,
   TransactionTargetData,
@@ -15,6 +15,7 @@ import { SourceIntentModel } from './schemas/source-intent.schema'
 import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { ProofService } from '../prover/proof.service'
+import { ExecuteSimpleAccountArg } from '../transaction/smart-wallets/simple-account'
 
 /**
  * This class fulfills an intent by creating the transactions for the intent targets and the fulfill intent transaction.
@@ -47,6 +48,11 @@ export class FulfillIntentService {
       }
       return
     }
+    // If the intent is already solved, return
+    // Could happen if redis has pending job while this is still executing
+    if (model.status === 'SOLVED') {
+      return
+    }
 
     const simpleAccountClient = await this.simpleAccountClientService.getClient(solver.chainID)
 
@@ -54,7 +60,7 @@ export class FulfillIntentService {
     const targetSolveTxs = this.getTransactionsForTargets(data)
 
     // Create fulfill tx
-    const fulfillTx = this.getFulfillIntentTx(solver.solverAddress, model)
+    const fulfillTx = await this.getFulfillIntentTx(solver.solverAddress, model)
 
     // Combine all transactions
     const transactions = [...targetSolveTxs, fulfillTx]
@@ -185,11 +191,15 @@ export class FulfillIntentService {
    * @param model
    * @private
    */
-  private getFulfillIntentTx(solverAddress: Hex, model: SourceIntentModel) {
+  private async getFulfillIntentTx(
+    solverAddress: Hex,
+    model: SourceIntentModel,
+  ): Promise<ExecuteSimpleAccountArg> {
     const walletAddr = this.ecoConfigService.getEth().claimant
     const proof = this.proofService.getProofType(model.intent.prover)
+    const isHyperlane = proof === PROOF_HYPERLANE
     const functionName = proof === PROOF_STORAGE ? 'fulfillStorage' : 'fulfillHyperInstant'
-    const encodeProverAddress = proof === PROOF_HYPERLANE ? model.intent.prover : undefined
+    const encodeProverAddress = isHyperlane ? model.intent.prover : undefined
     const args = [
       model.event.sourceChainID,
       model.intent.targets,
@@ -202,6 +212,11 @@ export class FulfillIntentService {
     if (encodeProverAddress) {
       args.push(encodeProverAddress)
     }
+    let fee = 0n
+    if (isHyperlane) {
+      fee = BigInt((await this.getHyperlaneFee(solverAddress, model)) || '0x0')
+    }
+
     const fulfillIntentData = encodeFunctionData({
       abi: InboxAbi,
       functionName,
@@ -212,6 +227,43 @@ export class FulfillIntentService {
     return {
       to: solverAddress,
       data: fulfillIntentData,
+      // ...(isHyperlane && fee > 0 && { value: fee }),
+      value: fee,
     }
+  }
+
+  /**
+   * Returns the hyperlane fee
+   * @param prover
+   * @private
+   */
+  private async getHyperlaneFee(
+    solverAddress: Hex,
+    model: SourceIntentModel,
+  ): Promise<Hex | undefined> {
+    const client = await this.simpleAccountClientService.getClient(
+      Number(model.intent.destinationChainID),
+    )
+    const encodedMessageBody = encodeAbiParameters(
+      [{ type: 'bytes[]' }, { type: 'address[]' }],
+      [[model.intent.hash], [this.ecoConfigService.getEth().claimant]],
+    )
+
+    const args = [
+      model.event.sourceChainID, //_sourceChainID
+      encodedMessageBody, //_messageBody
+      pad(model.intent.prover), //_prover
+    ]
+    const callData = encodeFunctionData({
+      abi: InboxAbi,
+      functionName: 'fetchFee',
+      // @ts-expect-error we dynamically set the args
+      args,
+    })
+    const proverData = await client.call({
+      to: solverAddress,
+      data: callData,
+    })
+    return proverData.data
   }
 }

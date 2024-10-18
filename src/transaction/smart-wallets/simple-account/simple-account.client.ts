@@ -44,7 +44,10 @@ export type SimpleAccountActions = {
   execute: (args: ExecuteSimpleAccountArgs) => Promise<Hex>
 }
 
-type ExecuteSimpleAccountArgs = { to: Hex; data: Hex; value?: bigint }[]
+// The type that simple account executes arrays of
+export type ExecuteSimpleAccountArg = { to: Hex; data: Hex; value?: bigint }
+
+export type ExecuteSimpleAccountArgs = ExecuteSimpleAccountArg[]
 
 async function execute<chain extends Chain | undefined, account extends Account | undefined>(
   client: SimpleAccountClient<Transport, chain, account>,
