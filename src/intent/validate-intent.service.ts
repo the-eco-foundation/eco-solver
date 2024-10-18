@@ -160,7 +160,7 @@ export class ValidateIntentService implements OnModuleInit {
     })
 
     return srcSolvers.some((intent) => {
-      return intent.provers.some((prover) => getAddress(prover) == getAddress(model.intent.prover))
+      return intent.provers.some((prover) => prover == model.intent.prover)
     })
   }
 
