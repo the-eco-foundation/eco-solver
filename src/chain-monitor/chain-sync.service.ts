@@ -8,7 +8,7 @@ import { SourceIntent } from '../eco-configs/eco-config.types'
 import { IntentCreatedLog, IntentSourceAbi } from '../contracts'
 import { entries } from 'lodash'
 import { BlockTag } from 'viem'
-import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
+import { SimpleAccountClientService } from '../transaction/smart-wallets/simple-account/simple-account-client.service'
 import { WatchIntentService } from '../intent/watch-intent.service'
 
 /**

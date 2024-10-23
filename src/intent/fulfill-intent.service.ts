@@ -12,10 +12,10 @@ import { EcoError } from '../common/errors/eco-error'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { Solver } from '../eco-configs/eco-config.types'
 import { SourceIntentModel } from './schemas/source-intent.schema'
-import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
+import { SimpleAccountClientService } from '../transaction/smart-wallets/simple-account/simple-account-client.service'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { ProofService } from '../prover/proof.service'
-import { ExecuteSimpleAccountArg } from '../transaction/smart-wallets/simple-account'
+import { ExecuteSmartWalletArg } from '../transaction/smart-wallets/smart-wallet.types'
 
 /**
  * This class fulfills an intent by creating the transactions for the intent targets and the fulfill intent transaction.
@@ -194,7 +194,7 @@ export class FulfillIntentService {
   private async getFulfillIntentTx(
     solverAddress: Hex,
     model: SourceIntentModel,
-  ): Promise<ExecuteSimpleAccountArg> {
+  ): Promise<ExecuteSmartWalletArg> {
     const walletAddr = this.ecoConfigService.getEth().claimant
     const proof = this.proofService.getProofType(model.intent.prover)
     const isHyperlane = proof === PROOF_HYPERLANE

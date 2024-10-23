@@ -4,9 +4,10 @@ import { Solver } from '../eco-configs/eco-config.types'
 import { getDestinationNetworkAddressKey } from '../common/utils/strings'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { erc20Abi, Hex } from 'viem'
-import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
+import { SimpleAccountClientService } from '../transaction/smart-wallets/simple-account/simple-account-client.service'
 import { ViemEventLog } from '../common/events/viem'
 import { decodeTransferLog, isSupportedTokenType } from '../contracts'
+
 type TokenBalance = { decimals: bigint; balance: bigint }
 
 /**

@@ -9,7 +9,7 @@ import { Model } from 'mongoose'
 import { Solver, SourceIntent } from '../../eco-configs/eco-config.types'
 import { IntentSourceAbi } from '../../contracts'
 import { entries } from 'lodash'
-import { SimpleAccountClientService } from '../../transaction/simple-account-client.service'
+import { SimpleAccountClientService } from '../../transaction/smart-wallets/simple-account/simple-account-client.service'
 
 describe('ChainSyncService', () => {
   let chainSyncService: ChainSyncService

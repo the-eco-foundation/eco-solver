@@ -4,7 +4,7 @@ import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { Solver } from '../../eco-configs/eco-config.types'
 import { InboxAbi } from '../../contracts'
 import { Hex, zeroAddress } from 'viem'
-import { SimpleAccountClientService } from '../../transaction/simple-account-client.service'
+import { SimpleAccountClientService } from '../../transaction/smart-wallets/simple-account/simple-account-client.service'
 
 @Injectable()
 export class PermissionHealthIndicator extends HealthIndicator {

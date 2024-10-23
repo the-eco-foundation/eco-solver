@@ -1,6 +1,5 @@
 import {
   encodeFunctionData,
-  WalletClient,
   Hex,
   Transport,
   Chain,
@@ -8,9 +7,14 @@ import {
   RpcSchema,
   Prettify,
   WalletRpcSchema,
-  PublicActions,
 } from 'viem'
 import { SimpleAccountAbi } from '../../../contracts'
+import {
+  ExecuteSmartWalletArgs,
+  SmartWalletActions,
+  SmartWalletClient,
+} from '../smart-wallet.types'
+import { throwIfValueSendInBatch } from '../utils'
 
 export type SimpleAccountClient<
   transport extends Transport = Transport,
@@ -18,40 +22,31 @@ export type SimpleAccountClient<
   account extends Account | undefined = Account | undefined,
   rpcSchema extends RpcSchema | undefined = undefined,
 > = Prettify<
-  WalletClient<
+  SmartWalletClient<
     transport,
     chain,
     account,
     rpcSchema extends RpcSchema ? [...WalletRpcSchema, ...rpcSchema] : WalletRpcSchema
-  > &
-    PublicActions<transport, chain> &
-    SimpleAccountActions & {
-      simpleAccountAddress: Hex
-    }
+  > & {
+    simpleAccountAddress: Hex
+  }
 >
 
 export function SimpleAccountActions<
   transport extends Transport,
   chain extends Chain | undefined = Chain | undefined,
   account extends Account | undefined = Account | undefined,
->(client: SimpleAccountClient<transport, chain, account>): SimpleAccountActions {
+>(
+  client: SimpleAccountClient<transport, chain, account>,
+): Omit<SmartWalletActions, 'deployKernelAccount'> {
   return {
     execute: (args) => execute(client, args),
   }
 }
 
-export type SimpleAccountActions = {
-  execute: (args: ExecuteSimpleAccountArgs) => Promise<Hex>
-}
-
-// The type that simple account executes arrays of
-export type ExecuteSimpleAccountArg = { to: Hex; data: Hex; value?: bigint }
-
-export type ExecuteSimpleAccountArgs = ExecuteSimpleAccountArg[]
-
 async function execute<chain extends Chain | undefined, account extends Account | undefined>(
   client: SimpleAccountClient<Transport, chain, account>,
-  transactions: ExecuteSimpleAccountArgs,
+  transactions: ExecuteSmartWalletArgs,
 ): Promise<Hex> {
   if (transactions.length === 1) {
     const [tx] = transactions
@@ -70,6 +65,7 @@ async function execute<chain extends Chain | undefined, account extends Account 
       account: client.account as Account,
     })
   }
+  throwIfValueSendInBatch(transactions)
 
   const data = encodeFunctionData({
     abi: SimpleAccountAbi,

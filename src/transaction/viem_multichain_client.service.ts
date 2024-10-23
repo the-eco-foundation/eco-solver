@@ -16,6 +16,7 @@ export class ViemMultichainClientService<T extends Client, V extends ClientConfi
   protected pollingInterval: number
 
   constructor(readonly ecoConfigService: EcoConfigService) {}
+
   onModuleInit() {
     this.setChainConfigs()
   }
