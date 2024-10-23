@@ -1,7 +1,16 @@
-import { Hex, Transport, Chain, Account, RpcSchema, Prettify, WalletRpcSchema } from 'viem'
+import {
+  Hex,
+  Transport,
+  Chain,
+  Account,
+  RpcSchema,
+  Prettify,
+  WalletRpcSchema,
+} from 'viem'
 import { ExecuteSmartWalletArgs, SmartWalletClient } from '../smart-wallet.types'
 import { ToEcdsaKernelSmartAccountReturnType } from 'permissionless/accounts'
 import { KernelWalletActions } from './kernel-account.config'
+import { encodeCallData as encodeKernelCallData } from 'permissionless/accounts/kernel/utils/encodeCallData'
 
 export type DeployFactoryArgs = {
   factory?: Hex | undefined
@@ -47,17 +56,16 @@ async function execute<
   client: KernelAccountClient<entryPointVersion, Transport, chain, account>,
   transactions: ExecuteSmartWalletArgs,
 ): Promise<Hex> {
-  // encodeFunctionData({
-  //   abi: KernelFactoryAbi,
-  //   functionName: 'createKernelAccount',
-  //   args: [transactions.map((tx) => tx.to), transactions.map((tx) => tx.data)],
-  // })
-  // const data = encodeFunctionData({
-  //   abi: KernelV3ExecuteAbi,
-  //   functionName: 'execute',
-  //   args: [transactions.map((tx) => tx.to), transactions.map((tx) => tx.data)],
-  // })
-  return '0x'
+  const calls = transactions.map((tx) => ({ to: tx.to, data: tx.data, value: tx.value }))
+  const kernelVersion = client.kernelAccount.entryPoint.version == '0.6' ? '0.2.4' : '0.3.1'
+  const data = encodeKernelCallData({ calls, kernelVersion })
+  return client.sendTransaction({
+    data: data,
+    kzg: undefined,
+    to: client.kernelAccount.address,
+    chain: client.chain as Chain,
+    account: client.account as Account,
+  })
 }
 
 async function deployKernelAccount<

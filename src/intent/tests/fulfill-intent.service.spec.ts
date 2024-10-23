@@ -7,11 +7,11 @@ import { SourceIntentModel } from '../../intent/schemas/source-intent.schema'
 import { Model } from 'mongoose'
 import { UtilsIntentService } from '../utils-intent.service'
 import { FulfillIntentService } from '../fulfill-intent.service'
-import { SimpleAccountClientService } from '../../transaction/smart-wallets/simple-account/simple-account-client.service'
 import { EcoError } from '../../common/errors/eco-error'
 import { ProofService } from '../../prover/proof.service'
 import { InboxAbi, PROOF_HYPERLANE, PROOF_STORAGE } from '../../contracts'
 import { Hex } from 'viem'
+import { KernelAccountClientService } from '../../transaction/smart-wallets/kernel/kernel-account-client.service'
 
 jest.mock('viem', () => {
   return {
@@ -22,7 +22,7 @@ jest.mock('viem', () => {
 
 describe('FulfillIntentService', () => {
   let fulfillIntentService: FulfillIntentService
-  let simpleAccountClientService: DeepMocked<SimpleAccountClientService>
+  let accountClientService: DeepMocked<KernelAccountClientService>
   let proofService: DeepMocked<ProofService>
   let utilsIntentService: DeepMocked<UtilsIntentService>
   let ecoConfigService: DeepMocked<EcoConfigService>
@@ -36,7 +36,7 @@ describe('FulfillIntentService', () => {
     const chainMod: TestingModule = await Test.createTestingModule({
       providers: [
         FulfillIntentService,
-        { provide: SimpleAccountClientService, useValue: createMock<SimpleAccountClientService>() },
+        { provide: KernelAccountClientService, useValue: createMock<KernelAccountClientService>() },
         { provide: ProofService, useValue: createMock<ProofService>() },
         { provide: UtilsIntentService, useValue: createMock<UtilsIntentService>() },
         { provide: EcoConfigService, useValue: createMock<EcoConfigService>() },
@@ -48,7 +48,7 @@ describe('FulfillIntentService', () => {
     }).compile()
 
     fulfillIntentService = chainMod.get(FulfillIntentService)
-    simpleAccountClientService = chainMod.get(SimpleAccountClientService)
+    accountClientService = chainMod.get(KernelAccountClientService)
     proofService = chainMod.get(ProofService)
     utilsIntentService = chainMod.get(UtilsIntentService)
     ecoConfigService = chainMod.get(EcoConfigService)

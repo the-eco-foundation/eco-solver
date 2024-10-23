@@ -4,9 +4,9 @@ import { Solver } from '../eco-configs/eco-config.types'
 import { getDestinationNetworkAddressKey } from '../common/utils/strings'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { erc20Abi, Hex } from 'viem'
-import { SimpleAccountClientService } from '../transaction/smart-wallets/simple-account/simple-account-client.service'
 import { ViemEventLog } from '../common/events/viem'
 import { decodeTransferLog, isSupportedTokenType } from '../contracts'
+import { KernelAccountClientService } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
 
 type TokenBalance = { decimals: bigint; balance: bigint }
 
@@ -21,7 +21,7 @@ export class BalanceService implements OnApplicationBootstrap {
 
   constructor(
     private readonly ecoConfig: EcoConfigService,
-    private readonly simpleAccountClientService: SimpleAccountClientService,
+    private readonly kernelAccountClientService: KernelAccountClientService,
   ) {}
 
   async onApplicationBootstrap() {
@@ -91,7 +91,7 @@ export class BalanceService implements OnApplicationBootstrap {
   ): Promise<TokenBalance | undefined> {
     const key = getDestinationNetworkAddressKey(chainID, tokenAddress)
     if (!this.tokenBalances.has(key)) {
-      const client = await this.simpleAccountClientService.getClient(chainID)
+      const client = await this.kernelAccountClientService.getClient(chainID)
       const erc20 = {
         address: tokenAddress,
         abi: erc20Abi,
@@ -102,7 +102,7 @@ export class BalanceService implements OnApplicationBootstrap {
           {
             ...erc20,
             functionName: 'balanceOf',
-            args: [client.simpleAccountAddress],
+            args: [client.kernelAccount.address],
           },
           {
             ...erc20,

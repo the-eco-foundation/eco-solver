@@ -6,10 +6,10 @@ import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
 import { ViemEventLog } from '../common/events/viem'
 import { erc20Abi, Hex, WatchContractEventReturnType, zeroHash } from 'viem'
-import { SimpleAccountClientService } from '../transaction/smart-wallets/simple-account/simple-account-client.service'
 import { convertBigIntsToStrings } from '../common/viem/utils'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { getIntentJobId } from '../common/utils/strings'
+import { KernelAccountClientServiceV7 } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
 
 @Injectable()
 export class BalanceWebsocketService implements OnApplicationBootstrap, OnModuleDestroy {
@@ -19,7 +19,7 @@ export class BalanceWebsocketService implements OnApplicationBootstrap, OnModule
 
   constructor(
     @InjectQueue(QUEUES.ETH_SOCKET.queue) private readonly ethQueue: Queue,
-    private readonly simpleAccountClientService: SimpleAccountClientService,
+    private readonly kernelAccountClientService: KernelAccountClientServiceV7,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
@@ -37,7 +37,7 @@ export class BalanceWebsocketService implements OnApplicationBootstrap, OnModule
 
     const websocketTasks = Object.entries(this.ecoConfigService.getSolvers()).map(
       async ([, solver]) => {
-        const client = await this.simpleAccountClientService.getClient(solver.chainID)
+        const client = await this.kernelAccountClientService.getClient(solver.chainID)
         // const instanceAddress = this.alchemyService.getWallet(solver.network).address
 
         Object.entries(solver.targets).forEach(([address, source]) => {
@@ -48,7 +48,7 @@ export class BalanceWebsocketService implements OnApplicationBootstrap, OnModule
               abi: erc20Abi,
               eventName: 'Transfer',
               // restrict transfers from anyone to the simple account address
-              args: { to: client.simpleAccountAddress },
+              args: { to: client.kernelAccount.address },
               onLogs: this.addJob(solver.network, solver.chainID) as any,
             })
           }

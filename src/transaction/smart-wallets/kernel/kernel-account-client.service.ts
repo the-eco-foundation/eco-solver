@@ -6,19 +6,19 @@ import { SignerService } from '../../../sign/signer.service'
 import { Chain } from 'viem'
 import { KernelAccountClientConfig } from './kernel-account.config'
 import { KernelVersion } from 'permissionless/accounts'
-import { createKernelAccountClient } from './create.kernel.account'
+import { createKernelAccountClient, entryPointV_0_7 } from './create.kernel.account'
 import { KernelAccountClient } from './kernel-account.client'
 import { EcoLogMessage } from '../../../common/logging/eco-log-message'
 
 @Injectable()
-export class KernelAccountClientService<
+export class KernelAccountClientServiceBase<
   entryPointVersion extends '0.6' | '0.7',
   kernelVersion extends KernelVersion<entryPointVersion>,
 > extends ViemMultichainClientService<
   KernelAccountClient<entryPointVersion>,
   KernelAccountClientConfig<entryPointVersion, kernelVersion>
 > {
-  private logger = new Logger(KernelAccountClientService.name)
+  private logger = new Logger(KernelAccountClientServiceBase.name)
 
   constructor(
     readonly ecoConfigService: EcoConfigService,
@@ -59,5 +59,15 @@ export class KernelAccountClientService<
       owners: [this.signerService.getAccount()],
       index: 0n, // optional
     }
+  }
+}
+
+@Injectable()
+export class KernelAccountClientService extends KernelAccountClientServiceBase<
+  entryPointV_0_7,
+  KernelVersion<entryPointV_0_7>
+> {
+  constructor(ecoConfigService: EcoConfigService, signerService: SignerService) {
+    super(ecoConfigService, signerService)
   }
 }

@@ -3,23 +3,16 @@ import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestj
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { erc20Abi, Hex } from 'viem'
 import { Network } from 'alchemy-sdk'
-import { SimpleAccountClientService } from '../../transaction/smart-wallets/simple-account/simple-account-client.service'
 import { entries } from 'lodash'
 import { TargetContract } from '../../eco-configs/eco-config.types'
 import { KernelAccountClientService } from '../../transaction/smart-wallets/kernel/kernel-account-client.service'
-import { entryPointV_0_7 } from '../../transaction/smart-wallets/kernel/create.kernel.account'
-import { KernelVersion } from 'permissionless/accounts'
 
 type TokenType = { decimal: string; value: string; minBalances?: number }
 @Injectable()
 export class BalanceHealthIndicator extends HealthIndicator {
   private logger = new Logger(BalanceHealthIndicator.name)
   constructor(
-    private readonly simpleAccountClientService: SimpleAccountClientService,
-    private readonly kernelAcountClientService: KernelAccountClientService<
-      entryPointV_0_7,
-      KernelVersion<entryPointV_0_7>
-    >,
+    private readonly kernelAcountClientService: KernelAccountClientService,
     private readonly configService: EcoConfigService,
   ) {
     super()
