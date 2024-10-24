@@ -11,7 +11,7 @@ import { getRpcUrl } from '../viem/utils'
  */
 export function getTransport(
   chain: Chain,
-  apiKey: string,
+  apiKey?: string,
   websocketEnabled: boolean = false,
 ): WebSocketTransport | HttpTransport {
   const { url, isWebsocket } = getRpcUrl(chain, apiKey, websocketEnabled)
