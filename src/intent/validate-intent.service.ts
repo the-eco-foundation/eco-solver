@@ -11,7 +11,7 @@ import { SourceIntentModel } from './schemas/source-intent.schema'
 import { ProofService } from '../prover/proof.service'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
-import { getAddress, Hex } from 'viem'
+import { Hex } from 'viem'
 import { EcoError } from '../common/errors/eco-error'
 
 /**

@@ -11,6 +11,7 @@ import { QUEUES } from '../../common/redis/constants'
 import { Queue } from 'bullmq'
 import { EcoError } from '../../common/errors/eco-error'
 import { getFunctionBytes } from '../../common/viem/contracts'
+import { address1, address2 } from './feasable-intent.service.spec'
 
 jest.mock('viem', () => {
   return {
@@ -136,32 +137,32 @@ describe('UtilsIntentService', () => {
     })
 
     it('should return false some target transactions fail to decode', async () => {
-      const model = { intent: { targets: ['0x1', '0x2'], data: ['0x11', '0x22'] } } as any
+      const model = { intent: { targets: [address1, address2], data: ['0x11', '0x22'] } } as any
       utilsIntentService.getTransactionTargetData = jest
         .fn()
         .mockImplementation((model, solver, target, data) => {
-          if (target === '0x2') return null
+          if (target === address2) return null
           return { decoded: true }
         })
       expect(utilsIntentService.selectorsSupported(model, {} as any)).toBe(false)
     })
 
     it('should return true when all target transactions decode', async () => {
-      const model = { intent: { targets: ['0x1', '0x2'], data: ['0x11', '0x22'] } } as any
+      const model = { intent: { targets: [address1, address2], data: ['0x11', '0x22'] } } as any
       utilsIntentService.getTransactionTargetData = jest.fn().mockReturnValue({ decoded: true })
       expect(utilsIntentService.selectorsSupported(model, {} as any)).toBe(true)
     })
   })
 
   describe('on getTransactionTargetData', () => {
-    const target = '0x1'
+    const target = address1
     const data = '0xa9059cbb3333333' //transfer selector plus data fake
     const selectors = ['transfer(address,uint256)']
     const targetConfig = { contractType: 'erc20', selectors }
     const decodedData = { stuff: true }
 
     it('should throw when no target config exists on solver', async () => {
-      const model = { intent: { targets: ['0x1'], data: ['0x11'] } } as any
+      const model = { intent: { targets: [address1], data: ['0x11'] } } as any
       const solver = { targets: {} }
       expect(() =>
         utilsIntentService.getTransactionTargetData(model, solver as any, target, data),
@@ -177,7 +178,7 @@ describe('UtilsIntentService', () => {
       expect(
         utilsIntentService.getTransactionTargetData(
           model,
-          { targets: { '0x1': { contractType: 'erc20', selectors } } } as any,
+          { targets: { [address1]: { contractType: 'erc20', selectors } } } as any,
           target,
           data,
         ),
@@ -201,7 +202,7 @@ describe('UtilsIntentService', () => {
       expect(
         utilsIntentService.getTransactionTargetData(
           model,
-          { targets: { '0x1': { contractType: 'erc20', selectors } } } as any,
+          { targets: { [address1]: { contractType: 'erc20', selectors } } } as any,
           target,
           fakeData,
         ),
@@ -224,7 +225,7 @@ describe('UtilsIntentService', () => {
       expect(
         utilsIntentService.getTransactionTargetData(
           model,
-          { targets: { '0x1': targetConfig } } as any,
+          { targets: { [address1]: targetConfig } } as any,
           target,
           data,
         ),
@@ -237,8 +238,8 @@ describe('UtilsIntentService', () => {
   })
 
   describe('on targetsSupported', () => {
-    const target = '0x1'
-    const target1 = '0x2'
+    const target = address1
+    const target1 = address2
     const targetConfig = { contractType: 'erc20', selectors: [] }
 
     it('should return false if model targets are empty', async () => {
@@ -246,7 +247,7 @@ describe('UtilsIntentService', () => {
         intent: { targets: [], data: [], hash: '0x9' },
         event: { sourceNetwork: 'opt-sepolia' },
       } as any
-      const solver = { targets: { '0x1': { contractType: 'erc20', selectors: [] } } }
+      const solver = { targets: { address1: { contractType: 'erc20', selectors: [] } } }
       expect(utilsIntentService.targetsSupported(model, solver as any)).toBe(false)
       expect(mockLogWarn).toHaveBeenCalledTimes(1)
       expect(mockLogWarn).toHaveBeenCalledWith({
@@ -297,7 +298,7 @@ describe('UtilsIntentService', () => {
   })
 
   describe('on getIntentProcessData', () => {
-    const intentHash = '0x1'
+    const intentHash = address1
     const model = {
       intent: { hash: intentHash, destinationChainID: '85432' },
       event: { sourceNetwork: 'opt-sepolia' },

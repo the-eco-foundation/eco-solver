@@ -12,10 +12,10 @@ import { EcoError } from '../common/errors/eco-error'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { Solver } from '../eco-configs/eco-config.types'
 import { SourceIntentModel } from './schemas/source-intent.schema'
-import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { ProofService } from '../prover/proof.service'
-import { ExecuteSimpleAccountArg } from '../transaction/smart-wallets/simple-account'
+import { ExecuteSmartWalletArg } from '../transaction/smart-wallets/smart-wallet.types'
+import { KernelAccountClientService } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
 
 /**
  * This class fulfills an intent by creating the transactions for the intent targets and the fulfill intent transaction.
@@ -26,7 +26,7 @@ export class FulfillIntentService {
 
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
-    private readonly simpleAccountClientService: SimpleAccountClientService,
+    private readonly kernelAccountClientService: KernelAccountClientService,
     private readonly proofService: ProofService,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
@@ -54,7 +54,7 @@ export class FulfillIntentService {
       return
     }
 
-    const simpleAccountClient = await this.simpleAccountClientService.getClient(solver.chainID)
+    const kernelAccountClient = await this.kernelAccountClientService.getClient(solver.chainID)
 
     // Create transactions for intent targets
     const targetSolveTxs = this.getTransactionsForTargets(data)
@@ -75,9 +75,9 @@ export class FulfillIntentService {
     )
 
     try {
-      const transactionHash = await simpleAccountClient.execute(transactions)
+      const transactionHash = await kernelAccountClient.execute(transactions)
 
-      const receipt = await simpleAccountClient.waitForTransactionReceipt({ hash: transactionHash })
+      const receipt = await kernelAccountClient.waitForTransactionReceipt({ hash: transactionHash })
 
       // set the status and receipt for the model
       model.status = 'SOLVED'
@@ -194,7 +194,7 @@ export class FulfillIntentService {
   private async getFulfillIntentTx(
     solverAddress: Hex,
     model: SourceIntentModel,
-  ): Promise<ExecuteSimpleAccountArg> {
+  ): Promise<ExecuteSmartWalletArg> {
     const walletAddr = this.ecoConfigService.getEth().claimant
     const proof = this.proofService.getProofType(model.intent.prover)
     const isHyperlane = proof === PROOF_HYPERLANE
@@ -241,7 +241,7 @@ export class FulfillIntentService {
     solverAddress: Hex,
     model: SourceIntentModel,
   ): Promise<Hex | undefined> {
-    const client = await this.simpleAccountClientService.getClient(
+    const client = await this.kernelAccountClientService.getClient(
       Number(model.intent.destinationChainID),
     )
     const encodedMessageBody = encodeAbiParameters(

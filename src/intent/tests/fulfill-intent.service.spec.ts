@@ -7,11 +7,12 @@ import { SourceIntentModel } from '../../intent/schemas/source-intent.schema'
 import { Model } from 'mongoose'
 import { UtilsIntentService } from '../utils-intent.service'
 import { FulfillIntentService } from '../fulfill-intent.service'
-import { SimpleAccountClientService } from '../../transaction/simple-account-client.service'
 import { EcoError } from '../../common/errors/eco-error'
 import { ProofService } from '../../prover/proof.service'
 import { InboxAbi, PROOF_HYPERLANE, PROOF_STORAGE } from '../../contracts'
 import { Hex } from 'viem'
+import { KernelAccountClientService } from '../../transaction/smart-wallets/kernel/kernel-account-client.service'
+import { address1, address2 } from './feasable-intent.service.spec'
 
 jest.mock('viem', () => {
   return {
@@ -22,7 +23,7 @@ jest.mock('viem', () => {
 
 describe('FulfillIntentService', () => {
   let fulfillIntentService: FulfillIntentService
-  let simpleAccountClientService: DeepMocked<SimpleAccountClientService>
+  let accountClientService: DeepMocked<KernelAccountClientService>
   let proofService: DeepMocked<ProofService>
   let utilsIntentService: DeepMocked<UtilsIntentService>
   let ecoConfigService: DeepMocked<EcoConfigService>
@@ -36,7 +37,7 @@ describe('FulfillIntentService', () => {
     const chainMod: TestingModule = await Test.createTestingModule({
       providers: [
         FulfillIntentService,
-        { provide: SimpleAccountClientService, useValue: createMock<SimpleAccountClientService>() },
+        { provide: KernelAccountClientService, useValue: createMock<KernelAccountClientService>() },
         { provide: ProofService, useValue: createMock<ProofService>() },
         { provide: UtilsIntentService, useValue: createMock<UtilsIntentService>() },
         { provide: EcoConfigService, useValue: createMock<EcoConfigService>() },
@@ -48,7 +49,7 @@ describe('FulfillIntentService', () => {
     }).compile()
 
     fulfillIntentService = chainMod.get(FulfillIntentService)
-    simpleAccountClientService = chainMod.get(SimpleAccountClientService)
+    accountClientService = chainMod.get(KernelAccountClientService)
     proofService = chainMod.get(ProofService)
     utilsIntentService = chainMod.get(UtilsIntentService)
     ecoConfigService = chainMod.get(EcoConfigService)
@@ -57,18 +58,23 @@ describe('FulfillIntentService', () => {
     fulfillIntentService['logger'].debug = mockLogDebug
     fulfillIntentService['logger'].log = mockLogLog
     fulfillIntentService['logger'].error = mockLogError
+
+    // make sure it returns something real
+    fulfillIntentService['getHyperlaneFee'] = jest.fn().mockReturnValue(0n)
   })
-  const hash = '0x1'
-  const claimant = '0x2'
-  const solver = { solverAddress: '0x1', chainID: 1 }
+  const hash = address1
+  const claimant = address2
+  const solver = { solverAddress: address1, chainID: 1 }
   const model = { intent: { hash, destinationChainID: 85432 }, event: { sourceChainID: 11111 } }
-  const emptyTxs = [{ data: undefined, to: hash }]
+  const emptyTxs = [{ data: undefined, to: hash, value: 0n }]
   afterEach(async () => {
     // restore the spy created with spyOn
     jest.restoreAllMocks()
     mockLogDebug.mockClear()
     mockLogLog.mockClear()
     mockLogError.mockClear()
+    mockEncodeFunctionData.mockClear()
+    delete (model as any).status
   })
 
   describe('on executeFulfillIntent', () => {
@@ -99,7 +105,7 @@ describe('FulfillIntentService', () => {
         fulfillIntentService['getFulfillIntentData'] = mockGetFulfillIntentData
         fulfillIntentService['getTransactionsForTargets'] = jest.fn().mockReturnValue([])
         jest.spyOn(ecoConfigService, 'getEth').mockReturnValue({ claimant } as any)
-        jest.spyOn(simpleAccountClientService, 'getClient').mockImplementation(async (id) => {
+        jest.spyOn(accountClientService, 'getClient').mockImplementation(async (id) => {
           return {
             execute: () => {
               throw error
@@ -116,7 +122,7 @@ describe('FulfillIntentService', () => {
         fulfillIntentService['getFulfillIntentData'] = mockGetFulfillIntentData
         fulfillIntentService['getTransactionsForTargets'] = jest.fn().mockReturnValue([])
         jest.spyOn(ecoConfigService, 'getEth').mockReturnValue({ claimant } as any)
-        jest.spyOn(simpleAccountClientService, 'getClient').mockImplementation(async (id) => {
+        jest.spyOn(accountClientService, 'getClient').mockImplementation(async (id) => {
           return {
             execute: () => {
               throw error
@@ -141,7 +147,7 @@ describe('FulfillIntentService', () => {
         fulfillIntentService['getFulfillIntentData'] = mockGetFulfillIntentData
         fulfillIntentService['getTransactionsForTargets'] = jest.fn().mockReturnValue([])
         jest.spyOn(ecoConfigService, 'getEth').mockReturnValue({ claimant } as any)
-        jest.spyOn(simpleAccountClientService, 'getClient').mockImplementation(async (id) => {
+        jest.spyOn(accountClientService, 'getClient').mockImplementation(async (id) => {
           return {
             execute: () => {
               throw error
@@ -162,12 +168,16 @@ describe('FulfillIntentService', () => {
       const transactionHash = '0x33'
       const mockExecute = jest.fn()
       const mockWaitForTransactionReceipt = jest.fn()
+      const mockGetIntentProcessData = jest.fn()
       beforeEach(async () => {
         fulfillIntentService['getFulfillIntentTx'] = jest.fn().mockReturnValue(emptyTxs)
-        utilsIntentService.getIntentProcessData = jest.fn().mockResolvedValue({ model, solver })
+        utilsIntentService.getIntentProcessData = mockGetIntentProcessData.mockResolvedValue({
+          model,
+          solver,
+        })
         fulfillIntentService['getTransactionsForTargets'] = jest.fn().mockReturnValue([])
 
-        jest.spyOn(simpleAccountClientService, 'getClient').mockImplementation(async (id) => {
+        jest.spyOn(accountClientService, 'getClient').mockImplementation(async (id) => {
           return {
             execute: mockExecute.mockResolvedValue(transactionHash),
             waitForTransactionReceipt: mockWaitForTransactionReceipt.mockResolvedValue({
@@ -182,8 +192,10 @@ describe('FulfillIntentService', () => {
       })
 
       afterEach(() => {
+        jest.restoreAllMocks()
         mockExecute.mockClear()
         mockWaitForTransactionReceipt.mockClear()
+        mockGetIntentProcessData.mockClear()
       })
 
       it('should execute the transactions', async () => {
@@ -225,7 +237,7 @@ describe('FulfillIntentService', () => {
     it('should return empty on unsupported selector', async () => {
       expect(
         fulfillIntentService.handleErc20(
-          { selector: '0x1', targetConfig: {} } as any,
+          { selector: address1, targetConfig: {} } as any,
           {} as any,
           '0x0',
         ),
@@ -250,7 +262,7 @@ describe('FulfillIntentService', () => {
   })
 
   describe('on getTransactionsForTargets', () => {
-    const model = { intent: { targets: ['0x1'], data: ['0x2'] } }
+    const model = { intent: { targets: [address1], data: [address2] } }
     const tt = { targetConfig: { contractType: 'erc20' } }
     it('should return empty if input is invalid', async () => {
       expect(fulfillIntentService['getTransactionsForTargets']({} as any)).toEqual([])
@@ -316,7 +328,7 @@ describe('FulfillIntentService', () => {
     })
 
     it('should return correct data for erc20', async () => {
-      const mockHandleErc20Data = [{ to: '0x1', data: '0x2' }]
+      const mockHandleErc20Data = [{ to: address1, data: address2 }]
       utilsIntentService.getTransactionTargetData = jest.fn().mockReturnValue(tt)
       fulfillIntentService.handleErc20 = jest.fn().mockReturnValue(mockHandleErc20Data)
       expect(fulfillIntentService['getTransactionsForTargets']({ model, solver } as any)).toEqual(
@@ -325,7 +337,7 @@ describe('FulfillIntentService', () => {
     })
 
     it('should process multiple targets', async () => {
-      const model = { intent: { targets: ['0x1', '0x2'], data: ['0x3', '0x4'] } }
+      const model = { intent: { targets: [address1, address2], data: ['0x3', '0x4'] } }
       const mockHandleErc20Data = [
         { to: '0x11', data: '0x22' },
         { to: '0x33', data: '0x44' },
@@ -345,8 +357,8 @@ describe('FulfillIntentService', () => {
     const model = {
       intent: {
         hash: '0x1234',
-        targets: ['0x1'],
-        data: ['0x2'],
+        targets: [address1],
+        data: [address2],
         prover: ['0x1122'],
         expiryTime: '0x2233',
         nonce: '0x3344',
@@ -371,7 +383,7 @@ describe('FulfillIntentService', () => {
     it('should use the correct function name and args for PROOF_STORAGE', async () => {
       const mockGetProofType = jest.fn().mockReturnValue(PROOF_STORAGE)
       proofService.getProofType = mockGetProofType
-      fulfillIntentService['getFulfillIntentTx'](solver.solverAddress, model as any)
+      await fulfillIntentService['getFulfillIntentTx'](solver.solverAddress, model as any)
       expect(proofService.getProofType).toHaveBeenCalledTimes(1)
       expect(proofService.getProofType).toHaveBeenCalledWith(model.intent.prover)
       expect(mockEncodeFunctionData).toHaveBeenCalledWith({
@@ -384,9 +396,10 @@ describe('FulfillIntentService', () => {
       const mockGetProofType = jest.fn().mockReturnValue(PROOF_HYPERLANE)
       proofService.getProofType = mockGetProofType
       defaultArgs.push(model.intent.prover)
-      fulfillIntentService['getFulfillIntentTx'](solver.solverAddress, model as any)
+      await fulfillIntentService['getFulfillIntentTx'](solver.solverAddress, model as any)
       expect(proofService.getProofType).toHaveBeenCalledTimes(1)
       expect(proofService.getProofType).toHaveBeenCalledWith(model.intent.prover)
+      expect(mockEncodeFunctionData).toHaveBeenCalledTimes(1)
       expect(mockEncodeFunctionData).toHaveBeenCalledWith({
         abi: InboxAbi,
         functionName: 'fulfillHyperInstant',

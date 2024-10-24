@@ -15,6 +15,9 @@ import { EcoError } from '../../common/errors/eco-error'
 import { getERC20Selector } from '../../contracts'
 import { Network } from 'alchemy-sdk'
 
+export const address1 = '0x1111111111111111111111111111111111111111'
+export const address2 = '0x2222222222222222222222222222222222222222'
+
 describe('FeasableIntentService', () => {
   let feasableIntentService: FeasableIntentService
   let balanceService: DeepMocked<BalanceService>
@@ -141,7 +144,7 @@ describe('FeasableIntentService', () => {
     })
 
     it('should fail if any of the targets fail', async () => {
-      const mockModel = { intent: { targets: [{}, {}], data: ['0x1', '0x2'] } }
+      const mockModel = { intent: { targets: [{}, {}], data: [address1, address2] } }
       jest
         .spyOn(feasableIntentService, 'validateEachExecution')
         .mockImplementation(async ({}, {}, {}, data) => {
@@ -159,7 +162,7 @@ describe('FeasableIntentService', () => {
     })
 
     it('should succeed if all targets succeed', async () => {
-      const mockModel = { intent: { targets: [{}, {}], data: ['0x1', '0x2'] } }
+      const mockModel = { intent: { targets: [{}, {}], data: [address1, address2] } }
       jest
         .spyOn(feasableIntentService, 'validateEachExecution')
         .mockResolvedValue({ solvent: true, profitable: true })
@@ -254,11 +257,11 @@ describe('FeasableIntentService', () => {
       const amount = 100n
       const handleData = {
         selector: getERC20Selector('transfer'),
-        decodedFunctionData: { args: ['0x1', amount] },
+        decodedFunctionData: { args: [address1, amount] },
       }
       const mockModel = {
         event: { sourceNetwork: 'opt-sepolia' },
-        intent: { rewardTokens: ['0x1'], rewardAmounts: [200n] },
+        intent: { rewardTokens: [address1], rewardAmounts: [200n] },
       }
       it('should fail a transfer where we lack the funds to fulfill', async () => {
         jest.spyOn(balanceService, 'getTokenBalance').mockResolvedValue({ balance: 0n } as any)
@@ -322,8 +325,8 @@ describe('FeasableIntentService', () => {
   })
 
   describe('on isProfitableErc20Transfer', () => {
-    const acceptedTokens = ['0x1', '0x2'] as Hex[]
-    const rewardTokens = ['0x1', '0x2'] as Hex[]
+    const acceptedTokens = [address1, address2] as Hex[]
+    const rewardTokens = [address1, address2] as Hex[]
     const rewardAmounts = [100n, 200n]
     const fullfillAmountUSDC = 300n
 
@@ -383,8 +386,8 @@ describe('FeasableIntentService', () => {
   describe('on convertToUSDC', () => {
     it('should return the correct conversion', async () => {
       const conversions = [
-        { network: 'op1', token: '0x1', amount: 100n, conv: 100n },
-        { network: 'op2', token: '0x2', amount: 200n, conv: 200n },
+        { network: 'op1', token: address1, amount: 100n, conv: 100n },
+        { network: 'op2', token: address2, amount: 200n, conv: 200n },
       ]
       conversions.forEach((conversion) => {
         expect(

@@ -32,7 +32,11 @@ export class EcoError extends Error {
   }
 
   static InvalidSimpleAccountConfig() {
-    return new EcoError(`The simple account is invalid`)
+    return new EcoError(`The simple account config is invalid`)
+  }
+
+  static InvalidKernelAccountConfig() {
+    return new EcoError(`The kernel account config is invalid`)
   }
 
   static FeasableIntentNoTransactionError = new Error('No transaction data found')
