@@ -11,33 +11,26 @@ export class ViemMultichainClientService<T extends Client, V extends ClientConfi
 {
   readonly instances: Map<number, T> = new Map()
 
-  protected supportedChainIds: number[] = []
+  protected supportedAlchemyChainIds: number[] = []
   protected apiKey: string
   protected pollingInterval: number
 
   constructor(readonly ecoConfigService: EcoConfigService) {}
+
   onModuleInit() {
     this.setChainConfigs()
   }
 
-  get supportedNetworks(): ReadonlyArray<number> {
-    return this.supportedChainIds
-  }
-
   async getClient(id: number): Promise<T> {
-    if (!this.supportedNetworks.includes(id)) {
+    if (!this.isSupportedNetwork(id)) {
       throw EcoError.AlchemyUnsupportedNetworkIDError(id)
     }
-    return await this.clientForChain(id)!
-  }
-
-  private async clientForChain(chainID: number): Promise<T> {
-    return await this.loadInstance(chainID)!
+    return this.loadInstance(id)
   }
 
   private setChainConfigs() {
     const alchemyConfigs = this.ecoConfigService.getAlchemy()
-    this.supportedChainIds = alchemyConfigs.networks.map((n) => n.id)
+    this.supportedAlchemyChainIds = alchemyConfigs.networks.map((n) => n.id)
     this.apiKey = alchemyConfigs.apiKey
     this.pollingInterval = this.ecoConfigService.getEth().pollingInterval
   }
@@ -57,7 +50,7 @@ export class ViemMultichainClientService<T extends Client, V extends ClientConfi
 
   /**
    * Use overrides if they exist -- otherwise use the default settings.
-   * @param chain
+   * @param chainID
    * @returns
    */
   private async getChainConfig(chainID: number): Promise<V> {
@@ -66,19 +59,27 @@ export class ViemMultichainClientService<T extends Client, V extends ClientConfi
       id: chainID,
     })
 
-    if (this.supportedChainIds.includes(chainID) && chain) {
-      return await this.buildChainConfig(chain)
+    if (chain) {
+      return this.buildChainConfig(chain)
     } else {
       throw EcoError.UnsupportedChainError(chain[0])
     }
   }
 
   protected async buildChainConfig(chain: Chain): Promise<V> {
-    const rpcTransport = getTransport(chain, this.apiKey)
+    const apiKey = this.supportedAlchemyChainIds.includes(chain.id) ? this.apiKey : undefined
+    const rpcTransport = getTransport(chain, apiKey)
     return {
       transport: rpcTransport,
       chain: chain,
       pollingInterval: this.pollingInterval,
     } as V
+  }
+
+  private isSupportedNetwork(chainID: number): boolean {
+    return (
+      this.supportedAlchemyChainIds.includes(chainID) ||
+      ChainsSupported.some((chain) => chain.id === chainID)
+    )
   }
 }
