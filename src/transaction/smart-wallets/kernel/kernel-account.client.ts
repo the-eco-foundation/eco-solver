@@ -1,16 +1,8 @@
-import {
-  Hex,
-  Transport,
-  Chain,
-  Account,
-  RpcSchema,
-  Prettify,
-  WalletRpcSchema,
-} from 'viem'
+import { Hex, Transport, Chain, Account, RpcSchema, Prettify, WalletRpcSchema } from 'viem'
 import { ExecuteSmartWalletArgs, SmartWalletClient } from '../smart-wallet.types'
 import { ToEcdsaKernelSmartAccountReturnType } from 'permissionless/accounts'
 import { KernelWalletActions } from './kernel-account.config'
-import { encodeCallData as encodeKernelCallData } from 'permissionless/accounts/kernel/utils/encodeCallData'
+import { encodeKernelExecuteCallData } from './actions/encodeData.kernel'
 
 export type DeployFactoryArgs = {
   factory?: Hex | undefined
@@ -33,6 +25,7 @@ export type KernelAccountClient<
     rpcSchema extends RpcSchema ? [...WalletRpcSchema, ...rpcSchema] : WalletRpcSchema
   > & {
     kernelAccount: ToEcdsaKernelSmartAccountReturnType<entryPointVersion>
+    kernelAccountAddress: Hex
   }
 >
 
@@ -58,7 +51,7 @@ async function execute<
 ): Promise<Hex> {
   const calls = transactions.map((tx) => ({ to: tx.to, data: tx.data, value: tx.value }))
   const kernelVersion = client.kernelAccount.entryPoint.version == '0.6' ? '0.2.4' : '0.3.1'
-  const data = encodeKernelCallData({ calls, kernelVersion })
+  const data = encodeKernelExecuteCallData({ calls, kernelVersion })
   return client.sendTransaction({
     data: data,
     kzg: undefined,

@@ -86,8 +86,8 @@ export class BalanceHealthIndicator extends HealthIndicator {
     }> = []
     const sourceIntents = this.configService.getSourceIntents()
     for (const sourceIntent of sourceIntents) {
-      const client = await this.simpleAccountClientService.getClient(sourceIntent.chainID)
-      const accountAddress = client.simpleAccountAddress
+      const client = await this.kernelAcountClientService.getClient(sourceIntent.chainID)
+      const accountAddress = client.kernelAccountAddress
 
       const balances = await this.getBalanceCalls(sourceIntent.chainID, sourceIntent.tokens)
 
@@ -109,8 +109,8 @@ export class BalanceHealthIndicator extends HealthIndicator {
     const solverConfig = this.configService.getSolvers()
     await Promise.all(
       Object.entries(solverConfig).map(async ([, solver]) => {
-        const client = await this.simpleAccountClientService.getClient(solver.chainID)
-        const accountAddress = client.simpleAccountAddress
+        const client = await this.kernelAcountClientService.getClient(solver.chainID)
+        const accountAddress = client.kernelAccountAddress
         const tokens = Object.keys(solver.targets) as Hex[]
         const balances = await this.getBalanceCalls(solver.chainID, tokens)
         const mins = Object.values(solver.targets).map((target) => target.minBalance)
@@ -131,8 +131,8 @@ export class BalanceHealthIndicator extends HealthIndicator {
   }
 
   private async getBalanceCalls(chainID: number, tokens: Hex[]) {
-    const client = await this.simpleAccountClientService.getClient(chainID)
-    const accountAddress = client.simpleAccountAddress
+    const client = await this.kernelAcountClientService.getClient(chainID)
+    const accountAddress = client.kernelAccountAddress
 
     const balanceCalls = tokens.map((token) => {
       return [

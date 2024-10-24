@@ -5678,10 +5678,10 @@ path-type@^4.0.0:
   resolved "https://registry.yarnpkg.com/path-type/-/path-type-4.0.0.tgz#84ed01c0a7ba380afe09d90a8c180dcd9d03043b"
   integrity sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==
 
-permissionless@^0.2.10:
-  version "0.2.10"
-  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.2.10.tgz#7b0bb8ad61a43f76b8ba2021f7c7ce2b09283a15"
-  integrity sha512-l05ORtPTLo1B+36eHXSIsRAxHvUvsD9i2t12524NaWuwgAM8SMQX99FNWOQwNRb3oVIeYMXCygDXDdvyqwvNzA==
+permissionless@^0.2.11:
+  version "0.2.11"
+  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.2.11.tgz#7a4167f0925f327ed2194467143daf2557d62aac"
+  integrity sha512-p7fnz0Sd3EA6pXRF2/q72Sl2zaOakP8nZBDsWJhmCsarV7e3bn3/Hpn1mEvk1D9lgMij6XWE477Gv99azDMe2A==
 
 picocolors@^1.0.0, picocolors@^1.0.1:
   version "1.0.1"

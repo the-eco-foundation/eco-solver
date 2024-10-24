@@ -33,6 +33,17 @@ export const InboxAbi = [
   {
     inputs: [
       {
+        internalType: 'uint256',
+        name: '_requiredFee',
+        type: 'uint256',
+      },
+    ],
+    name: 'InsufficientFee',
+    type: 'error',
+  },
+  {
+    inputs: [
+      {
         internalType: 'bytes32',
         name: '_hash',
         type: 'bytes32',
@@ -318,6 +329,19 @@ export const InboxAbi = [
       },
     ],
     name: 'changeSolverWhitelist',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_destination',
+        type: 'address',
+      },
+    ],
+    name: 'drain',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',

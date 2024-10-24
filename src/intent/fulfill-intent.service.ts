@@ -241,7 +241,7 @@ export class FulfillIntentService {
     solverAddress: Hex,
     model: SourceIntentModel,
   ): Promise<Hex | undefined> {
-    const client = await this.simpleAccountClientService.getClient(
+    const client = await this.kernelAccountClientService.getClient(
       Number(model.intent.destinationChainID),
     )
     const encodedMessageBody = encodeAbiParameters(

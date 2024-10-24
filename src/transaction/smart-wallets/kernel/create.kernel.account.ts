@@ -33,6 +33,7 @@ export async function createKernelAccountClient<
     client,
   })
   client.kernelAccount = kernelAccount
+  client.kernelAccountAddress = kernelAccount.address
   client = client.extend(KernelAccountActions).extend(publicActions) as any
 
   //conditionally deploys kernel account if it doesn't exist
