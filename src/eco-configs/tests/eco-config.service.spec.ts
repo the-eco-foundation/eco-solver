@@ -17,7 +17,7 @@ describe('Eco Config Helper Tests', () => {
           provide: EcoConfigService,
           useFactory: async (awsConfigService: AwsConfigService) => {
             await awsConfigService.initConfigs()
-            return new EcoConfigService(awsConfigService)
+            return new EcoConfigService([awsConfigService])
           },
           inject: [AwsConfigService],
         },

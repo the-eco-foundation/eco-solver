@@ -18,7 +18,7 @@ import { SolverModule } from './solver/solver.module'
   imports: [
     BalanceModule,
     ChainMonitorModule,
-    EcoConfigModule,
+    EcoConfigModule.withAWS(),
     EventEmitterModule.forRoot({
       // the delimiter used to segment namespaces
       delimiter: '.',
@@ -29,7 +29,6 @@ import { SolverModule } from './solver/solver.module'
     SourceIntentModel,
     ProcessorModule,
     MongooseModule.forRootAsync({
-      imports: [EcoConfigModule],
       inject: [EcoConfigService],
       useFactory: async (configService: EcoConfigService) => {
         const uri = configService.getMongooseUri()
@@ -54,7 +53,6 @@ function getPino() {
   return EcoConfigService.getStaticConfig().logger.usePino
     ? [
         LoggerModule.forRootAsync({
-          imports: [EcoConfigModule],
           inject: [EcoConfigService],
           useFactory: async (configService: EcoConfigService) => {
             const loggerConfig = configService.getLoggerConfig()

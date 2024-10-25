@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common'
-import { EcoConfigModule } from '../eco-configs/eco-config.module'
 import { initBullMQ } from '../bullmq/bullmq.helper'
 import { QUEUES } from '../common/redis/constants'
 import { SourceIntentModel, SourceIntentSchema } from './schemas/source-intent.schema'
@@ -18,7 +17,6 @@ import { SolverModule } from '../solver/solver.module'
 @Module({
   imports: [
     BalanceModule,
-    EcoConfigModule,
     MongooseModule.forFeature([{ name: SourceIntentModel.name, schema: SourceIntentSchema }]),
     ProverModule,
     SolverModule,
