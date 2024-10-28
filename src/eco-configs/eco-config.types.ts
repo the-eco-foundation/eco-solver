@@ -38,7 +38,7 @@ export type EcoConfigType = {
     }
     pollingInterval: number
   }
-  aws: AwsCredentials
+  aws: AwsCredential[]
   database: {
     auth: MongoAuthType
     uriPrefix: string
@@ -75,7 +75,7 @@ export type RedisConfig = {
 /**
  * The config type for the aws credentials
  */
-export type AwsCredentials = {
+export type AwsCredential = {
   region: string
   secretID: string
 }
