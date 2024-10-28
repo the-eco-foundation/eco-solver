@@ -1,10 +1,11 @@
 import { SecretsManager } from '@aws-sdk/client-secrets-manager'
-import { AwsCredentials } from './eco-config.types'
+import { AwsCredential } from './eco-config.types'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import * as config from 'config'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { ConfigSource } from './interfaces/config-source.interface'
 import { EcoError } from '../common/errors/eco-error'
+import { merge } from 'lodash'
 
 /**
  * Service to retrieve AWS secrets from AWS Secrets Manager
@@ -35,8 +36,16 @@ export class AwsConfigService implements OnModuleInit, ConfigSource {
         message: `Initializing aws configs`,
       }),
     )
-    const awsCreds = config.get('aws') as AwsCredentials
-    this._awsConfigs = await this.getAwsSecrets(awsCreds)
+    let awsCreds = config.get('aws')
+    if (!Array.isArray(awsCreds)) {
+      awsCreds = [awsCreds]
+    }
+    const creds = await Promise.all(
+      awsCreds.map(async (cred: AwsCredential) => {
+        return await this.getAwsSecrets(cred)
+      }),
+    )
+    merge(this._awsConfigs, ...creds)
   }
 
   get awsConfigs(): Record<string, string> {
@@ -48,7 +57,7 @@ export class AwsConfigService implements OnModuleInit, ConfigSource {
    * @param awsCreds the aws credentials
    * @returns
    */
-  private async getAwsSecrets(awsCreds: AwsCredentials): Promise<Record<string, string>> {
+  private async getAwsSecrets(awsCreds: AwsCredential): Promise<Record<string, string>> {
     const secretsManager = new SecretsManager({
       region: awsCreds.region,
     })

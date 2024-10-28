@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common'
 import { ProofService } from './proof.service'
 import { TransactionModule } from '../transaction/transaction.module'
-import { EcoConfigModule } from '../eco-configs/eco-config.module'
 
 @Module({
-  imports: [TransactionModule, EcoConfigModule],
+  imports: [TransactionModule],
   providers: [ProofService],
   exports: [ProofService],
 })

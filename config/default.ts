@@ -1,8 +1,14 @@
 export default {
-  aws: {
-    region: 'us-east-2',
-    secretID: 'eco-solver-secrets',
-  },
+  aws: [
+    {
+      region: 'us-east-2',
+      secretID: 'eco-solver-secrets-dev',
+    },
+    {
+      region: 'us-east-2',
+      secretID: 'eco-solver-configs-dev',
+    },
+  ],
   redis: {
     options: {
       single: {
