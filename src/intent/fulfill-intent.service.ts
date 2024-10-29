@@ -80,8 +80,11 @@ export class FulfillIntentService {
       const receipt = await kernelAccountClient.waitForTransactionReceipt({ hash: transactionHash })
 
       // set the status and receipt for the model
-      model.status = 'SOLVED'
       model.receipt = receipt as any
+      if (receipt.status === 'reverted') {
+        throw EcoError.FulfillIntentRevertError(receipt)
+      }
+      model.status = 'SOLVED'
 
       this.logger.debug(
         EcoLogMessage.fromDefault({
