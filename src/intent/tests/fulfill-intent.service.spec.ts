@@ -130,11 +130,12 @@ describe('FulfillIntentService', () => {
             },
             waitForTransactionReceipt: () => {
               return receipt
-            },
+            }
           } as any
         })
         await expect(() => fulfillIntentService.executeFulfillIntent(hash)).rejects.toThrow(error)
         expect(mockLogError).toHaveBeenCalledTimes(1)
+        expect((model as any).status).toBe('FAILED')
         expect(mockLogError).toHaveBeenCalledWith({
           msg: `fulfillIntent: Invalid transaction`,
           error: EcoError.FulfillIntentBatchError.toString(),
