@@ -115,6 +115,36 @@ describe('FulfillIntentService', () => {
         await expect(() => fulfillIntentService.executeFulfillIntent(hash)).rejects.toThrow(error)
       })
 
+      it('should fail on receipt status reverted', async () => {
+        const receipt = { status: 'reverted' }
+        const error = EcoError.FulfillIntentRevertError(receipt as any)
+        utilsIntentService.getIntentProcessData = jest.fn().mockResolvedValue({ model, solver })
+        const mockGetFulfillIntentData = jest.fn()
+        fulfillIntentService['getFulfillIntentData'] = mockGetFulfillIntentData
+        fulfillIntentService['getTransactionsForTargets'] = jest.fn().mockReturnValue([])
+        jest.spyOn(ecoConfigService, 'getEth').mockReturnValue({ claimant } as any)
+        jest.spyOn(accountClientService, 'getClient').mockImplementation(async (id) => {
+          return {
+            execute: () => {
+              return '0x33'
+            },
+            waitForTransactionReceipt: () => {
+              return receipt
+            },
+          } as any
+        })
+        await expect(() => fulfillIntentService.executeFulfillIntent(hash)).rejects.toThrow(error)
+        expect(mockLogError).toHaveBeenCalledTimes(1)
+        expect((model as any).status).toBe('FAILED')
+        expect(mockLogError).toHaveBeenCalledWith({
+          msg: `fulfillIntent: Invalid transaction`,
+          error: EcoError.FulfillIntentBatchError.toString(),
+          model,
+          errorPassed: error,
+          flatExecuteData: emptyTxs,
+        })
+      })
+
       it('should log error', async () => {
         const error = new Error('stuff went bad')
         utilsIntentService.getIntentProcessData = jest.fn().mockResolvedValue({ model, solver })

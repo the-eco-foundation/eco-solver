@@ -2,7 +2,7 @@ import { Network } from 'alchemy-sdk'
 import { Logger } from '@nestjs/common'
 import * as _ from 'lodash'
 import { EcoLogMessage } from '../logging/eco-log-message'
-import { Chain } from 'viem'
+import { Chain, TransactionReceipt } from 'viem'
 
 export class EcoError extends Error {
   // Alchemy Service
@@ -42,6 +42,9 @@ export class EcoError extends Error {
   static FeasableIntentNoTransactionError = new Error('No transaction data found')
   static FulfillIntentNoTransactionError = new Error('No transaction data found')
   static FulfillIntentBatchError = new Error('Could not fulfill batch transaction')
+  static FulfillIntentRevertError(receipt: TransactionReceipt) {
+    return new Error(JSON.stringify(receipt))
+  }
 
   // ValidateIntent Service
   static ValidateIntentDescructureFailed(err?: Error) {
