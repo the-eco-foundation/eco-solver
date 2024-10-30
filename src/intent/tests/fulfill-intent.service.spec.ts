@@ -130,7 +130,7 @@ describe('FulfillIntentService', () => {
             },
             waitForTransactionReceipt: () => {
               return receipt
-            }
+            },
           } as any
         })
         await expect(() => fulfillIntentService.executeFulfillIntent(hash)).rejects.toThrow(error)
