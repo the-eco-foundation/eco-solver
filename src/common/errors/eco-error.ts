@@ -43,7 +43,8 @@ export class EcoError extends Error {
   static FulfillIntentNoTransactionError = new Error('No transaction data found')
   static FulfillIntentBatchError = new Error('Could not fulfill batch transaction')
   static FulfillIntentRevertError(receipt: TransactionReceipt) {
-    return new Error(JSON.stringify(receipt))
+    const msg = JSON.stringify(receipt, (_, v) => (typeof v === 'bigint' ? v.toString() : v))
+    return new Error(msg)
   }
 
   // ValidateIntent Service

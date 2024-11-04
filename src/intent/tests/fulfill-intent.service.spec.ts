@@ -75,6 +75,7 @@ describe('FulfillIntentService', () => {
     mockLogError.mockClear()
     mockEncodeFunctionData.mockClear()
     delete (model as any).status
+    delete (model as any).receipt
   })
 
   describe('on executeFulfillIntent', () => {
@@ -171,7 +172,7 @@ describe('FulfillIntentService', () => {
       })
 
       it('should update the db model with status and error receipt', async () => {
-        const error = new Error('stuff went bad')
+        let error = new Error('stuff went bad')
         utilsIntentService.getIntentProcessData = jest.fn().mockResolvedValue({ model, solver })
         const mockGetFulfillIntentData = jest.fn()
         fulfillIntentService['getFulfillIntentData'] = mockGetFulfillIntentData
@@ -190,6 +191,24 @@ describe('FulfillIntentService', () => {
           ...model,
           status: 'FAILED',
           receipt: error,
+        })
+
+        //check error stacking
+        const error2 = new Error('stuff went bad a second time')
+        jest.spyOn(accountClientService, 'getClient').mockImplementation(async (id) => {
+          return {
+            execute: () => {
+              throw error2
+            },
+          } as any
+        })
+
+        await expect(() => fulfillIntentService.executeFulfillIntent(hash)).rejects.toThrow(error2)
+        expect(utilsIntentService.updateIntentModel).toHaveBeenCalledTimes(2)
+        expect(utilsIntentService.updateIntentModel).toHaveBeenLastCalledWith(intentModel, {
+          ...model,
+          status: 'FAILED',
+          receipt: { previous: error, current: error2 },
         })
       })
     })
