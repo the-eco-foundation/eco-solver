@@ -172,7 +172,7 @@ describe('FulfillIntentService', () => {
       })
 
       it('should update the db model with status and error receipt', async () => {
-        let error = new Error('stuff went bad')
+        const error = new Error('stuff went bad')
         utilsIntentService.getIntentProcessData = jest.fn().mockResolvedValue({ model, solver })
         const mockGetFulfillIntentData = jest.fn()
         fulfillIntentService['getFulfillIntentData'] = mockGetFulfillIntentData
