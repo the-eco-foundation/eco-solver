@@ -6,7 +6,7 @@ on:
       - release-staging
 jobs:
   deploy:
-    uses: eco/workflows/.github/workflows/deploy-to-eks.yml@v20231102
+    uses: eco/workflows/.github/workflows/deploy-to-eks.yml@main
     with:
       appname: solver
       assumed-role: arn:aws:iam::027715947294:role/solver-eks-actions-beam-staging
@@ -15,4 +15,4 @@ jobs:
       ghenv: staging
       ghsha: e4c823a00ef065ea635afc31e274fd2ffb08692e
       targetenv: staging
-      
+
