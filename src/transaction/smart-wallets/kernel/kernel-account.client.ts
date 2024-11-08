@@ -3,6 +3,8 @@ import { ExecuteSmartWalletArgs, SmartWalletClient } from '../smart-wallet.types
 import { ToEcdsaKernelSmartAccountReturnType } from 'permissionless/accounts'
 import { KernelWalletActions } from './kernel-account.config'
 import { encodeKernelExecuteCallData } from './actions/encodeData.kernel'
+import { EntryPointVersion } from 'viem/_types/account-abstraction'
+import { KERNEL_VERSION_TO_ADDRESSES_MAP } from 'permissionless/accounts/kernel/toEcdsaKernelSmartAccount'
 
 export type DeployFactoryArgs = {
   factory?: Hex | undefined

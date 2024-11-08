@@ -1,4 +1,4 @@
-import { createWalletClient, publicActions } from 'viem'
+import { createWalletClient, Hex, publicActions } from 'viem'
 import { KernelAccountClientConfig } from './kernel-account.config'
 import {
   DeployFactoryArgs,
@@ -6,6 +6,8 @@ import {
   KernelAccountClient,
 } from './kernel-account.client'
 import { KernelVersion, toEcdsaKernelSmartAccount } from 'permissionless/accounts'
+import { KERNEL_VERSION_TO_ADDRESSES_MAP } from 'permissionless/accounts/kernel/toEcdsaKernelSmartAccount'
+import { EntryPointVersion } from 'viem/_types/account-abstraction'
 
 export type entryPointV_0_7 = '0.7'
 
@@ -32,6 +34,8 @@ export async function createKernelAccountClient<
     ...parameters,
     client,
   })
+  kernelAccount.getFactoryArgs = getFactoryArgs(kernelAccount.entryPoint.version)
+
   client.kernelAccount = kernelAccount
   client.kernelAccountAddress = kernelAccount.address
   client = client.extend(KernelAccountActions).extend(publicActions) as any
@@ -40,3 +44,22 @@ export async function createKernelAccountClient<
   const args = await client.deployKernelAccount()
   return { client, args }
 }
+
+function getFactoryArgs(entryPointVersion: EntryPointVersion): () => Promise<{ factory?: Hex | undefined, factoryData?: Hex | undefined }> {
+  return async (): Promise<{ factory?: Hex | undefined, factoryData?: Hex | undefined }> => {
+    const kernelVersion = entryPointVersion == '0.6' ? '0.2.4' : '0.3.1'
+    const addresses = KERNEL_VERSION_TO_ADDRESSES_MAP[kernelVersion]
+    return {
+      factory: addresses.FACTORY_ADDRESS,
+      factoryData: undefined //kernelAccount.encodeCalls([]),
+    }
+  }
+}
+
+// async function getFactoryArgs(kernelVersion: ): Promise<{ factory?: Hex | undefined, factoryData?: Hex | undefined }> {
+//   const kern = KERNEL_VERSION_TO_ADDRESSES_MAP[kernelVersion]
+//   return {
+//     factory: kern.FACTORY_ADDRESS,
+//     factoryData: undefined //kernelAccount.encodeCalls([]),
+//   }
+// }

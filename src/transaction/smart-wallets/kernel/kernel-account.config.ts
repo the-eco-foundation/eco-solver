@@ -1,5 +1,5 @@
 import { KernelVersion, ToEcdsaKernelSmartAccountParameters } from 'permissionless/accounts'
-import { Prettify, WalletClientConfig } from 'viem'
+import { Hex, Prettify, WalletClientConfig } from 'viem'
 import { SmartWalletActions } from '../smart-wallet.types'
 import { DeployFactoryArgs } from './kernel-account.client'
 
