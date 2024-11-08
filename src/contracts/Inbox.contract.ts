@@ -21,6 +21,27 @@ export const InboxAbi = [
     type: 'constructor',
   },
   {
+    inputs: [],
+    name: 'BatchTooLarge',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'CallToMailbox',
+    type: 'error',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '_requiredFee',
+        type: 'uint256',
+      },
+    ],
+    name: 'InsufficientFee',
+    type: 'error',
+  },
+  {
     inputs: [
       {
         internalType: 'bytes32',
@@ -55,6 +76,17 @@ export const InboxAbi = [
   {
     inputs: [],
     name: 'IntentExpired',
+    type: 'error',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'bytes32',
+        name: '_hash',
+        type: 'bytes32',
+      },
+    ],
+    name: 'IntentNotFulfilled',
     type: 'error',
   },
   {
@@ -122,8 +154,64 @@ export const InboxAbi = [
         name: '_claimant',
         type: 'address',
       },
+      {
+        indexed: false,
+        internalType: 'address',
+        name: '_prover',
+        type: 'address',
+      },
+    ],
+    name: 'AddToBatch',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'bytes32',
+        name: '_hash',
+        type: 'bytes32',
+      },
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: '_sourceChainID',
+        type: 'uint256',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: '_claimant',
+        type: 'address',
+      },
     ],
     name: 'Fulfillment',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'bytes32',
+        name: '_hash',
+        type: 'bytes32',
+      },
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: '_sourceChainID',
+        type: 'uint256',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: '_claimant',
+        type: 'address',
+      },
+    ],
+    name: 'HyperInstantFulfillment',
     type: 'event',
   },
   {
@@ -143,6 +231,25 @@ export const InboxAbi = [
       },
     ],
     name: 'OwnershipTransferred',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: '_chainID',
+        type: 'uint256',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: '_prover',
+        type: 'address',
+      },
+    ],
+    name: 'ProverSet',
     type: 'event',
   },
   {
@@ -171,6 +278,44 @@ export const InboxAbi = [
     type: 'event',
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'bytes32',
+        name: '_hash',
+        type: 'bytes32',
+      },
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: '_sourceChainID',
+        type: 'uint256',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: '_claimant',
+        type: 'address',
+      },
+    ],
+    name: 'ToBeProven',
+    type: 'event',
+  },
+  {
+    inputs: [],
+    name: 'MAX_BATCH_SIZE',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [
       {
         internalType: 'address',
@@ -185,6 +330,102 @@ export const InboxAbi = [
     ],
     name: 'changeSolverWhitelist',
     outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_destination',
+        type: 'address',
+      },
+    ],
+    name: 'drain',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '_sourceChainID',
+        type: 'uint256',
+      },
+      {
+        internalType: 'bytes',
+        name: '_messageBody',
+        type: 'bytes',
+      },
+      {
+        internalType: 'bytes32',
+        name: '_prover',
+        type: 'bytes32',
+      },
+    ],
+    name: 'fetchFee',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: 'fee',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '_sourceChainID',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address[]',
+        name: '_targets',
+        type: 'address[]',
+      },
+      {
+        internalType: 'bytes[]',
+        name: '_data',
+        type: 'bytes[]',
+      },
+      {
+        internalType: 'uint256',
+        name: '_expiryTime',
+        type: 'uint256',
+      },
+      {
+        internalType: 'bytes32',
+        name: '_nonce',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'address',
+        name: '_claimant',
+        type: 'address',
+      },
+      {
+        internalType: 'bytes32',
+        name: '_expectedHash',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'address',
+        name: '_prover',
+        type: 'address',
+      },
+    ],
+    name: 'fulfillHyperBatched',
+    outputs: [
+      {
+        internalType: 'bytes[]',
+        name: '',
+        type: 'bytes[]',
+      },
+    ],
     stateMutability: 'nonpayable',
     type: 'function',
   },
@@ -225,8 +466,62 @@ export const InboxAbi = [
         name: '_expectedHash',
         type: 'bytes32',
       },
+      {
+        internalType: 'address',
+        name: '_prover',
+        type: 'address',
+      },
     ],
-    name: 'fulfill',
+    name: 'fulfillHyperInstant',
+    outputs: [
+      {
+        internalType: 'bytes[]',
+        name: '',
+        type: 'bytes[]',
+      },
+    ],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '_sourceChainID',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address[]',
+        name: '_targets',
+        type: 'address[]',
+      },
+      {
+        internalType: 'bytes[]',
+        name: '_data',
+        type: 'bytes[]',
+      },
+      {
+        internalType: 'uint256',
+        name: '_expiryTime',
+        type: 'uint256',
+      },
+      {
+        internalType: 'bytes32',
+        name: '_nonce',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'address',
+        name: '_claimant',
+        type: 'address',
+      },
+      {
+        internalType: 'bytes32',
+        name: '_expectedHash',
+        type: 'bytes32',
+      },
+    ],
+    name: 'fulfillStorage',
     outputs: [
       {
         internalType: 'bytes[]',
@@ -271,6 +566,19 @@ export const InboxAbi = [
   },
   {
     inputs: [],
+    name: 'mailbox',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
     name: 'makeSolvingPublic',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -292,6 +600,42 @@ export const InboxAbi = [
   {
     inputs: [],
     name: 'renounceOwnership',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '_sourceChainID',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address',
+        name: '_prover',
+        type: 'address',
+      },
+      {
+        internalType: 'bytes32[]',
+        name: '_intentHashes',
+        type: 'bytes32[]',
+      },
+    ],
+    name: 'sendBatch',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_mailbox',
+        type: 'address',
+      },
+    ],
+    name: 'setMailbox',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',

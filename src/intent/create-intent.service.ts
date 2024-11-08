@@ -9,13 +9,14 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { getIntentJobId } from '../common/utils/strings'
 import { Hex } from 'viem'
-import { UtilsIntentService } from './utils-intent.service'
 import { ValidSmartWalletService } from '../solver/filters/valid-smart-wallet.service'
 import { decodeCreateIntentLog, IntentCreatedLog } from '../contracts'
 import { SourceIntentDataModel } from './schemas/source-intent-data.schema'
 
 /**
- * Service class for getting configs for the app
+ * This service is responsible for creating a new intent record in the database. It is
+ * triggered when a new intent is created recieved in {@link WatchIntentService}.
+ * It validates that the record doesn't exist yet, and that its creator is a valid BEND wallet
  */
 @Injectable()
 export class CreateIntentService implements OnModuleInit {
@@ -26,7 +27,6 @@ export class CreateIntentService implements OnModuleInit {
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly validSmartWalletService: ValidSmartWalletService,
-    private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
@@ -34,6 +34,13 @@ export class CreateIntentService implements OnModuleInit {
     this.intentJobConfig = this.ecoConfigService.getRedis().jobs.intentJobConfig
   }
 
+  /**
+   * Decodes the intent log, validates the creator is a valid BEND wallet, and creates a new record in the database
+   * if one doesn't yet exist. Finally it enqueue the intent for validation
+   *
+   * @param intentWs the intent created log
+   * @returns
+   */
   async createIntent(intentWs: IntentCreatedLog) {
     this.logger.debug(
       EcoLogMessage.fromDefault({
@@ -52,6 +59,7 @@ export class CreateIntentService implements OnModuleInit {
       const model = await this.intentModel.findOne({
         'intent.hash': intent.hash,
       })
+
       if (model) {
         // Record already exists, do nothing and return
         this.logger.debug(
@@ -65,12 +73,12 @@ export class CreateIntentService implements OnModuleInit {
         )
         return
       }
-      // const isBendWallet = await this.validSmartWalletService.validateSmartWallet(
-      //   intent.creator as Hex,
-      //   intentWs.sourceChainID,
-      // )
-      //todo fix this
-      const isBendWallet = true
+
+      const isBendWallet = await this.validSmartWalletService.validateSmartWallet(
+        intent.creator as Hex,
+        intentWs.sourceChainID,
+      )
+
       //create db record
       const record = await this.intentModel.create({
         event: intentWs,
@@ -94,8 +102,8 @@ export class CreateIntentService implements OnModuleInit {
           properties: {
             intentHash: intent.hash,
             intent: record.intent,
-            ...(isBendWallet ? { jobId } : {}),
             isBendWallet,
+            ...(isBendWallet ? { jobId } : {}),
           },
         }),
       )

@@ -1,22 +1,24 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
-import { encodeFunctionData, erc20Abi, Hex } from 'viem'
+import { encodeAbiParameters, encodeFunctionData, erc20Abi, Hex, pad } from 'viem'
 import {
   IntentProcessData,
   TransactionTargetData,
   UtilsIntentService,
 } from './utils-intent.service'
-import { getERC20Selector, InboxAbi } from '../contracts'
+import { getERC20Selector, InboxAbi, PROOF_HYPERLANE, PROOF_STORAGE } from '../contracts'
 import { EcoError } from '../common/errors/eco-error'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { Solver } from '../eco-configs/eco-config.types'
 import { SourceIntentModel } from './schemas/source-intent.schema'
-import { SimpleAccountClientService } from '../transaction/simple-account-client.service'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
+import { ProofService } from '../prover/proof.service'
+import { ExecuteSmartWalletArg } from '../transaction/smart-wallets/smart-wallet.types'
+import { KernelAccountClientService } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
 
 /**
- * Service class for getting configs for the app
+ * This class fulfills an intent by creating the transactions for the intent targets and the fulfill intent transaction.
  */
 @Injectable()
 export class FulfillIntentService {
@@ -24,13 +26,21 @@ export class FulfillIntentService {
 
   constructor(
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
+    private readonly kernelAccountClientService: KernelAccountClientService,
+    private readonly proofService: ProofService,
     private readonly utilsIntentService: UtilsIntentService,
-    private readonly simpleAccountClientService: SimpleAccountClientService,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
+  /**
+   * Executes the fulfill intent process for an intent. It creates the transaction for fulfillment, and posts it
+   * to the chain. It then updates the db model of the intent with the status and receipt.
+   *
+   * @param intentHash the intent hash to fulfill
+   * @returns
+   */
   async executeFulfillIntent(intentHash: Hex) {
-    const data = await this.utilsIntentService.getProcessIntentData(intentHash)
+    const data = await this.utilsIntentService.getIntentProcessData(intentHash)
     const { model, solver, err } = data ?? {}
     if (!data || !model || !solver) {
       if (err) {
@@ -38,21 +48,19 @@ export class FulfillIntentService {
       }
       return
     }
+    // If the intent is already solved, return
+    // Could happen if redis has pending job while this is still executing
+    if (model.status === 'SOLVED') {
+      return
+    }
 
-    const simpleAccountClient = await this.simpleAccountClientService.getClient(solver.chainID)
+    const kernelAccountClient = await this.kernelAccountClientService.getClient(solver.chainID)
 
     // Create transactions for intent targets
     const targetSolveTxs = this.getTransactionsForTargets(data)
 
     // Create fulfill tx
-    const fulfillIntentData = this.getFulfillIntentData(
-      this.ecoConfigService.getEth().claimant,
-      model,
-    )
-    const fulfillTx = {
-      to: solver.solverAddress,
-      data: fulfillIntentData,
-    }
+    const fulfillTx = await this.getFulfillIntentTx(solver.solverAddress, model)
 
     // Combine all transactions
     const transactions = [...targetSolveTxs, fulfillTx]
@@ -67,12 +75,16 @@ export class FulfillIntentService {
     )
 
     try {
-      const transactionHash = await simpleAccountClient.execute(transactions)
+      const transactionHash = await kernelAccountClient.execute(transactions)
 
-      const receipt = await simpleAccountClient.waitForTransactionReceipt({ hash: transactionHash })
+      const receipt = await kernelAccountClient.waitForTransactionReceipt({ hash: transactionHash })
 
-      model.status = 'SOLVED'
+      // set the status and receipt for the model
       model.receipt = receipt as any
+      if (receipt.status === 'reverted') {
+        throw EcoError.FulfillIntentRevertError(receipt)
+      }
+      model.status = 'SOLVED'
 
       this.logger.debug(
         EcoLogMessage.fromDefault({
@@ -86,7 +98,7 @@ export class FulfillIntentService {
       )
     } catch (e) {
       model.status = 'FAILED'
-      model.receipt = e
+      model.receipt = model.receipt ? { previous: model.receipt, current: e } : e
 
       this.logger.error(
         EcoLogMessage.withError({
@@ -95,7 +107,7 @@ export class FulfillIntentService {
           properties: {
             model: model,
             flatExecuteData: transactions,
-            error: e,
+            errorPassed: e,
           },
         }),
       )
@@ -103,6 +115,7 @@ export class FulfillIntentService {
       // Throw error to retry job
       throw e
     } finally {
+      // Update the db model
       await this.utilsIntentService.updateIntentModel(this.intentModel, model)
     }
   }
@@ -120,13 +133,13 @@ export class FulfillIntentService {
       case getERC20Selector('transfer'):
         const dstAmount = tt.decodedFunctionData.args?.[1] as bigint
 
-        const transferSolverAmount = encodeFunctionData({
+        const transferFunctionData = encodeFunctionData({
           abi: erc20Abi,
           functionName: 'transfer',
           args: [solver.solverAddress, dstAmount],
         })
 
-        return [{ to: target, data: transferSolverAmount }]
+        return [{ to: target, data: transferFunctionData }]
       default:
         return []
     }
@@ -145,7 +158,12 @@ export class FulfillIntentService {
 
     // Create transactions for intent targets
     return model.intent.targets.flatMap((target, index) => {
-      const tt = this.utilsIntentService.getTransactionTargetData(model, solver, target, index)
+      const tt = this.utilsIntentService.getTransactionTargetData(
+        model,
+        solver,
+        target,
+        model.intent.data[index],
+      )
       if (tt === null) {
         this.logger.error(
           EcoLogMessage.withError({
@@ -176,19 +194,79 @@ export class FulfillIntentService {
    * @param model
    * @private
    */
-  private getFulfillIntentData(walletAddr: Hex, model: SourceIntentModel) {
-    return encodeFunctionData({
+  private async getFulfillIntentTx(
+    solverAddress: Hex,
+    model: SourceIntentModel,
+  ): Promise<ExecuteSmartWalletArg> {
+    const walletAddr = this.ecoConfigService.getEth().claimant
+    const proof = this.proofService.getProofType(model.intent.prover)
+    const isHyperlane = proof === PROOF_HYPERLANE
+    const functionName = proof === PROOF_STORAGE ? 'fulfillStorage' : 'fulfillHyperInstant'
+    const encodeProverAddress = isHyperlane ? model.intent.prover : undefined
+    const args = [
+      model.event.sourceChainID,
+      model.intent.targets,
+      model.intent.data,
+      model.intent.expiryTime,
+      model.intent.nonce,
+      walletAddr,
+      model.intent.hash,
+    ]
+    if (encodeProverAddress) {
+      args.push(encodeProverAddress)
+    }
+    let fee = 0n
+    if (isHyperlane) {
+      fee = BigInt((await this.getHyperlaneFee(solverAddress, model)) || '0x0')
+    }
+
+    const fulfillIntentData = encodeFunctionData({
       abi: InboxAbi,
-      functionName: 'fulfill',
-      args: [
-        model.event.sourceChainID,
-        model.intent.targets,
-        model.intent.data,
-        model.intent.expiryTime,
-        model.intent.nonce,
-        walletAddr,
-        model.intent.hash,
-      ],
+      functionName,
+      // @ts-expect-error we dynamically set the args
+      args,
     })
+
+    return {
+      to: solverAddress,
+      data: fulfillIntentData,
+      // ...(isHyperlane && fee > 0 && { value: fee }),
+      value: fee,
+    }
+  }
+
+  /**
+   * Returns the hyperlane fee
+   * @param prover
+   * @private
+   */
+  private async getHyperlaneFee(
+    solverAddress: Hex,
+    model: SourceIntentModel,
+  ): Promise<Hex | undefined> {
+    const client = await this.kernelAccountClientService.getClient(
+      Number(model.intent.destinationChainID),
+    )
+    const encodedMessageBody = encodeAbiParameters(
+      [{ type: 'bytes[]' }, { type: 'address[]' }],
+      [[model.intent.hash], [this.ecoConfigService.getEth().claimant]],
+    )
+
+    const args = [
+      model.event.sourceChainID, //_sourceChainID
+      encodedMessageBody, //_messageBody
+      pad(model.intent.prover), //_prover
+    ]
+    const callData = encodeFunctionData({
+      abi: InboxAbi,
+      functionName: 'fetchFee',
+      // @ts-expect-error we dynamically set the args
+      args,
+    })
+    const proverData = await client.call({
+      to: solverAddress,
+      data: callData,
+    })
+    return proverData.data
   }
 }

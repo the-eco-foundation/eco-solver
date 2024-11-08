@@ -4,7 +4,7 @@ import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { Solver } from '../../eco-configs/eco-config.types'
 import { InboxAbi } from '../../contracts'
 import { Hex, zeroAddress } from 'viem'
-import { SimpleAccountClientService } from '../../transaction/simple-account-client.service'
+import { KernelAccountClientService } from '../../transaction/smart-wallets/kernel/kernel-account-client.service'
 
 @Injectable()
 export class PermissionHealthIndicator extends HealthIndicator {
@@ -13,7 +13,7 @@ export class PermissionHealthIndicator extends HealthIndicator {
     new Map()
 
   constructor(
-    private readonly simpleAccountClientService: SimpleAccountClientService,
+    private readonly kernelAccountClientService: KernelAccountClientService,
     private readonly configService: EcoConfigService,
   ) {
     super()
@@ -44,15 +44,16 @@ export class PermissionHealthIndicator extends HealthIndicator {
 
   private async loadPermissions(solver: Solver) {
     const key = this.getSolverKey(solver.network, solver.chainID, solver.solverAddress)
-    const client = await this.simpleAccountClientService.getClient(solver.chainID)
+    const client = await this.kernelAccountClientService.getClient(solver.chainID)
+    const address = client.kernelAccount.address
     const whitelisted = await client.readContract({
       address: solver.solverAddress,
       abi: InboxAbi,
       functionName: 'solverWhitelist',
-      args: [client.simpleAccountAddress],
+      args: [address],
     })
     this.solverPermissions.set(key, {
-      account: client.simpleAccountAddress ?? zeroAddress,
+      account: address ?? zeroAddress,
       whitelisted,
     })
   }

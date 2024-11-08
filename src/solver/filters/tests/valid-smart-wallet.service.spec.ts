@@ -60,8 +60,7 @@ describe('ValidSmartWalletService Tests', () => {
           getContractEvents: jest.fn().mockReturnValue([]),
         }
       })
-      const result = await validWalletService.validateSmartWallet('0x789', 1)
-
+      const result = await validWalletService.validateSmartWallet('0x789', 1n)
       expect(result).toEqual(false)
     })
 
@@ -71,8 +70,7 @@ describe('ValidSmartWalletService Tests', () => {
           getContractEvents: jest.fn().mockReturnValue([{ args: { factory: '0xabc' } }]),
         }
       })
-      const result = await validWalletService.validateSmartWallet('0x789', 1)
-
+      const result = await validWalletService.validateSmartWallet('0x789', 1n)
       expect(result).toEqual(false)
     })
 
@@ -82,7 +80,7 @@ describe('ValidSmartWalletService Tests', () => {
           getContractEvents: jest.fn().mockReturnValue([{ args: { factory: factory } }]),
         }
       })
-      const result = await validWalletService.validateSmartWallet('0x789', 1)
+      const result = await validWalletService.validateSmartWallet('0x789', 1n)
       expect(result).toEqual(true)
     })
   })

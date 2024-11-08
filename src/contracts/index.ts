@@ -4,3 +4,5 @@ export * from './IntentSource.contract'
 export * from './Prover.contract'
 export * from './SimpleAccount.contract'
 export * from './utils'
+// interfaces
+export * from './interfaces'

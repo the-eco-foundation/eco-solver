@@ -13,11 +13,14 @@ import { addressKeys } from '../common/viem/utils'
 @Injectable()
 export class EcoConfigService implements OnModuleInit {
   private logger = new Logger(EcoConfigService.name)
-  private externalConfigs: any
+  private externalConfigs: any = {}
   private ecoConfig: config.IConfig
 
-  constructor(private readonly configSource: ConfigSource) {
-    this.externalConfigs = configSource.getConfig()
+  constructor(private readonly sources: ConfigSource[]) {
+    this.sources.reduce((prev, curr) => {
+      return config.util.extendDeep(prev, curr.getConfig())
+    }, this.externalConfigs)
+
     this.ecoConfig = config
     this.initConfigs()
   }
@@ -65,6 +68,9 @@ export class EcoConfigService implements OnModuleInit {
         return getAddress(token)
       })
       intent.sourceAddress = getAddress(intent.sourceAddress)
+      intent.provers = intent.provers.map((prover) => {
+        return getAddress(prover)
+      })
       return intent
     })
     return intents

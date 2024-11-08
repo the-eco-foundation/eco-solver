@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { SourceIntentModel } from './schemas/source-intent.schema'
 import { Model } from 'mongoose'
@@ -20,12 +20,18 @@ export interface TransactionTargetData {
   targetConfig: TargetContract
 }
 
+/**
+ * Model and solver for the intent
+ */
 export interface IntentProcessData {
   model: SourceIntentModel | null
   solver: Solver | null
   err?: EcoError
 }
 
+/**
+ * Infeasable result type
+ */
 type InfeasableResult = (
   | false
   | {
@@ -34,11 +40,12 @@ type InfeasableResult = (
     }
   | undefined
 )[]
+
 /**
  * Service class for solving an intent on chain
  */
 @Injectable()
-export class UtilsIntentService implements OnModuleInit {
+export class UtilsIntentService {
   private logger = new Logger(UtilsIntentService.name)
 
   constructor(
@@ -46,17 +53,24 @@ export class UtilsIntentService implements OnModuleInit {
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
-  onModuleInit() {}
-
   /**
-   * Updates the transaction receipt
-   * @param model
-   * @private
+   * updateOne the intent model in the database, using the intent hash as the query
+   *
+   * @param intentModel the model factory to use
+   * @param model the new model data
    */
   async updateIntentModel(intentModel: Model<SourceIntentModel>, model: SourceIntentModel) {
     return await intentModel.updateOne({ 'intent.hash': model.intent.hash }, model)
   }
 
+  /**
+   * Updates the intent model with the invalid cause, using {@link updateIntentModel}
+   *
+   * @param intentModel the model factory to use
+   * @param model the new model data
+   * @param invalidCause the reason the intent is invalid
+   * @returns
+   */
   async updateInvalidIntentModel(
     intentModel: Model<SourceIntentModel>,
     model: SourceIntentModel,
@@ -72,6 +86,14 @@ export class UtilsIntentService implements OnModuleInit {
     return await this.updateIntentModel(intentModel, model)
   }
 
+  /**
+   * Updates the intent model with the infeasable cause and receipt, using {@link updateIntentModel}
+   *
+   * @param intentModel  the model factory to use
+   * @param model  the new model data
+   * @param infeasable  the infeasable result
+   * @returns
+   */
   async updateInfeasableIntentModel(
     intentModel: Model<SourceIntentModel>,
     model: SourceIntentModel,
@@ -82,11 +104,22 @@ export class UtilsIntentService implements OnModuleInit {
     return await this.updateIntentModel(intentModel, model)
   }
 
+  /**
+   * Verifies that the intent targets and data arrays are equal in length, and
+   * that every target-data can be decoded
+   *
+   * @param model the intent model
+   * @param solver the solver for the intent
+   * @returns
+   */
   selectorsSupported(model: SourceIntentModel, solver: Solver): boolean {
-    if (model.intent.targets.length !== model.intent.data.length) {
+    if (
+      model.intent.targets.length !== model.intent.data.length ||
+      model.intent.targets.length == 0
+    ) {
       this.logger.log(
         EcoLogMessage.fromDefault({
-          message: `validateIntent: Target calldata mismatch`,
+          message: `validateIntent: Target/data invalid`,
           properties: {
             intent: model.intent,
           },
@@ -94,22 +127,27 @@ export class UtilsIntentService implements OnModuleInit {
       )
       return false
     }
-    return (
-      model.intent.targets.length > 0 &&
-      model.intent.targets.every((target, index) => {
-        const tx = this.getTransactionTargetData(model, solver, target, index)
-        return tx
-      })
-    )
+    return model.intent.targets.every((target, index) => {
+      const tx = this.getTransactionTargetData(model, solver, target, model.intent.data[index])
+      return tx
+    })
   }
 
+  /**
+   * Decodes the function data for a target contract
+   *
+   * @param model the intent model
+   * @param solver the solver for the intent
+   * @param target  the target address
+   * @param data  the data to decode
+   * @returns
+   */
   getTransactionTargetData(
     model: SourceIntentModel,
     solver: Solver,
     target: Hex,
-    index: number,
+    data: Hex,
   ): TransactionTargetData | null {
-    const data = model.intent.data[index]
     const targetConfig = solver.targets[target as string] as TargetContract
     if (!targetConfig) {
       //shouldn't happen since we do this.targetsSupported(model, solver) before this call
@@ -139,11 +177,19 @@ export class UtilsIntentService implements OnModuleInit {
     return { decodedFunctionData: tx, selector, targetConfig }
   }
 
+  /**
+   * Verifies that all the intent targets are supported by the solver
+   *
+   * @param model the intent model
+   * @param solver the solver for the intent
+   * @returns
+   */
   targetsSupported(model: SourceIntentModel, solver: Solver): boolean {
     const modelTargets = model.intent.targets
     const solverTargets = Object.keys(solver.targets)
     //all targets are included in the solver targets array
-    const targetsSupported = difference(modelTargets, solverTargets).length == 0
+    const exist = solverTargets.length > 0 && modelTargets.length > 0
+    const targetsSupported = exist && difference(modelTargets, solverTargets).length == 0
 
     if (!targetsSupported) {
       this.logger.warn(
@@ -159,7 +205,14 @@ export class UtilsIntentService implements OnModuleInit {
     return targetsSupported
   }
 
-  async getProcessIntentData(intentHash: string): Promise<IntentProcessData | undefined> {
+  /**
+   * Finds the the intent model in the database by the intent hash and the solver that can fulfill
+   * on the destination chain for that intent
+   *
+   * @param intentHash the intent hash
+   * @returns Intent model and solver
+   */
+  async getIntentProcessData(intentHash: string): Promise<IntentProcessData | undefined> {
     try {
       const model = await this.intentModel.findOne({
         'intent.hash': intentHash,
@@ -185,7 +238,7 @@ export class UtilsIntentService implements OnModuleInit {
     } catch (e) {
       this.logger.error(
         EcoLogMessage.fromDefault({
-          message: `Error in getProcessIntentData ${intentHash}`,
+          message: `Error in getIntentProcessData ${intentHash}`,
           properties: {
             intentHash: intentHash,
             error: e,
