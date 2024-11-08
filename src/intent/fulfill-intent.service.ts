@@ -98,7 +98,7 @@ export class FulfillIntentService {
       )
     } catch (e) {
       model.status = 'FAILED'
-      model.receipt = e
+      model.receipt = model.receipt ? { previous: model.receipt, current: e } : e
 
       this.logger.error(
         EcoLogMessage.withError({
