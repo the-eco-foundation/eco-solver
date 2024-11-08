@@ -19,4 +19,3 @@ jobs:
       ghenv: staging
       ghsha: e4c823a00ef065ea635afc31e274fd2ffb08692e
       targetenv: staging
-
