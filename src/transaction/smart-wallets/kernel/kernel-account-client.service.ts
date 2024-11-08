@@ -3,7 +3,7 @@ import { ViemMultichainClientService } from '../../viem_multichain_client.servic
 import { entryPoint07Address } from 'viem/account-abstraction'
 import { EcoConfigService } from '../../../eco-configs/eco-config.service'
 import { SignerService } from '../../../sign/signer.service'
-import { Chain } from 'viem'
+import { Chain, Hex, zeroAddress } from 'viem'
 import { KernelAccountClientConfig } from './kernel-account.config'
 import { KernelVersion } from 'permissionless/accounts'
 import { createKernelAccountClient, entryPointV_0_7 } from './create.kernel.account'
@@ -59,6 +59,19 @@ export class KernelAccountClientServiceBase<
       owners: [this.signerService.getAccount()],
       index: 0n, // optional
     }
+  }
+  /**
+   * Returns the address of the wallet for the first solver in the config.
+   * @returns 
+   */
+  public override async getAddress(): Promise<Hex> {
+    const solvers = this.ecoConfigService.getSolvers()
+    if (!solvers || Object.values(solvers).length == 0) {
+      return zeroAddress
+    }
+
+    const clientKernel = await this.getClient(Object.values(solvers)[0].chainID)
+    return clientKernel.kernelAccount?.address
   }
 }
 

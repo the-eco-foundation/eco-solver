@@ -92,6 +92,11 @@ export class EcoConfigService implements OnModuleInit {
     return this.getSolvers()[chainID]
   }
 
+  // Get the launch darkly configs
+  getLaunchDarkly(): EcoConfigType['launchDarkly'] {
+    return this.ecoConfig.get('launchDarkly')
+  }
+
   getDatabaseConfig(): EcoConfigType['database'] {
     return this.ecoConfig.get('database')
   }

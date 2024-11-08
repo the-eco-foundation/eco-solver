@@ -1,21 +1,20 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { Chain, Client, ClientConfig, createClient, extractChain } from 'viem'
+import { Chain, Client, ClientConfig, createClient, extractChain, Hex, zeroAddress } from 'viem'
 import { EcoError } from '../common/errors/eco-error'
 import { ChainsSupported } from '../common/chains/supported'
 import { getTransport } from '../common/chains/transport'
 
 @Injectable()
 export class ViemMultichainClientService<T extends Client, V extends ClientConfig>
-  implements OnModuleInit
-{
+  implements OnModuleInit {
   readonly instances: Map<number, T> = new Map()
 
   protected supportedAlchemyChainIds: number[] = []
   protected apiKey: string
   protected pollingInterval: number
 
-  constructor(readonly ecoConfigService: EcoConfigService) {}
+  constructor(readonly ecoConfigService: EcoConfigService) { }
 
   onModuleInit() {
     this.setChainConfigs()
@@ -77,7 +76,22 @@ export class ViemMultichainClientService<T extends Client, V extends ClientConfi
     } as V
   }
 
+  /**
+   * Returns the address of the wallet for the first solver in the config.
+   * @returns 
+   */
+  protected async getAddress(): Promise<Hex> {
+    const solvers = this.ecoConfigService.getSolvers()
+    if (!solvers || Object.values(solvers).length == 0) {
+      return zeroAddress
+    }
+
+    const wallet = await this.getClient(Object.values(solvers)[0].chainID)
+    return wallet.account?.address || zeroAddress
+  }
+
   private isSupportedNetwork(chainID: number): boolean {
+    chainID = Number(10)
     return (
       this.supportedAlchemyChainIds.includes(chainID) ||
       ChainsSupported.some((chain) => chain.id === chainID)

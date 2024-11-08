@@ -13,6 +13,7 @@ import { ProverModule } from './prover/prover.module'
 import { HealthModule } from './health/health.module'
 import { ProcessorModule } from './bullmq/processors/processor.module'
 import { SolverModule } from './solver/solver.module'
+import { FlagsModule } from './flags/flags.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SolverModule } from './solver/solver.module'
       // the delimiter used to segment namespaces
       delimiter: '.',
     }),
+    FlagsModule,
     HealthModule,
     IntentModule,
     SignModule,
@@ -42,7 +44,6 @@ import { SolverModule } from './solver/solver.module'
     ...getPino(),
   ],
   controllers: [],
-  providers: [],
 })
 export class AppModule {}
 

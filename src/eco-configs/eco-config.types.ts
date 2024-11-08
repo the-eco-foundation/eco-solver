@@ -5,6 +5,7 @@ import * as Redis from 'ioredis'
 import { Settings } from 'redlock'
 import { JobsOptions } from 'bullmq'
 import { Hex } from 'viem'
+import { LDOptions } from '@launchdarkly/node-server-sdk'
 
 // The config type that we store in json
 export type EcoConfigType = {
@@ -14,6 +15,7 @@ export type EcoConfigType = {
   externalAPIs: unknown
   redis: RedisConfig
   alchemy: AlchemyConfigType
+  launchDarkly: LaunchDarklyConfig
   eth: {
     privateKey: string
     simpleAccount: {
@@ -56,6 +58,14 @@ export type EcoConfigType = {
 }
 
 export type EcoConfigKeys = keyof EcoConfigType
+
+/**
+ * The config type for the launch darkly feature flagging service
+ */
+export type LaunchDarklyConfig = {
+  apiKey: string
+  options?: LDOptions
+}
 
 /**
  * The config type for the redis section
