@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - release-staging
+
+permissions:
+  contents: read  # Allow access to repository content
+  actions: read
 jobs:
   deploy:
-    uses: eco/workflows/.github/workflows/deploy-to-eks.yml@main
+    uses: eco/workflows/.github/workflows/deploy-to-eks.yml@v20231102
     with:
       appname: solver
       assumed-role: arn:aws:iam::027715947294:role/solver-eks-actions-beam-staging
