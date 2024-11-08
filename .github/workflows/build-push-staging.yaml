@@ -10,7 +10,7 @@ permissions:
   actions: read
 jobs:
   deploy:
-    uses: eco/workflows/.github/workflows/deploy-to-eks.yml@v20231102
+    uses: ./.github/workflows/deploy-to-eks.yml
     with:
       appname: solver
       assumed-role: arn:aws:iam::027715947294:role/solver-eks-actions-beam-staging

@@ -1,0 +1,178 @@
+# ref: https://docs.github.com/en/actions/deployment/deploying-to-your-cloud-provider/deploying-to-amazon-elastic-container-service
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
+
+# OIDC: https://aws.amazon.com/blogs/security/use-iam-roles-to-connect-github-actions-to-actions-in-aws/
+name: Deploy to EKS via ECR
+on:
+  workflow_call:
+    inputs:
+      appname:
+        required: true
+        type: string
+      assumed-role:
+        required: true
+        type: string
+      aws-region:
+        required: true
+        type: string
+      ecr-repository:
+        required: true
+        type: string
+      ghenv:
+        required: true
+        type: string
+      ghsha:
+        required: true
+        type: string
+      targetenv:
+        required: true
+        type: string
+
+
+permissions:
+      id-token: write   # This is required for requesting the JWT
+      contents: read    # This is required for actions/checkout
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.ghenv }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ghsha }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ inputs.assumed-role }}
+          role-session-name: ${{ inputs.appname }}-${{ inputs.ghenv }}-oidc
+          aws-region: ${{ inputs.aws-region }}
+      - name: Sts GetCallerIdentity
+        run: |
+          aws sts get-caller-identity
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
+          IMAGE_TAG: ${{ inputs.ghsha }}
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to EKS.
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: deployment yaml
+        env:
+          APPNAME: ${{ inputs.appname }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
+          IMAGE_TAG: ${{ inputs.ghsha }}
+        shell: bash
+        run: |
+          mkdir .github/kustomize/base
+          cat << EOF > .github/kustomize/base/deployment.yaml
+          ---
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: _APPNAME_
+            namespace: default
+          spec:
+            selector:
+              matchLabels:
+                app: _APPNAME_
+            replicas: 1
+            template:
+              metadata:
+                labels:
+                  app: _APPNAME_
+              spec:
+                containers:
+                - image: _ECR_REGISTRY_/_ECR_REPOSITORY_:_TAGHERE_
+                  name: _APPNAME_
+          EOF
+          sed -i "s|_APPNAME_|${APPNAME}|g" .github/kustomize/base/deployment.yaml
+          sed -i "s|_ECR_REGISTRY_|${ECR_REGISTRY}|g" .github/kustomize/base/deployment.yaml
+          sed -i "s|_ECR_REPOSITORY_|${ECR_REPOSITORY}|g" .github/kustomize/base/deployment.yaml
+          sed -i "s|_TAGHERE_|${IMAGE_TAG}|g" .github/kustomize/base/deployment.yaml
+      - name: service yaml
+        env:
+          APPNAME: ${{ inputs.appname }}
+        shell: bash
+        run: |
+          cat << EOF > .github/kustomize/base/service.yaml
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: _APPNAME_
+            namespace: default
+          spec:
+            ports:
+            - protocol: TCP
+            type: ClusterIP
+            selector:
+              app: _APPNAME_
+          EOF
+          sed -i "s|_APPNAME_|${APPNAME}|g" .github/kustomize/base/service.yaml
+      - name: ingress yaml
+        env:
+          APPNAME: ${{ inputs.appname }}
+        shell: bash
+        run: |
+          cat << EOF > .github/kustomize/base/ingress.yaml
+          ---
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: _APPNAME_
+            namespace: default
+          spec:
+            ingressClassName: nginx
+            rules:
+              - http:
+                  paths:
+                    - path: /
+                      pathType: Prefix
+                      backend:
+                        service:
+                          name: _APPNAME_
+            tls:
+              - secretName: _APPNAME_-tls
+          EOF
+          sed -i "s|_APPNAME_|${APPNAME}|g" .github/kustomize/base/ingress.yaml
+      - name: kustomization yaml
+        shell: bash
+        run: |
+          cat << EOF > .github/kustomize/base/kustomization.yaml
+          resources:
+          - deployment.yaml
+          - service.yaml
+          - ingress.yaml
+          EOF
+      - name: Install and apply kube job
+        env:
+          GHENV: ${{ inputs.ghenv }}
+          TARGETENV: ${{ inputs.targetenv }}
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          aws eks --region "us-east-2" update-kubeconfig --name "eks-beam-${GHENV}"
+          kubectl apply -k .github/kustomize/${TARGETENV}
