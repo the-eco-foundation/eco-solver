@@ -3,6 +3,7 @@ import { EcoConfigService } from '../eco-configs/eco-config.service'
 import * as ld from '@launchdarkly/node-server-sdk'
 import { KernelAccountClientService } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
+import { waitForInitialization } from './utils'
 
 export type LaunchDarklyFlags = {
   bendWalletOnly: boolean
@@ -20,8 +21,8 @@ export const FlagVariationKeys: Record<FlagType, string> = {
  * Service class for interacting with the Launch Darkly feature flagging service
  */
 @Injectable()
-export class FlagsService implements OnModuleInit {
-  private logger = new Logger(FlagsService.name)
+export class FlagService implements OnModuleInit {
+  private logger = new Logger(FlagService.name)
   private flagsClient: ld.LDClient
   private context: ld.LDContext
   private flagValues: LaunchDarklyFlags = {
@@ -47,12 +48,13 @@ export class FlagsService implements OnModuleInit {
   }
 
   /**
-   * Initializes the Launch Darkly client with the provided API key. Sets an 
+   * Initializes the Launch Darkly client with the provided API key. Sets an
    * on ready listener to initialize the flags
    */
   private async initLaunchDarklyClient() {
     this.context = { kind: 'solver-pod', key: await this.kernelAccountService.getAddress() }
     this.flagsClient = ld.init(this.ecoConfigService.getLaunchDarkly().apiKey)
+    const lock = { initialized: false }
     this.flagsClient.on('ready', async () => {
       await Promise.all(
         Object.values(FlagVariationKeys).map(async (flag) => {
@@ -63,15 +65,18 @@ export class FlagsService implements OnModuleInit {
           )
         }),
       )
+      lock.initialized = true
       this.logger.log(
         EcoLogMessage.fromDefault({
-          message: `FlagsService ready`,
+          message: `FlagService ready`,
           properties: {
             flags: this.flagValues,
           },
         }),
       )
     })
+    // Wait for the flags to be initialized
+    await waitForInitialization(lock)
   }
 
   /**
@@ -79,10 +84,10 @@ export class FlagsService implements OnModuleInit {
    */
   private registerFlagListeners() {
     this.flagsClient.on('update', async (param) => {
-      if (!FlagsService.isSupportedFlag(param.key)) {
+      if (!FlagService.isSupportedFlag(param.key)) {
         this.logger.log(
           EcoLogMessage.fromDefault({
-            message: `FlagsService update: unsupported flag`,
+            message: `FlagService update: unsupported flag`,
             properties: {
               flagName: param.key,
             },
@@ -98,7 +103,7 @@ export class FlagsService implements OnModuleInit {
       )
       this.logger.log(
         EcoLogMessage.fromDefault({
-          message: `FlagsService update`,
+          message: `FlagService update`,
           properties: {
             flagName: flag,
             flag: this.flagValues[flag],
