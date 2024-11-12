@@ -13,7 +13,7 @@ import { ProverModule } from './prover/prover.module'
 import { HealthModule } from './health/health.module'
 import { ProcessorModule } from './bullmq/processors/processor.module'
 import { SolverModule } from './solver/solver.module'
-import { FlagsModule } from './flags/flags.module';
+import { FlagsModule } from './flags/flags.module'
 
 @Module({
   imports: [

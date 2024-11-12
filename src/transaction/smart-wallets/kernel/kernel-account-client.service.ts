@@ -62,7 +62,7 @@ export class KernelAccountClientServiceBase<
   }
   /**
    * Returns the address of the wallet for the first solver in the config.
-   * @returns 
+   * @returns
    */
   public override async getAddress(): Promise<Hex> {
     const solvers = this.ecoConfigService.getSolvers()

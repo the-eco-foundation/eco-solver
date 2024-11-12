@@ -7,14 +7,15 @@ import { getTransport } from '../common/chains/transport'
 
 @Injectable()
 export class ViemMultichainClientService<T extends Client, V extends ClientConfig>
-  implements OnModuleInit {
+  implements OnModuleInit
+{
   readonly instances: Map<number, T> = new Map()
 
   protected supportedAlchemyChainIds: number[] = []
   protected apiKey: string
   protected pollingInterval: number
 
-  constructor(readonly ecoConfigService: EcoConfigService) { }
+  constructor(readonly ecoConfigService: EcoConfigService) {}
 
   onModuleInit() {
     this.setChainConfigs()
@@ -78,7 +79,7 @@ export class ViemMultichainClientService<T extends Client, V extends ClientConfi
 
   /**
    * Returns the address of the wallet for the first solver in the config.
-   * @returns 
+   * @returns
    */
   protected async getAddress(): Promise<Hex> {
     const solvers = this.ecoConfigService.getSolvers()

@@ -4,8 +4,7 @@ import { TransactionModule } from '../transaction/transaction.module'
 
 @Module({
   imports: [TransactionModule],
-  providers: [
-    FlagsService
-  ],
+  providers: [FlagsService],
+  exports: [FlagsService],
 })
-export class FlagsModule { }
+export class FlagsModule {}
