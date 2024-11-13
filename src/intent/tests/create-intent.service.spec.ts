@@ -72,7 +72,7 @@ describe('CreateIntentService', () => {
     mockLogLog.mockClear()
   })
 
-  describe.only('on createIntent', () => {
+  describe('on createIntent', () => {
     const mockEvent = {
       data: '0xda',
       transactionHash: '0x123',

@@ -445,6 +445,7 @@ describe('FulfillIntentService', () => {
         args: defaultArgs,
       })
     })
+
     it('should use the correct function name and args for PROOF_HYPERLANE', async () => {
       const mockStorage = jest.fn().mockReturnValue(false)
       const mockHyperlane = jest.fn().mockReturnValue(true)
