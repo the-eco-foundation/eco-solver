@@ -2,7 +2,13 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { addSeconds, compareAsc } from 'date-fns'
 import { MultichainPublicClientService } from '../transaction/multichain-public-client.service'
 import { Hex } from 'viem'
-import { ProofCall, ProofType, ProverInterfaceAbi } from '../contracts'
+import {
+  PROOF_HYPERLANE,
+  PROOF_STORAGE,
+  ProofCall,
+  ProofType,
+  ProverInterfaceAbi,
+} from '../contracts'
 import { entries } from 'lodash'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
@@ -20,9 +26,12 @@ export class ProofService implements OnModuleInit {
    */
   private proofContracts: Record<Hex, ProofType> = {}
 
-  // set the minimum duration for a proof to be valid as a contstant to 7 days
+  // set the minimum duration for a proof to be valid as a constant to 7 days
   // TODO: update prover interace contract to return the duration here
-  private static readonly PROOF_MINIMUM_DURATION_SECONDS = 60 * 60 * 24 * 7
+  public static readonly PROOF_STORAGE_MINIMUM_DURATION_SECONDS = 60 * 60 * 24 * 7
+
+  // the minimum duration for a hyperprover to be valid, 1 hour
+  public static readonly PROOF_HYPERPROVER_MINIMUM_DURATION_SECONDS = 60 * 60 * 1
   constructor(
     private readonly publicClient: MultichainPublicClientService,
     private readonly ecoConfigService: EcoConfigService,
@@ -40,6 +49,24 @@ export class ProofService implements OnModuleInit {
    */
   getProofType(proverAddress: Hex): ProofType {
     return this.proofContracts[proverAddress]
+  }
+
+  /**
+   * Checks if the prover is a hyperlane prover
+   * @param proverAddress the prover address
+   * @returns
+   */
+  isHyperlaneProver(proverAddress: Hex): boolean {
+    return this.getProofType(proverAddress) === PROOF_HYPERLANE
+  }
+
+  /**
+   * Checks if the prover is a storage prover
+   * @param proverAddress the prover address
+   * @returns
+   */
+  isStorageProver(proverAddress: Hex): boolean {
+    return this.getProofType(proverAddress) === PROOF_STORAGE
   }
 
   /**
@@ -107,12 +134,12 @@ export class ProofService implements OnModuleInit {
   /**
    * Check to see if the expiration of an intent is after the minimum proof time from now.
    *
-   * @param chainID the chain id
+   * @param prover the address of the prover
    * @param expirationDate the expiration date
    * @returns true if the intent can be proven before the minimum proof time, false otherwise
    */
-  isIntentExpirationWithinProofMinimumDate(chainID: number, expirationDate: Date): boolean {
-    return compareAsc(expirationDate, this.getProofMinimumDate(chainID)) == 1
+  isIntentExpirationWithinProofMinimumDate(prover: Hex, expirationDate: Date): boolean {
+    return compareAsc(expirationDate, this.getProofMinimumDate(prover)) == 1
   }
 
   /**
@@ -120,13 +147,19 @@ export class ProofService implements OnModuleInit {
    * @param chainID  the chain id
    * @returns
    */
-  getProofMinimumDate(chainID: number): Date {
-    return addSeconds(new Date(), this.getProofMinimumDurationSeconds(chainID))
+  getProofMinimumDate(prover: Hex): Date {
+    return addSeconds(new Date(), this.getProofMinimumDurationSeconds(prover))
   }
 
-  //todo: update this to get the duration from the prover interface when its deployed
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private getProofMinimumDurationSeconds(chainID: number): number {
-    return ProofService.PROOF_MINIMUM_DURATION_SECONDS
+  /**
+   * The minimum duration that a proof can be generated for a given prover
+   *
+   * @param prover the address of the prover
+   * @returns
+   */
+  private getProofMinimumDurationSeconds(prover: Hex): number {
+    return this.isHyperlaneProver(prover)
+      ? ProofService.PROOF_HYPERPROVER_MINIMUM_DURATION_SECONDS
+      : ProofService.PROOF_STORAGE_MINIMUM_DURATION_SECONDS
   }
 }

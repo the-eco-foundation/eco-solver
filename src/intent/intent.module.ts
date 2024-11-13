@@ -13,10 +13,12 @@ import { ProverModule } from '../prover/prover.module'
 import { TransactionModule } from '../transaction/transaction.module'
 import { MongooseModule } from '@nestjs/mongoose'
 import { SolverModule } from '../solver/solver.module'
+import { FlagsModule } from '../flags/flags.module'
 
 @Module({
   imports: [
     BalanceModule,
+    FlagsModule,
     MongooseModule.forFeature([{ name: SourceIntentModel.name, schema: SourceIntentSchema }]),
     ProverModule,
     SolverModule,

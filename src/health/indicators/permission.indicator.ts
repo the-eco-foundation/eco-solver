@@ -3,7 +3,7 @@ import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestj
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { Solver } from '../../eco-configs/eco-config.types'
 import { InboxAbi } from '../../contracts'
-import { Hex, zeroAddress } from 'viem'
+import { Hex } from 'viem'
 import { KernelAccountClientService } from '../../transaction/smart-wallets/kernel/kernel-account-client.service'
 
 @Injectable()
@@ -53,7 +53,7 @@ export class PermissionHealthIndicator extends HealthIndicator {
       args: [address],
     })
     this.solverPermissions.set(key, {
-      account: address ?? zeroAddress,
+      account: address,
       whitelisted,
     })
   }

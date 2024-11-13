@@ -167,7 +167,7 @@ export class BalanceHealthIndicator extends HealthIndicator {
 
     while (
       balances.length > 0 &&
-      ([{ result: decimal as unknown }, { result: value as unknown }] = [
+      ([{ result: value as unknown }, { result: decimal as unknown }] = [
         balances.shift(),
         balances.shift(),
       ])

@@ -6,7 +6,6 @@ import { BalanceHealthIndicator } from './indicators/balance.indicator'
 import { EcoRedisHealthIndicator } from './indicators/eco-redis.indicator'
 import { MongoDBHealthIndicator } from './indicators/mongodb.indicator'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { PermissionHealthIndicator } from './indicators/permission.indicator'
 import { GitCommitHealthIndicator } from './indicators/git-commit.indicator'
 
 @Injectable()
@@ -17,7 +16,6 @@ export class HealthService {
     private readonly health: HealthCheckService,
     private readonly balanceIndicator: BalanceHealthIndicator,
     private readonly gitCommitHealthIndicator: GitCommitHealthIndicator,
-    private readonly permissionIndicator: PermissionHealthIndicator,
     private readonly mongoDBHealthIndicator: MongoDBHealthIndicator,
     private readonly redisIndicator: EcoRedisHealthIndicator,
   ) {}
@@ -27,7 +25,6 @@ export class HealthService {
       () => this.gitCommitHealthIndicator.gitCommit(),
       () => this.redisIndicator.checkRedis(),
       () => this.mongoDBHealthIndicator.checkMongoDB(),
-      () => this.permissionIndicator.checkPermissions(),
       () => this.balanceIndicator.checkBalances(),
     ])
     this.logger.log(
