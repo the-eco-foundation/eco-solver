@@ -30,7 +30,7 @@ export class ProofService implements OnModuleInit {
   // TODO: update prover interace contract to return the duration here
   public static readonly PROOF_STORAGE_MINIMUM_DURATION_SECONDS = 60 * 60 * 24 * 7
 
-  // the minimum duration for a hyperprover to be valid
+  // the minimum duration for a hyperprover to be valid, 1 hour
   public static readonly PROOF_HYPERPROVER_MINIMUM_DURATION_SECONDS = 60 * 60 * 1
   constructor(
     private readonly publicClient: MultichainPublicClientService,
