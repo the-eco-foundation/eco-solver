@@ -97,7 +97,7 @@ export class ValidateIntentService implements OnModuleInit {
     const proverUnsupported = !this.supportedProver(model)
     const targetsUnsupported = !this.supportedTargets(model, solver)
     const selectorsUnsupported = !this.supportedSelectors(model, solver)
-    const expiresEarly = !this.validExpirationTime(model, solver)
+    const expiresEarly = !this.validExpirationTime(model)
 
     if (proverUnsupported || targetsUnsupported || selectorsUnsupported || expiresEarly) {
       await this.utilsIntentService.updateInvalidIntentModel(this.intentModel, model, {
@@ -117,7 +117,7 @@ export class ValidateIntentService implements OnModuleInit {
             expiresEarly,
             ...(expiresEarly && {
               proofMinDurationSeconds: this.proofService
-                .getProofMinimumDate(solver.chainID)
+                .getProofMinimumDate(model.intent.prover)
                 .toUTCString(),
             }),
           },
@@ -192,11 +192,14 @@ export class ValidateIntentService implements OnModuleInit {
    * @param solver the solver for the source chain
    * @returns
    */
-  private validExpirationTime(model: SourceIntentModel, solver: Solver): boolean {
+  private validExpirationTime(model: SourceIntentModel): boolean {
     //convert to milliseconds
     const time = Number.parseInt(`${model.intent.expiryTime as bigint}`) * 1000
     const expires = new Date(time)
-    return !!this.proofService.isIntentExpirationWithinProofMinimumDate(solver.chainID, expires)
+    return !!this.proofService.isIntentExpirationWithinProofMinimumDate(
+      model.intent.prover,
+      expires,
+    )
   }
 
   /**

@@ -7,7 +7,7 @@ import {
   TransactionTargetData,
   UtilsIntentService,
 } from './utils-intent.service'
-import { getERC20Selector, InboxAbi, PROOF_HYPERLANE, PROOF_STORAGE } from '../contracts'
+import { getERC20Selector, InboxAbi } from '../contracts'
 import { EcoError } from '../common/errors/eco-error'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { Solver } from '../eco-configs/eco-config.types'
@@ -199,9 +199,10 @@ export class FulfillIntentService {
     model: SourceIntentModel,
   ): Promise<ExecuteSmartWalletArg> {
     const walletAddr = this.ecoConfigService.getEth().claimant
-    const proof = this.proofService.getProofType(model.intent.prover)
-    const isHyperlane = proof === PROOF_HYPERLANE
-    const functionName = proof === PROOF_STORAGE ? 'fulfillStorage' : 'fulfillHyperInstant'
+    const isHyperlane = this.proofService.isHyperlaneProver(model.intent.prover)
+    const functionName = this.proofService.isStorageProver(model.intent.prover)
+      ? 'fulfillStorage'
+      : 'fulfillHyperInstant'
     const encodeProverAddress = isHyperlane ? model.intent.prover : undefined
     const args = [
       model.event.sourceChainID,
@@ -215,6 +216,7 @@ export class FulfillIntentService {
     if (encodeProverAddress) {
       args.push(encodeProverAddress)
     }
+
     let fee = 0n
     if (isHyperlane) {
       fee = BigInt((await this.getHyperlaneFee(solverAddress, model)) || '0x0')
