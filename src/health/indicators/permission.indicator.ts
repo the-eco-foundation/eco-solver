@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common'
 import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { Solver } from '../../eco-configs/eco-config.types'
-import { InboxAbi } from '../../contracts'
 import { Hex } from 'viem'
 import { KernelAccountClientService } from '../../transaction/smart-wallets/kernel/kernel-account-client.service'
+import { InboxAbi } from '@ecoinc/ecoism'
 
 @Injectable()
 export class PermissionHealthIndicator extends HealthIndicator {

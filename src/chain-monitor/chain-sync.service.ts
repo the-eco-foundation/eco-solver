@@ -5,11 +5,12 @@ import { SourceIntentModel } from '../intent/schemas/source-intent.schema'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { SourceIntent } from '../eco-configs/eco-config.types'
-import { IntentCreatedLog, IntentSourceAbi } from '../contracts'
+import { IntentCreatedLog } from '../contracts'
 import { entries } from 'lodash'
 import { BlockTag } from 'viem'
 import { WatchIntentService } from '../intent/watch-intent.service'
 import { KernelAccountClientService } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
+import { IntentSourceAbi } from '@ecoinc/ecoism'
 
 /**
  * Service class for syncing any missing transactions for all the source intent contracts.

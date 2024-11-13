@@ -7,10 +7,11 @@ import { getIntentJobId } from '../common/utils/strings'
 import { SourceIntent } from '../eco-configs/eco-config.types'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { MultichainPublicClientService } from '../transaction/multichain-public-client.service'
-import { IntentCreatedLog, IntentSourceAbi } from '../contracts'
+import { IntentCreatedLog } from '../contracts'
 import { WatchContractEventReturnType, zeroHash } from 'viem'
 import { convertBigIntsToStrings } from '../common/viem/utils'
 import { entries } from 'lodash'
+import { IntentSourceAbi } from '@ecoinc/ecoism'
 
 /**
  * This service subscribes to SourceIntent contracts for IntentCreated events. It subscribes on all
