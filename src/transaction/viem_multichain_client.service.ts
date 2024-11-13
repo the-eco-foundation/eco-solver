@@ -92,7 +92,6 @@ export class ViemMultichainClientService<T extends Client, V extends ClientConfi
   }
 
   private isSupportedNetwork(chainID: number): boolean {
-    chainID = Number(10)
     return (
       this.supportedAlchemyChainIds.includes(chainID) ||
       ChainsSupported.some((chain) => chain.id === chainID)
