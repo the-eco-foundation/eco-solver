@@ -76,23 +76,23 @@ export class CreateIntentService implements OnModuleInit {
         return
       }
 
-      const isBendWallet =
-        this.flagService.getFlagValue('bendWalletOnly') &&
-        (await this.validSmartWalletService.validateSmartWallet(
-          intent.creator as Hex,
-          intentWs.sourceChainID,
-        ))
+      const validWallet = this.flagService.getFlagValue('bendWalletOnly')
+        ? await this.validSmartWalletService.validateSmartWallet(
+            intent.creator as Hex,
+            intentWs.sourceChainID,
+          )
+        : true
 
       //create db record
       const record = await this.intentModel.create({
         event: intentWs,
         intent: intent,
         receipt: null,
-        status: isBendWallet ? 'PENDING' : 'NON-BEND-WALLET',
+        status: validWallet ? 'PENDING' : 'NON-BEND-WALLET',
       })
 
       const jobId = getIntentJobId('create', intent.hash as Hex, intent.logIndex)
-      if (isBendWallet) {
+      if (validWallet) {
         //add to processing queue
         await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.validate_intent, intent.hash, {
           jobId,
@@ -106,8 +106,8 @@ export class CreateIntentService implements OnModuleInit {
           properties: {
             intentHash: intent.hash,
             intent: record.intent,
-            isBendWallet,
-            ...(isBendWallet ? { jobId } : {}),
+            validWallet,
+            ...(validWallet ? { jobId } : {}),
           },
         }),
       )
