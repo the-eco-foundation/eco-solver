@@ -6,6 +6,7 @@ import { EcoConfigType, Solver, SourceIntent } from './eco-config.types'
 import { entries, keys } from 'lodash'
 import { getAddress } from 'viem'
 import { addressKeys } from '../common/viem/utils'
+import { getNodeEnv } from './utils'
 
 /**
  * Service class for getting configs for the app
@@ -22,6 +23,7 @@ export class EcoConfigService implements OnModuleInit {
     }, this.externalConfigs)
 
     this.ecoConfig = config
+    console.log(`'NODE_ENV' ${getNodeEnv()}`)
     this.initConfigs()
   }
 

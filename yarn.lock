@@ -1570,10 +1570,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@ecoinc/ecoism@^0.0.3914-beta":
-  version "0.0.3914-beta"
-  resolved "https://registry.yarnpkg.com/@ecoinc/ecoism/-/ecoism-0.0.3914-beta.tgz#89fe63b211909e8d5750ca2f5b373f751e622a13"
-  integrity sha512-t+UcOF8Orzj8VzEZOLy1rY5iLnxD7RzChTtSfFDxZvbDQoxWYLipJzeL0zZfWymPTNI1Hzlz2mk2zmdoFYCjlA==
+"@ecoinc/ecoism@^0.0.414-beta":
+  version "0.0.414-beta"
+  resolved "https://registry.yarnpkg.com/@ecoinc/ecoism/-/ecoism-0.0.414-beta.tgz#80afdae445796bce5be0b68a9226752b7c9018b8"
+  integrity sha512-CrexkCo7yjFP8KKCyCG5oSs2aVyEt5hM7OyM1/8i4N/7xT9ljCiD3GjqMlZlvvCdQ3cn/dNS0Wdeadt4fbaPXw==
   dependencies:
     "@hyperlane-xyz/registry" "^4.2.0"
     "@hyperlane-xyz/sdk" "^5.1.0"

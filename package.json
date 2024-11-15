@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.592.0",
-    "@ecoinc/ecoism": "^0.0.3914-beta",
+    "@ecoinc/ecoism": "^0.0.414-beta",
     "@launchdarkly/node-server-sdk": "^9.7.1",
     "@liaoliaots/nestjs-redis-health": "^9.0.4",
     "@nestjs/bullmq": "^10.1.1",
