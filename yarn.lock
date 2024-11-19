@@ -1570,10 +1570,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@eco-foundation/eco@^0.0.423-beta":
-  version "0.0.423-beta"
-  resolved "https://registry.yarnpkg.com/@eco-foundation/eco/-/eco-0.0.423-beta.tgz#f408bf1306dd5c6f96f12160b82487e2a5f94515"
-  integrity sha512-AQaacEDp48Stjm20mdjEkSUaZ/F32HsS/Ya3IEdC5RHnnwMRYSpZS7j7veJ9ICDj+IArjTeQm0kvow6JrXWFqg==
+"@eco-foundation/routes@^0.0.424-beta":
+  version "0.0.424-beta"
+  resolved "https://registry.yarnpkg.com/@eco-foundation/routes/-/routes-0.0.424-beta.tgz#3f0e329ca3cd2797ff89cc8659e0990a1eb9dc19"
+  integrity sha512-1Rx5PP9ZKGbCiJ16cX1g0pe08pLeEol6LL+LoYNXxRftYSfAgohF2C0VHiFaWbyudzsG3oIh5ukghri2t9Jdzg==
   dependencies:
     "@hyperlane-xyz/registry" "^4.2.0"
     "@hyperlane-xyz/sdk" "^5.1.0"

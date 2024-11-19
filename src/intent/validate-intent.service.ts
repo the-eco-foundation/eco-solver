@@ -7,7 +7,7 @@ import { JobsOptions, Queue } from 'bullmq'
 import { InjectQueue } from '@nestjs/bullmq'
 import { getIntentJobId } from '../common/utils/strings'
 import { Solver } from '../eco-configs/eco-config.types'
-import { SourceIntentModel } from './schemas/source-intent.schema'
+import { IntentSourceModel } from './schemas/intent-source.schema'
 import { ProofService } from '../prover/proof.service'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
@@ -31,7 +31,7 @@ export class ValidateIntentService implements OnModuleInit {
 
   constructor(
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
-    @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
+    @InjectModel(IntentSourceModel.name) private intentModel: Model<IntentSourceModel>,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly proofService: ProofService,
     private readonly ecoConfigService: EcoConfigService,
@@ -89,7 +89,7 @@ export class ValidateIntentService implements OnModuleInit {
    * @param solver the solver for the source chain
    * @returns true if they all pass, false otherwise
    */
-  async assertValidations(model: SourceIntentModel, solver: Solver): Promise<boolean> {
+  async assertValidations(model: IntentSourceModel, solver: Solver): Promise<boolean> {
     if (!this.isRewardsEqualSized(model)) {
       return false
     }
@@ -154,8 +154,8 @@ export class ValidateIntentService implements OnModuleInit {
    * @param model the source intent model
    * @returns
    */
-  private supportedProver(model: SourceIntentModel): boolean {
-    const srcSolvers = this.ecoConfigService.getSourceIntents().filter((intent) => {
+  private supportedProver(model: IntentSourceModel): boolean {
+    const srcSolvers = this.ecoConfigService.getIntentSources().filter((intent) => {
       return BigInt(intent.chainID) == model.event.sourceChainID
     })
 
@@ -171,7 +171,7 @@ export class ValidateIntentService implements OnModuleInit {
    * @param solver the solver for the source chain
    * @returns
    */
-  private supportedTargets(model: SourceIntentModel, solver: Solver): boolean {
+  private supportedTargets(model: IntentSourceModel, solver: Solver): boolean {
     return !!this.utilsIntentService.targetsSupported(model, solver)
   }
 
@@ -181,7 +181,7 @@ export class ValidateIntentService implements OnModuleInit {
    * @param solver the solver for the source chain
    * @returns
    */
-  private supportedSelectors(model: SourceIntentModel, solver: Solver): boolean {
+  private supportedSelectors(model: IntentSourceModel, solver: Solver): boolean {
     //check if the targets support the selectors encoded in the intent data
     return !!this.utilsIntentService.selectorsSupported(model, solver)
   }
@@ -192,7 +192,7 @@ export class ValidateIntentService implements OnModuleInit {
    * @param solver the solver for the source chain
    * @returns
    */
-  private validExpirationTime(model: SourceIntentModel): boolean {
+  private validExpirationTime(model: IntentSourceModel): boolean {
     //convert to milliseconds
     const time = Number.parseInt(`${model.intent.expiryTime as bigint}`) * 1000
     const expires = new Date(time)
@@ -207,7 +207,7 @@ export class ValidateIntentService implements OnModuleInit {
    * @param model the source intent model
    * @returns
    */
-  isRewardsEqualSized(model: SourceIntentModel) {
+  isRewardsEqualSized(model: IntentSourceModel) {
     //check that the rewards and amounts are equal sized
     if (model.intent.rewardTokens.length !== model.intent.rewardAmounts.length) {
       this.logger.log(

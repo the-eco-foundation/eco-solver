@@ -70,7 +70,7 @@ describe('WatchIntentService', () => {
         publicClientService.getClient.mockResolvedValue({
           watchContractEvent: mockWatch,
         } as any)
-        ecoConfigService.getSourceIntents.mockReturnValue(sources)
+        ecoConfigService.getIntentSources.mockReturnValue(sources)
         ecoConfigService.getSolvers.mockReturnValue(sources)
         await watchIntentService.onApplicationBootstrap()
         expect(mockWatch).toHaveBeenCalledTimes(2)
@@ -99,7 +99,7 @@ describe('WatchIntentService', () => {
         publicClientService.getClient.mockResolvedValue({
           watchContractEvent: () => mockUnwatch,
         } as any)
-        ecoConfigService.getSourceIntents.mockReturnValue(sources)
+        ecoConfigService.getIntentSources.mockReturnValue(sources)
         ecoConfigService.getSolvers.mockReturnValue(sources)
         await watchIntentService.onApplicationBootstrap()
         await watchIntentService.onModuleDestroy()

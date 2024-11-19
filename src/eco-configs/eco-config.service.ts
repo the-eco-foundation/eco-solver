@@ -2,11 +2,11 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import * as config from 'config'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { ConfigSource } from './interfaces/config-source.interface'
-import { EcoConfigType, Solver, SourceIntent } from './eco-config.types'
+import { EcoConfigType, Solver, IntentSource } from './eco-config.types'
 import { entries, keys } from 'lodash'
 import { getAddress } from 'viem'
 import { addressKeys } from '../common/viem/utils'
-import { getNodeEnv } from './utils'
+import { getChainConfig } from './utils'
 
 /**
  * Service class for getting configs for the app
@@ -23,7 +23,6 @@ export class EcoConfigService implements OnModuleInit {
     }, this.externalConfigs)
 
     this.ecoConfig = config
-    console.log(`'NODE_ENV' ${getNodeEnv()}`)
     this.initConfigs()
   }
 
@@ -64,15 +63,14 @@ export class EcoConfigService implements OnModuleInit {
   }
 
   // Returns the source intents config
-  getSourceIntents(): EcoConfigType['sourceIntents'] {
-    const intents = this.ecoConfig.get('sourceIntents').map((intent: SourceIntent) => {
-      intent.tokens = intent.tokens.map((token) => {
+  getIntentSources(): EcoConfigType['intentSources'] {
+    const intents = this.ecoConfig.get('intentSources').map((intent: IntentSource) => {
+      intent.tokens = intent.tokens.map((token: string) => {
         return getAddress(token)
       })
-      intent.sourceAddress = getAddress(intent.sourceAddress)
-      intent.provers = intent.provers.map((prover) => {
-        return getAddress(prover)
-      })
+      const config = getChainConfig(intent.chainID)
+      intent.sourceAddress = config.IntentSource
+      intent.provers = [config.Prover, config.HyperProver]
       return intent
     })
     return intents
@@ -82,7 +80,8 @@ export class EcoConfigService implements OnModuleInit {
   getSolvers(): EcoConfigType['solvers'] {
     const solvers = this.ecoConfig.get('solvers')
     entries(solvers).forEach(([, solver]: [string, Solver]) => {
-      solver.solverAddress = getAddress(solver.solverAddress)
+      const config = getChainConfig(solver.chainID)
+      solver.solverAddress = config.Inbox
       solver.targets = addressKeys(solver.targets) ?? {}
     })
     return solvers

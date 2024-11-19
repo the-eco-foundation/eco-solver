@@ -6,7 +6,7 @@ import { LoggerModule } from 'nestjs-pino'
 import { MongooseModule } from '@nestjs/mongoose'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { IntentModule } from './intent/intent.module'
-import { SourceIntentModel } from './intent/schemas/source-intent.schema'
+import { IntentSourceModel } from './intent/schemas/intent-source.schema'
 import { BalanceModule } from './balance/balance.module'
 import { SignModule } from './sign/sign.module'
 import { ProverModule } from './prover/prover.module'
@@ -28,7 +28,7 @@ import { FlagsModule } from './flags/flags.module'
     HealthModule,
     IntentModule,
     SignModule,
-    SourceIntentModel,
+    IntentSourceModel,
     ProcessorModule,
     MongooseModule.forRootAsync({
       inject: [EcoConfigService],

@@ -52,23 +52,23 @@ describe('ProofService', () => {
 
   describe('on loadProofTypes', () => {
     const mockGetProofTypes = jest.fn()
-    const sourceIntents = [
+    const intentSources = [
       { chainID: 1, provers: ['0x123', '0x456'] },
       { chainID: 2, provers: ['0x123', '0x777'] },
     ]
     const proofContracts = {
-      [sourceIntents[0].provers[0]]: PROOF_HYPERLANE,
-      [sourceIntents[0].provers[1]]: PROOF_HYPERLANE,
-      [sourceIntents[1].provers[1]]: PROOF_STORAGE,
+      [intentSources[0].provers[0]]: PROOF_HYPERLANE,
+      [intentSources[0].provers[1]]: PROOF_HYPERLANE,
+      [intentSources[1].provers[1]]: PROOF_STORAGE,
     }
     const proof1: Record<Hex, ProofType> = {}
     const proof2: Record<Hex, ProofType> = {}
     beforeEach(async () => {
-      sourceIntents[0].provers.forEach((s) => {
+      intentSources[0].provers.forEach((s) => {
         proof1[s] = PROOF_HYPERLANE
       })
-      sourceIntents[1].provers.forEach((s) => {
-        if (s === sourceIntents[0].provers[0]) {
+      intentSources[1].provers.forEach((s) => {
+        if (s === intentSources[0].provers[0]) {
           proof2[s] = PROOF_HYPERLANE
           return
         }
@@ -84,7 +84,7 @@ describe('ProofService', () => {
           }
         },
       )
-      ecoConfigService.getSourceIntents = jest.fn().mockReturnValue(sourceIntents)
+      ecoConfigService.getIntentSources = jest.fn().mockReturnValue(intentSources)
       await proofService.onModuleInit()
     })
 
@@ -93,7 +93,7 @@ describe('ProofService', () => {
     })
 
     it('should call getProofTypes for all source intents', async () => {
-      expect(mockGetProofTypes).toHaveBeenCalledTimes(sourceIntents.length)
+      expect(mockGetProofTypes).toHaveBeenCalledTimes(intentSources.length)
     })
 
     it('should set the proofContracts', async () => {

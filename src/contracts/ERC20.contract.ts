@@ -359,6 +359,6 @@ export function isSupportedTokenType(targetType: TargetContractType): boolean {
     case 'erc721':
     case 'erc1155':
     default:
-      throw EcoError.SourceIntentUnsupportedTargetType(targetType)
+      throw EcoError.IntentSourceUnsupportedTargetType(targetType)
   }
 }

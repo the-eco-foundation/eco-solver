@@ -1,13 +1,13 @@
 import { ContractFunctionReturnType, decodeEventLog, Hex, Log, Prettify } from 'viem'
 import { ExtractAbiEvent } from 'abitype'
 import { Network } from 'alchemy-sdk'
-import { IntentSourceAbi } from '@eco-foundation/eco'
+import { IntentSourceAbi } from '@eco-foundation/routes'
 
 // Define the type for the contract
 export type IntentSource = typeof IntentSourceAbi
 
 // Define the type for the IntentSource struct in the contract, and add the hash and logIndex fields
-export type SourceIntentViemType = Prettify<
+export type IntentSourceViemType = Prettify<
   ContractFunctionReturnType<IntentSource, 'pure' | 'view', 'getIntent', [Hex]> & {
     hash: Hex
     logIndex: number

@@ -28,11 +28,10 @@ export default {
       },
     },
   },
-  sourceIntents: [
+  intentSources: [
     {
       network: 'opt-sepolia',
       chainID: 11155420,
-      sourceAddress: '0xc135737F2a05b0f65c33DAb7C60e63E3E2008c6c',
       tokens: [
         '0x5fd84259d66Cd46123540766Be93DFE6D43130D7', //usdc
         '0x8327Db9040811545C13331A453aBe9C7AA1aCDf8',
@@ -47,7 +46,6 @@ export default {
     {
       network: 'base-sepolia',
       chainID: 84532,
-      sourceAddress: '0xc135737F2a05b0f65c33DAb7C60e63E3E2008c6c',
       tokens: [
         '0xAb1D243b07e99C91dE9E4B80DFc2B07a8332A2f7', //usdc
         '0x8bDa9F5C33FBCB04Ea176ea5Bc1f5102e934257f',
@@ -59,7 +57,6 @@ export default {
   solvers: {
     //base sepolia
     84532: {
-      solverAddress: '0x0C190D5A0a77168BDF87D0E0AE3f066F8e0E6ea4',
       targets: {
         //base sepolia USDC
         '0xAb1D243b07e99C91dE9E4B80DFc2B07a8332A2f7': {
@@ -83,7 +80,6 @@ export default {
     },
     //op sepolia
     11155420: {
-      solverAddress: '0x0C190D5A0a77168BDF87D0E0AE3f066F8e0E6ea4', //todo update to real address
       targets: {
         //op sepolia USDC
         '0x5fd84259d66Cd46123540766Be93DFE6D43130D7': {

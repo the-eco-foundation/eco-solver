@@ -23,7 +23,7 @@ export class ValidSmartWalletService implements OnModuleInit {
   }
   /**
    * Validates that the smart wallet account that posts and creates an IntentCreated event on chain
-   * for the SourceIntent contract, is from the correct smart wallet factory.
+   * for the IntentSource contract, is from the correct smart wallet factory.
    *
    * @param smartWalletAddress the address of the smart wallet to validate
    * @param chainID the chain id of the transaction the event is from

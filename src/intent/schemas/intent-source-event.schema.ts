@@ -4,7 +4,7 @@ import { ViemEventLog } from '../../common/events/viem'
 import { Hex } from 'viem'
 
 @Schema()
-export class SourceIntentEventModel implements ViemEventLog {
+export class IntentSourceEventModel implements ViemEventLog {
   @Prop({ required: true, type: BigInt })
   sourceChainID: bigint
   @Prop({ required: true })
@@ -28,5 +28,5 @@ export class SourceIntentEventModel implements ViemEventLog {
   @Prop({ required: true })
   logIndex: number
 }
-export const SourceIntentEventSchema = SchemaFactory.createForClass(SourceIntentEventModel)
-SourceIntentEventSchema.index({ transactionHash: 1 }, { unique: true })
+export const IntentSourceEventSchema = SchemaFactory.createForClass(IntentSourceEventModel)
+IntentSourceEventSchema.index({ transactionHash: 1 }, { unique: true })

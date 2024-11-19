@@ -4,17 +4,17 @@ import { JobsOptions, Queue } from 'bullmq'
 import { QUEUES } from '../common/redis/constants'
 import { InjectQueue } from '@nestjs/bullmq'
 import { getIntentJobId } from '../common/utils/strings'
-import { SourceIntent } from '../eco-configs/eco-config.types'
+import { IntentSource } from '../eco-configs/eco-config.types'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { MultichainPublicClientService } from '../transaction/multichain-public-client.service'
 import { IntentCreatedLog } from '../contracts'
 import { WatchContractEventReturnType, zeroHash } from 'viem'
 import { convertBigIntsToStrings } from '../common/viem/utils'
 import { entries } from 'lodash'
-import { IntentSourceAbi } from '@eco-foundation/eco'
+import { IntentSourceAbi } from '@eco-foundation/routes'
 
 /**
- * This service subscribes to SourceIntent contracts for IntentCreated events. It subscribes on all
+ * This service subscribes to IntentSource contracts for IntentCreated events. It subscribes on all
  * supported chains and prover addresses. When an event is emitted, it mutates the event log, and then
  * adds it intent queue for processing.
  */
@@ -44,7 +44,7 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
   }
 
   /**
-   * Subscribes to all SourceIntent contracts for IntentCreated events. It subscribes on all supported chains
+   * Subscribes to all IntentSource contracts for IntentCreated events. It subscribes on all supported chains
    * filtering on the prover addresses and destination chain ids. It loads a mapping of the unsubscribe events to
    * call {@link onModuleDestroy} to close the clients.
    */
@@ -52,7 +52,7 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
     const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(([, solver]) =>
       BigInt(solver.chainID),
     )
-    const subscribeTasks = this.ecoConfigService.getSourceIntents().map(async (source) => {
+    const subscribeTasks = this.ecoConfigService.getIntentSources().map(async (source) => {
       const client = await this.publicClientService.getClient(source.chainID)
       this.unwatch[source.chainID] = client.watchContractEvent({
         onError: (error) => {
@@ -81,13 +81,13 @@ export class WatchIntentService implements OnApplicationBootstrap, OnModuleDestr
   }
 
   /**
-   * Unsubscribes from all SourceIntent contracts. It closes all clients in {@link onModuleDestroy}
+   * Unsubscribes from all IntentSource contracts. It closes all clients in {@link onModuleDestroy}
    */
   async unsubscribe() {
     Object.values(this.unwatch).forEach((unwatch) => unwatch())
   }
 
-  addJob(source: SourceIntent) {
+  addJob(source: IntentSource) {
     return async (logs: IntentCreatedLog[]) => {
       for (const log of logs) {
         // bigint as it can't serialize to JSON

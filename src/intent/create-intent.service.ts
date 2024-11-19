@@ -4,14 +4,14 @@ import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { QUEUES } from '../common/redis/constants'
 import { JobsOptions, Queue } from 'bullmq'
 import { InjectQueue } from '@nestjs/bullmq'
-import { SourceIntentModel } from './schemas/source-intent.schema'
+import { IntentSourceModel } from './schemas/intent-source.schema'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { getIntentJobId } from '../common/utils/strings'
 import { Hex } from 'viem'
 import { ValidSmartWalletService } from '../solver/filters/valid-smart-wallet.service'
 import { decodeCreateIntentLog, IntentCreatedLog } from '../contracts'
-import { SourceIntentDataModel } from './schemas/source-intent-data.schema'
+import { IntentSourceDataModel } from './schemas/intent-source-data.schema'
 import { FlagService } from '../flags/flags.service'
 
 /**
@@ -26,7 +26,7 @@ export class CreateIntentService implements OnModuleInit {
 
   constructor(
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
-    @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
+    @InjectModel(IntentSourceModel.name) private intentModel: Model<IntentSourceModel>,
     private readonly validSmartWalletService: ValidSmartWalletService,
     private readonly flagService: FlagService,
     private readonly ecoConfigService: EcoConfigService,
@@ -54,7 +54,7 @@ export class CreateIntentService implements OnModuleInit {
     )
 
     const ei = decodeCreateIntentLog(intentWs.data, intentWs.topics)
-    const intent = SourceIntentDataModel.fromEvent(ei, intentWs.logIndex || 0)
+    const intent = IntentSourceDataModel.fromEvent(ei, intentWs.logIndex || 0)
 
     try {
       //check db if the intent is already filled

@@ -3,7 +3,7 @@ import { createMock, DeepMocked } from '@golevelup/ts-jest'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { Test, TestingModule } from '@nestjs/testing'
 import { getModelToken } from '@nestjs/mongoose'
-import { SourceIntentModel } from '../../intent/schemas/source-intent.schema'
+import { IntentSourceModel } from '../schemas/intent-source.schema'
 import { Model } from 'mongoose'
 import { UtilsIntentService } from '../utils-intent.service'
 import { getQueueToken } from '@nestjs/bullmq'
@@ -23,7 +23,7 @@ jest.mock('viem', () => {
 describe('UtilsIntentService', () => {
   let utilsIntentService: UtilsIntentService
   let ecoConfigService: DeepMocked<EcoConfigService>
-  let intentModel: DeepMocked<Model<SourceIntentModel>>
+  let intentModel: DeepMocked<Model<IntentSourceModel>>
   const mockLogDebug = jest.fn()
   const mockLogLog = jest.fn()
   const mockLogWarn = jest.fn()
@@ -34,8 +34,8 @@ describe('UtilsIntentService', () => {
         UtilsIntentService,
         { provide: EcoConfigService, useValue: createMock<EcoConfigService>() },
         {
-          provide: getModelToken(SourceIntentModel.name),
-          useValue: createMock<Model<SourceIntentModel>>(),
+          provide: getModelToken(IntentSourceModel.name),
+          useValue: createMock<Model<IntentSourceModel>>(),
         },
       ],
     })
@@ -45,7 +45,7 @@ describe('UtilsIntentService', () => {
 
     utilsIntentService = chainMod.get(UtilsIntentService)
     ecoConfigService = chainMod.get(EcoConfigService)
-    intentModel = chainMod.get(getModelToken(SourceIntentModel.name))
+    intentModel = chainMod.get(getModelToken(IntentSourceModel.name))
 
     utilsIntentService['logger'].debug = mockLogDebug
     utilsIntentService['logger'].log = mockLogLog
@@ -166,7 +166,7 @@ describe('UtilsIntentService', () => {
       const solver = { targets: {} }
       expect(() =>
         utilsIntentService.getTransactionTargetData(model, solver as any, target, data),
-      ).toThrow(EcoError.SourceIntentTargetConfigNotFound(target as string))
+      ).toThrow(EcoError.IntentSourceTargetConfigNotFound(target as string))
     })
 
     it('should return null when tx is not decoded ', async () => {
@@ -306,7 +306,7 @@ describe('UtilsIntentService', () => {
     it('should return undefined if it could not find the model in the db', async () => {
       intentModel.findOne = jest.fn().mockReturnValue(null)
       expect(await utilsIntentService.getIntentProcessData(intentHash)).toStrictEqual({
-        err: EcoError.SourceIntentDataNotFound(intentHash),
+        err: EcoError.IntentSourceDataNotFound(intentHash),
         model: null,
         solver: null,
       })
