@@ -1,7 +1,7 @@
 import { ContractFunctionReturnType, decodeEventLog, Hex, Log, Prettify } from 'viem'
 import { ExtractAbiEvent } from 'abitype'
 import { Network } from 'alchemy-sdk'
-import { IntentSourceAbi } from '@ecoinc/ecoism'
+import { IntentSourceAbi } from '@eco-foundation/eco'
 
 // Define the type for the contract
 export type IntentSource = typeof IntentSourceAbi

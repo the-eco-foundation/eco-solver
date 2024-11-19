@@ -16,7 +16,7 @@ import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { ProofService } from '../prover/proof.service'
 import { ExecuteSmartWalletArg } from '../transaction/smart-wallets/smart-wallet.types'
 import { KernelAccountClientService } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
-import { InboxAbi } from '@ecoinc/ecoism'
+import { InboxAbi } from '@eco-foundation/eco'
 
 /**
  * This class fulfills an intent by creating the transactions for the intent targets and the fulfill intent transaction.

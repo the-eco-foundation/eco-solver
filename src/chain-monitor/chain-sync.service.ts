@@ -10,7 +10,7 @@ import { entries } from 'lodash'
 import { BlockTag } from 'viem'
 import { WatchIntentService } from '../intent/watch-intent.service'
 import { KernelAccountClientService } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
-import { IntentSourceAbi } from '@ecoinc/ecoism'
+import { IntentSourceAbi } from '@eco-foundation/eco'
 
 /**
  * Service class for syncing any missing transactions for all the source intent contracts.
