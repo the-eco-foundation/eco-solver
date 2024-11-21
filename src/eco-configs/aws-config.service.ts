@@ -36,7 +36,7 @@ export class AwsConfigService implements OnModuleInit, ConfigSource {
         message: `Initializing aws configs`,
       }),
     )
-    let awsCreds = config.get('aws')
+    let awsCreds = config.get('aws') as any[]
     if (!Array.isArray(awsCreds)) {
       awsCreds = [awsCreds]
     }
