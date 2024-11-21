@@ -12,6 +12,7 @@ import { Hex } from 'viem'
 import { ValidSmartWalletService } from '../solver/filters/valid-smart-wallet.service'
 import { decodeCreateIntentLog, IntentCreatedLog } from '../contracts'
 import { SourceIntentDataModel } from './schemas/source-intent-data.schema'
+import { FlagService } from '../flags/flags.service'
 
 /**
  * This service is responsible for creating a new intent record in the database. It is
@@ -27,6 +28,7 @@ export class CreateIntentService implements OnModuleInit {
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
     @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
     private readonly validSmartWalletService: ValidSmartWalletService,
+    private readonly flagService: FlagService,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
@@ -74,21 +76,23 @@ export class CreateIntentService implements OnModuleInit {
         return
       }
 
-      const isBendWallet = await this.validSmartWalletService.validateSmartWallet(
-        intent.creator as Hex,
-        intentWs.sourceChainID,
-      )
+      const validWallet = this.flagService.getFlagValue('bendWalletOnly')
+        ? await this.validSmartWalletService.validateSmartWallet(
+            intent.creator as Hex,
+            intentWs.sourceChainID,
+          )
+        : true
 
       //create db record
       const record = await this.intentModel.create({
         event: intentWs,
         intent: intent,
         receipt: null,
-        status: isBendWallet ? 'PENDING' : 'NON-BEND-WALLET',
+        status: validWallet ? 'PENDING' : 'NON-BEND-WALLET',
       })
 
       const jobId = getIntentJobId('create', intent.hash as Hex, intent.logIndex)
-      if (isBendWallet) {
+      if (validWallet) {
         //add to processing queue
         await this.intentQueue.add(QUEUES.SOURCE_INTENT.jobs.validate_intent, intent.hash, {
           jobId,
@@ -102,8 +106,8 @@ export class CreateIntentService implements OnModuleInit {
           properties: {
             intentHash: intent.hash,
             intent: record.intent,
-            isBendWallet,
-            ...(isBendWallet ? { jobId } : {}),
+            validWallet,
+            ...(validWallet ? { jobId } : {}),
           },
         }),
       )

@@ -430,24 +430,33 @@ describe('FulfillIntentService', () => {
       ]
     })
     it('should use the correct function name and args for PROOF_STORAGE', async () => {
-      const mockGetProofType = jest.fn().mockReturnValue(PROOF_STORAGE)
-      proofService.getProofType = mockGetProofType
+      const mockStorage = jest.fn().mockReturnValue(true)
+      const mockHyperlane = jest.fn().mockReturnValue(false)
+      proofService.isStorageProver = mockStorage
+      proofService.isHyperlaneProver = mockHyperlane
       await fulfillIntentService['getFulfillIntentTx'](solver.solverAddress, model as any)
-      expect(proofService.getProofType).toHaveBeenCalledTimes(1)
-      expect(proofService.getProofType).toHaveBeenCalledWith(model.intent.prover)
+      expect(proofService.isStorageProver).toHaveBeenCalledTimes(1)
+      expect(proofService.isStorageProver).toHaveBeenCalledWith(model.intent.prover)
+      expect(proofService.isHyperlaneProver).toHaveBeenCalledTimes(1)
+      expect(proofService.isHyperlaneProver).toHaveBeenCalledWith(model.intent.prover)
       expect(mockEncodeFunctionData).toHaveBeenCalledWith({
         abi: InboxAbi,
         functionName: 'fulfillStorage',
         args: defaultArgs,
       })
     })
+
     it('should use the correct function name and args for PROOF_HYPERLANE', async () => {
-      const mockGetProofType = jest.fn().mockReturnValue(PROOF_HYPERLANE)
-      proofService.getProofType = mockGetProofType
+      const mockStorage = jest.fn().mockReturnValue(false)
+      const mockHyperlane = jest.fn().mockReturnValue(true)
+      proofService.isStorageProver = mockStorage
+      proofService.isHyperlaneProver = mockHyperlane
       defaultArgs.push(model.intent.prover)
       await fulfillIntentService['getFulfillIntentTx'](solver.solverAddress, model as any)
-      expect(proofService.getProofType).toHaveBeenCalledTimes(1)
-      expect(proofService.getProofType).toHaveBeenCalledWith(model.intent.prover)
+      expect(proofService.isStorageProver).toHaveBeenCalledTimes(1)
+      expect(proofService.isStorageProver).toHaveBeenCalledWith(model.intent.prover)
+      expect(proofService.isHyperlaneProver).toHaveBeenCalledTimes(1)
+      expect(proofService.isHyperlaneProver).toHaveBeenCalledWith(model.intent.prover)
       expect(mockEncodeFunctionData).toHaveBeenCalledTimes(1)
       expect(mockEncodeFunctionData).toHaveBeenCalledWith({
         abi: InboxAbi,

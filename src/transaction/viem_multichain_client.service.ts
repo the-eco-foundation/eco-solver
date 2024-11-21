@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { Chain, Client, ClientConfig, createClient, extractChain } from 'viem'
+import { Chain, Client, ClientConfig, createClient, extractChain, Hex, zeroAddress } from 'viem'
 import { EcoError } from '../common/errors/eco-error'
 import { ChainsSupported } from '../common/chains/supported'
 import { getTransport } from '../common/chains/transport'
@@ -75,6 +75,20 @@ export class ViemMultichainClientService<T extends Client, V extends ClientConfi
       chain: chain,
       pollingInterval: this.pollingInterval,
     } as V
+  }
+
+  /**
+   * Returns the address of the wallet for the first solver in the config.
+   * @returns
+   */
+  protected async getAddress(): Promise<Hex> {
+    const solvers = this.ecoConfigService.getSolvers()
+    if (!solvers || Object.values(solvers).length == 0) {
+      return zeroAddress
+    }
+
+    const wallet = await this.getClient(Object.values(solvers)[0].chainID)
+    return wallet.account?.address || zeroAddress
   }
 
   private isSupportedNetwork(chainID: number): boolean {

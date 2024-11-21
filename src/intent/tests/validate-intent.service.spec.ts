@@ -190,11 +190,10 @@ describe('ValidateIntentService', () => {
       //mostly covered in utilsIntentService
       it('should return whatever UtilsIntentService does', async () => {
         const model = { intent: { expiryTime: 100 } } as any
-        const solver = {} as any
         proofService.isIntentExpirationWithinProofMinimumDate.mockReturnValueOnce(true)
-        expect(validateIntentService['validExpirationTime'](model, solver)).toBe(true)
+        expect(validateIntentService['validExpirationTime'](model)).toBe(true)
         proofService.isIntentExpirationWithinProofMinimumDate.mockReturnValueOnce(false)
-        expect(validateIntentService['validExpirationTime'](model, solver)).toBe(false)
+        expect(validateIntentService['validExpirationTime'](model)).toBe(false)
       })
     })
   })
