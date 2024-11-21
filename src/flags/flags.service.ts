@@ -7,14 +7,12 @@ import { waitForInitialization } from './utils'
 
 export type LaunchDarklyFlags = {
   bendWalletOnly: boolean
-  time: number
 }
 
 export type FlagType = keyof LaunchDarklyFlags
 
 export const FlagVariationKeys: Record<FlagType, string> = {
   bendWalletOnly: 'bendWalletOnly',
-  time: 'time',
 }
 
 /**
@@ -27,7 +25,6 @@ export class FlagService implements OnModuleInit {
   private context: ld.LDContext
   private flagValues: LaunchDarklyFlags = {
     bendWalletOnly: false,
-    time: 0,
   }
   constructor(
     private readonly kernelAccountService: KernelAccountClientService,
