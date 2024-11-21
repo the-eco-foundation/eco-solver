@@ -8,10 +8,10 @@ import { EcoError } from '../common/errors/eco-error'
 export const ChainPrefix = 'pre'
 
 export enum NodeEnv {
-  Production = 'production',
-  Preproduction = 'preproduction',
-  Staging = 'staging',
-  Development = 'development',
+  production = 'production',
+  preproduction = 'preproduction',
+  staging = 'staging',
+  development = 'development',
 }
 
 /**
@@ -23,14 +23,14 @@ export enum NodeEnv {
 export function getNodeEnv(): NodeEnv {
   const env: string = config.util.getEnv('NODE_ENV')
   const normalizedEnv = env.toLowerCase() as keyof typeof NodeEnv
-  return NodeEnv[normalizedEnv] || NodeEnv.Development
+  return NodeEnv[normalizedEnv] || NodeEnv.development
 }
 
 /**
  * @returns true if the node env is preproduction or development
  */
 export function isPreEnv(): boolean {
-  return getNodeEnv() === NodeEnv.Preproduction || getNodeEnv() === NodeEnv.Development
+  return getNodeEnv() === NodeEnv.preproduction || getNodeEnv() === NodeEnv.development
 }
 
 /**
