@@ -48,7 +48,7 @@ export type EcoConfigType = {
     dbName: string
     enableJournaling: boolean
   }
-  sourceIntents: SourceIntent[]
+  intentSources: IntentSource[]
   //chainID to Solver type mapping
   solvers: Record<number, Solver>
   logger: {
@@ -141,7 +141,7 @@ export type TargetContractType = 'erc20' | 'erc721' | 'erc1155'
 /**
  * The config type for a single prover source configuration
  */
-export class SourceIntent {
+export class IntentSource {
   // The network that the prover is on
   network: Network
   // The chain ID of the network

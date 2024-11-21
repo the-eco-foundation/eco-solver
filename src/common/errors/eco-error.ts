@@ -17,18 +17,22 @@ export class EcoError extends Error {
     return new EcoError(`Could not create alchemy provider ${network}`)
   }
 
-  static SourceIntentDataNotFound(intentHash: string) {
+  static IntentSourceDataNotFound(intentHash: string) {
     return new EcoError(`Could not find data for intent hash ${intentHash}`)
   }
 
-  static SourceIntentDataInvalidParams = new Error('Targets and data must have the same length')
+  static IntentSourceDataInvalidParams = new Error('Targets and data must have the same length')
 
-  static SourceIntentTargetConfigNotFound(target: string) {
+  static IntentSourceTargetConfigNotFound(target: string) {
     return new EcoError(`Solver does not have target: ${target}`)
   }
 
-  static SourceIntentUnsupportedTargetType(targetType: string) {
+  static IntentSourceUnsupportedTargetType(targetType: string) {
     return new EcoError(`Unsupported target type ${targetType}`)
+  }
+
+  static ChainConfigNotFound(chainID: string) {
+    return new EcoError(`Chain config not found for chain ${chainID}`)
   }
 
   static InvalidSimpleAccountConfig() {

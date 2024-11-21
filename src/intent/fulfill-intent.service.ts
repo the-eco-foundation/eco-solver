@@ -7,15 +7,16 @@ import {
   TransactionTargetData,
   UtilsIntentService,
 } from './utils-intent.service'
-import { getERC20Selector, InboxAbi } from '../contracts'
+import { getERC20Selector } from '../contracts'
 import { EcoError } from '../common/errors/eco-error'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { Solver } from '../eco-configs/eco-config.types'
-import { SourceIntentModel } from './schemas/source-intent.schema'
+import { IntentSourceModel } from './schemas/intent-source.schema'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { ProofService } from '../prover/proof.service'
 import { ExecuteSmartWalletArg } from '../transaction/smart-wallets/smart-wallet.types'
 import { KernelAccountClientService } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
+import { InboxAbi } from '@eco-foundation/routes'
 
 /**
  * This class fulfills an intent by creating the transactions for the intent targets and the fulfill intent transaction.
@@ -25,7 +26,7 @@ export class FulfillIntentService {
   private logger = new Logger(FulfillIntentService.name)
 
   constructor(
-    @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
+    @InjectModel(IntentSourceModel.name) private intentModel: Model<IntentSourceModel>,
     private readonly kernelAccountClientService: KernelAccountClientService,
     private readonly proofService: ProofService,
     private readonly utilsIntentService: UtilsIntentService,
@@ -196,7 +197,7 @@ export class FulfillIntentService {
    */
   private async getFulfillIntentTx(
     solverAddress: Hex,
-    model: SourceIntentModel,
+    model: IntentSourceModel,
   ): Promise<ExecuteSmartWalletArg> {
     const walletAddr = this.ecoConfigService.getEth().claimant
     const isHyperlane = this.proofService.isHyperlaneProver(model.intent.prover)
@@ -244,7 +245,7 @@ export class FulfillIntentService {
    */
   private async getHyperlaneFee(
     solverAddress: Hex,
-    model: SourceIntentModel,
+    model: IntentSourceModel,
   ): Promise<Hex | undefined> {
     const client = await this.kernelAccountClientService.getClient(
       Number(model.intent.destinationChainID),

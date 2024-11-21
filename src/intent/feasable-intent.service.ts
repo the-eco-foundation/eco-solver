@@ -8,7 +8,7 @@ import { BalanceService } from '../balance/balance.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { EcoError } from '../common/errors/eco-error'
 import { Network } from 'alchemy-sdk'
-import { SourceIntentModel } from './schemas/source-intent.schema'
+import { IntentSourceModel } from './schemas/intent-source.schema'
 import { intersectionBy } from 'lodash'
 import { getIntentJobId } from '../common/utils/strings'
 import { Solver } from '../eco-configs/eco-config.types'
@@ -28,7 +28,7 @@ export class FeasableIntentService implements OnModuleInit {
   private fee: bigint
   constructor(
     @InjectQueue(QUEUES.SOURCE_INTENT.queue) private readonly intentQueue: Queue,
-    @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
+    @InjectModel(IntentSourceModel.name) private intentModel: Model<IntentSourceModel>,
     private readonly balanceService: BalanceService,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
@@ -92,7 +92,7 @@ export class FeasableIntentService implements OnModuleInit {
    * @returns
    */
   async validateExecution(
-    model: SourceIntentModel,
+    model: IntentSourceModel,
     solver: Solver,
   ): Promise<{
     feasable: boolean
@@ -126,7 +126,7 @@ export class FeasableIntentService implements OnModuleInit {
    * @returns
    */
   async validateEachExecution(
-    model: SourceIntentModel,
+    model: IntentSourceModel,
     solver: Solver,
     target: Hex,
     data: Hex,
@@ -173,7 +173,7 @@ export class FeasableIntentService implements OnModuleInit {
    */
   async handleErc20(
     tt: TransactionTargetData,
-    model: SourceIntentModel,
+    model: IntentSourceModel,
     solver: Solver,
     target: Hex,
   ): Promise<{ solvent: boolean; profitable: boolean } | undefined> {
@@ -191,7 +191,7 @@ export class FeasableIntentService implements OnModuleInit {
 
         const sourceNetwork = model.event.sourceNetwork
         const source = this.ecoConfigService
-          .getSourceIntents()
+          .getIntentSources()
           .find((intent) => intent.network == sourceNetwork)
         if (!source) {
           return

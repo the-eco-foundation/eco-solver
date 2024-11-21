@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { initBullMQ } from '../bullmq/bullmq.helper'
 import { QUEUES } from '../common/redis/constants'
-import { SourceIntentModel, SourceIntentSchema } from './schemas/source-intent.schema'
+import { IntentSourceModel, IntentSourceSchema } from './schemas/intent-source.schema'
 import { ValidateIntentService } from './validate-intent.service'
 import { FeasableIntentService } from './feasable-intent.service'
 import { CreateIntentService } from './create-intent.service'
@@ -19,7 +19,7 @@ import { FlagsModule } from '../flags/flags.module'
   imports: [
     BalanceModule,
     FlagsModule,
-    MongooseModule.forFeature([{ name: SourceIntentModel.name, schema: SourceIntentSchema }]),
+    MongooseModule.forFeature([{ name: IntentSourceModel.name, schema: IntentSourceSchema }]),
     ProverModule,
     SolverModule,
     TransactionModule,
@@ -33,14 +33,14 @@ import { FlagsModule } from '../flags/flags.module'
     FulfillIntentService,
     UtilsIntentService,
   ],
-  // controllers: [SourceIntentController],
+  // controllers: [IntentSourceController],
   exports: [
     WatchIntentService,
     CreateIntentService,
     ValidateIntentService,
     FeasableIntentService,
     FulfillIntentService,
-    MongooseModule, //add SourceIntentModel to the rest of the modules that import intents
+    MongooseModule, //add IntentSourceModel to the rest of the modules that import intents
   ],
 })
 export class IntentModule {}

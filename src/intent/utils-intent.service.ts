@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { SourceIntentModel } from './schemas/source-intent.schema'
+import { IntentSourceModel } from './schemas/intent-source.schema'
 import { Model } from 'mongoose'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
@@ -24,7 +24,7 @@ export interface TransactionTargetData {
  * Model and solver for the intent
  */
 export interface IntentProcessData {
-  model: SourceIntentModel | null
+  model: IntentSourceModel | null
   solver: Solver | null
   err?: EcoError
 }
@@ -49,7 +49,7 @@ export class UtilsIntentService {
   private logger = new Logger(UtilsIntentService.name)
 
   constructor(
-    @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
+    @InjectModel(IntentSourceModel.name) private intentModel: Model<IntentSourceModel>,
     private readonly ecoConfigService: EcoConfigService,
   ) {}
 
@@ -59,7 +59,7 @@ export class UtilsIntentService {
    * @param intentModel the model factory to use
    * @param model the new model data
    */
-  async updateIntentModel(intentModel: Model<SourceIntentModel>, model: SourceIntentModel) {
+  async updateIntentModel(intentModel: Model<IntentSourceModel>, model: IntentSourceModel) {
     return await intentModel.updateOne({ 'intent.hash': model.intent.hash }, model)
   }
 
@@ -72,8 +72,8 @@ export class UtilsIntentService {
    * @returns
    */
   async updateInvalidIntentModel(
-    intentModel: Model<SourceIntentModel>,
-    model: SourceIntentModel,
+    intentModel: Model<IntentSourceModel>,
+    model: IntentSourceModel,
     invalidCause: {
       proverUnsupported: boolean
       targetsUnsupported: boolean
@@ -95,8 +95,8 @@ export class UtilsIntentService {
    * @returns
    */
   async updateInfeasableIntentModel(
-    intentModel: Model<SourceIntentModel>,
-    model: SourceIntentModel,
+    intentModel: Model<IntentSourceModel>,
+    model: IntentSourceModel,
     infeasable: InfeasableResult,
   ) {
     model.status = 'INFEASABLE'
@@ -112,7 +112,7 @@ export class UtilsIntentService {
    * @param solver the solver for the intent
    * @returns
    */
-  selectorsSupported(model: SourceIntentModel, solver: Solver): boolean {
+  selectorsSupported(model: IntentSourceModel, solver: Solver): boolean {
     if (
       model.intent.targets.length !== model.intent.data.length ||
       model.intent.targets.length == 0
@@ -143,7 +143,7 @@ export class UtilsIntentService {
    * @returns
    */
   getTransactionTargetData(
-    model: SourceIntentModel,
+    model: IntentSourceModel,
     solver: Solver,
     target: Hex,
     data: Hex,
@@ -151,7 +151,7 @@ export class UtilsIntentService {
     const targetConfig = solver.targets[target as string] as TargetContract
     if (!targetConfig) {
       //shouldn't happen since we do this.targetsSupported(model, solver) before this call
-      throw EcoError.SourceIntentTargetConfigNotFound(target as string)
+      throw EcoError.IntentSourceTargetConfigNotFound(target as string)
     }
 
     const tx = decodeFunctionData({
@@ -184,7 +184,7 @@ export class UtilsIntentService {
    * @param solver the solver for the intent
    * @returns
    */
-  targetsSupported(model: SourceIntentModel, solver: Solver): boolean {
+  targetsSupported(model: IntentSourceModel, solver: Solver): boolean {
     const modelTargets = model.intent.targets
     const solverTargets = Object.keys(solver.targets)
     //all targets are included in the solver targets array
@@ -218,7 +218,7 @@ export class UtilsIntentService {
         'intent.hash': intentHash,
       })
       if (!model) {
-        return { model, solver: null, err: EcoError.SourceIntentDataNotFound(intentHash) }
+        return { model, solver: null, err: EcoError.IntentSourceDataNotFound(intentHash) }
       }
 
       const solver = this.ecoConfigService.getSolver(model.intent.destinationChainID)
