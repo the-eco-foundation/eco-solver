@@ -1,15 +1,15 @@
 import { BullModule } from '@nestjs/bullmq'
 import { DynamicModule } from '@nestjs/common'
-import { EcoConfigService } from '../eco-configs/eco-config.service'
-import { RedisConnectionUtils } from '../common/redis/redis-connection-utils'
-import { QueueInterface } from '../common/redis/constants'
+import { EcoConfigService } from '@/eco-configs/eco-config.service'
+import { RedisConnectionUtils } from '@/common/redis/redis-connection-utils'
+import { QueueMetadata } from '@/common/redis/constants'
 
 /**
  * Initialize the BullMQ queue with the given token and eco configs
- * @param token the name of the queue
+ * @param {QueueMetadata} queueInterface queue interface
  * @returns
  */
-export function initBullMQ(queueInterface: QueueInterface): DynamicModule {
+export function initBullMQ(queueInterface: QueueMetadata): DynamicModule {
   return BullModule.registerQueueAsync({
     name: queueInterface.queue,
     useFactory: async (configService: EcoConfigService) => {
