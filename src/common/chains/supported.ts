@@ -5,6 +5,7 @@ import { optimism, optimismSepolia } from './definitions/optimism'
 import { base, baseSepolia } from './definitions/base'
 import { arbitrum } from './definitions/arbitrum'
 import { mantle } from './definitions/mantle'
+import { polygon } from './definitions/polygon'
 
 /**
  * List of supported chains for the solver that have modified RPC URLs or are defined in the project
@@ -18,4 +19,5 @@ export const ChainsSupported: Chain[] = [
   helix,
   arbitrum,
   mantle,
+  polygon,
 ]
