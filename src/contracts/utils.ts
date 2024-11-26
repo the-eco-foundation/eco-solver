@@ -14,7 +14,7 @@ export function getERCAbi(targetType: TargetContractType): Abi {
     case 'erc721':
     case 'erc1155':
     default:
-      throw EcoError.SourceIntentUnsupportedTargetType(targetType)
+      throw EcoError.IntentSourceUnsupportedTargetType(targetType)
   }
 }
 

@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { EcoError } from '../../common/errors/eco-error'
 import { DecodeEventLogReturnType, getAddress, Hex } from 'viem'
-import { IntentSource, SourceIntentViemType } from '../../contracts'
+import { IntentSource, IntentSourceViemType } from '../../contracts'
 
 @Schema({ timestamps: true })
-export class SourceIntentDataModel implements SourceIntentViemType {
+export class IntentSourceDataModel implements IntentSourceViemType {
   @Prop({ required: true })
   hash: Hex
   @Prop({ required: true })
@@ -44,7 +44,7 @@ export class SourceIntentDataModel implements SourceIntentViemType {
     logIndex: number,
   ) {
     if (targets.length !== data.length) {
-      throw EcoError.SourceIntentDataInvalidParams
+      throw EcoError.IntentSourceDataInvalidParams
     }
     this.hash = hash
     this.creator = creator
@@ -63,9 +63,9 @@ export class SourceIntentDataModel implements SourceIntentViemType {
   static fromEvent(
     event: DecodeEventLogReturnType<IntentSource, 'IntentCreated'>,
     logIndex: number,
-  ): SourceIntentDataModel {
+  ): IntentSourceDataModel {
     const e = event.args
-    return new SourceIntentDataModel(
+    return new IntentSourceDataModel(
       e._hash,
       e._creator,
       e._destinationChain,
@@ -81,9 +81,9 @@ export class SourceIntentDataModel implements SourceIntentViemType {
   }
 }
 
-export const SourceIntentDataSchema = SchemaFactory.createForClass(SourceIntentDataModel)
-SourceIntentDataSchema.index({ hash: 1 }, { unique: true })
-SourceIntentDataSchema.index(
+export const IntentSourceDataSchema = SchemaFactory.createForClass(IntentSourceDataModel)
+IntentSourceDataSchema.index({ hash: 1 }, { unique: true })
+IntentSourceDataSchema.index(
   { hasBeenWithdrawn: 1, destinationChain: 'ascending', expiryTime: 'ascending' },
   { unique: false },
 )

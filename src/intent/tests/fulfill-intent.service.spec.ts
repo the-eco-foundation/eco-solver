@@ -3,16 +3,16 @@ import { createMock, DeepMocked } from '@golevelup/ts-jest'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { Test, TestingModule } from '@nestjs/testing'
 import { getModelToken } from '@nestjs/mongoose'
-import { SourceIntentModel } from '../../intent/schemas/source-intent.schema'
+import { IntentSourceModel } from '../schemas/intent-source.schema'
 import { Model } from 'mongoose'
 import { UtilsIntentService } from '../utils-intent.service'
 import { FulfillIntentService } from '../fulfill-intent.service'
 import { EcoError } from '../../common/errors/eco-error'
 import { ProofService } from '../../prover/proof.service'
-import { InboxAbi, PROOF_HYPERLANE, PROOF_STORAGE } from '../../contracts'
 import { Hex } from 'viem'
 import { KernelAccountClientService } from '../../transaction/smart-wallets/kernel/kernel-account-client.service'
 import { address1, address2 } from './feasable-intent.service.spec'
+import { InboxAbi } from '@eco-foundation/routes'
 
 jest.mock('viem', () => {
   return {
@@ -27,7 +27,7 @@ describe('FulfillIntentService', () => {
   let proofService: DeepMocked<ProofService>
   let utilsIntentService: DeepMocked<UtilsIntentService>
   let ecoConfigService: DeepMocked<EcoConfigService>
-  let intentModel: DeepMocked<Model<SourceIntentModel>>
+  let intentModel: DeepMocked<Model<IntentSourceModel>>
 
   const mockLogDebug = jest.fn()
   const mockLogLog = jest.fn()
@@ -42,8 +42,8 @@ describe('FulfillIntentService', () => {
         { provide: UtilsIntentService, useValue: createMock<UtilsIntentService>() },
         { provide: EcoConfigService, useValue: createMock<EcoConfigService>() },
         {
-          provide: getModelToken(SourceIntentModel.name),
-          useValue: createMock<Model<SourceIntentModel>>(),
+          provide: getModelToken(IntentSourceModel.name),
+          useValue: createMock<Model<IntentSourceModel>>(),
         },
       ],
     }).compile()
@@ -53,7 +53,7 @@ describe('FulfillIntentService', () => {
     proofService = chainMod.get(ProofService)
     utilsIntentService = chainMod.get(UtilsIntentService)
     ecoConfigService = chainMod.get(EcoConfigService)
-    intentModel = chainMod.get(getModelToken(SourceIntentModel.name))
+    intentModel = chainMod.get(getModelToken(IntentSourceModel.name))
 
     fulfillIntentService['logger'].debug = mockLogDebug
     fulfillIntentService['logger'].log = mockLogLog

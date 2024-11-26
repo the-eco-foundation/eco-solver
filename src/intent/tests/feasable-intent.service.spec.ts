@@ -2,7 +2,7 @@ import { createMock, DeepMocked } from '@golevelup/ts-jest'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { Test, TestingModule } from '@nestjs/testing'
 import { getModelToken } from '@nestjs/mongoose'
-import { SourceIntentModel } from '../../intent/schemas/source-intent.schema'
+import { IntentSourceModel } from '../schemas/intent-source.schema'
 import { Model } from 'mongoose'
 import { UtilsIntentService } from '../utils-intent.service'
 import { BullModule, getQueueToken } from '@nestjs/bullmq'
@@ -36,8 +36,8 @@ describe('FeasableIntentService', () => {
         { provide: UtilsIntentService, useValue: createMock<UtilsIntentService>() },
         { provide: EcoConfigService, useValue: createMock<EcoConfigService>() },
         {
-          provide: getModelToken(SourceIntentModel.name),
-          useValue: createMock<Model<SourceIntentModel>>(),
+          provide: getModelToken(IntentSourceModel.name),
+          useValue: createMock<Model<IntentSourceModel>>(),
         },
       ],
       imports: [
@@ -278,7 +278,7 @@ describe('FeasableIntentService', () => {
       it('should fail if we lack a matching source intent contract for the intent', async () => {
         jest.spyOn(balanceService, 'getTokenBalance').mockResolvedValue({ balance: amount } as any)
         jest
-          .spyOn(ecoConfigService, 'getSourceIntents')
+          .spyOn(ecoConfigService, 'getIntentSources')
           .mockReturnValue([{ network: 'base-sepolia' } as any])
         expect(
           await feasableIntentService.handleErc20(
@@ -293,7 +293,7 @@ describe('FeasableIntentService', () => {
       it('should fail if the transfer is not profitable', async () => {
         jest.spyOn(balanceService, 'getTokenBalance').mockResolvedValue({ balance: amount } as any)
         jest
-          .spyOn(ecoConfigService, 'getSourceIntents')
+          .spyOn(ecoConfigService, 'getIntentSources')
           .mockReturnValue([{ network: mockModel.event.sourceNetwork } as any])
         jest.spyOn(feasableIntentService, 'isProfitableErc20Transfer').mockReturnValue(false)
         expect(
@@ -309,7 +309,7 @@ describe('FeasableIntentService', () => {
       it('should succeed if the solver is solvent and the transfer is profitable', async () => {
         jest.spyOn(balanceService, 'getTokenBalance').mockResolvedValue({ balance: amount } as any)
         jest
-          .spyOn(ecoConfigService, 'getSourceIntents')
+          .spyOn(ecoConfigService, 'getIntentSources')
           .mockReturnValue([{ network: mockModel.event.sourceNetwork } as any])
         jest.spyOn(feasableIntentService, 'isProfitableErc20Transfer').mockReturnValue(true)
         expect(

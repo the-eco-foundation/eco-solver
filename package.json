@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.592.0",
+    "@eco-foundation/routes": "^0.0.424-beta",
     "@launchdarkly/node-server-sdk": "^9.7.1",
     "@liaoliaots/nestjs-redis-health": "^9.0.4",
     "@nestjs/bullmq": "^10.1.1",
@@ -54,6 +55,7 @@
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
+    "@types/config": "^3.3.5",
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.2",
     "@types/lodash": "^4.17.5",

@@ -84,15 +84,15 @@ export class BalanceHealthIndicator extends HealthIndicator {
       sourceAddress: Hex
       provers: Hex[]
     }> = []
-    const sourceIntents = this.configService.getSourceIntents()
-    for (const sourceIntent of sourceIntents) {
-      const client = await this.kernelAcountClientService.getClient(sourceIntent.chainID)
+    const IntentSources = this.configService.getIntentSources()
+    for (const IntentSource of IntentSources) {
+      const client = await this.kernelAcountClientService.getClient(IntentSource.chainID)
       const accountAddress = client.kernelAccountAddress
 
-      const balances = await this.getBalanceCalls(sourceIntent.chainID, sourceIntent.tokens)
+      const balances = await this.getBalanceCalls(IntentSource.chainID, IntentSource.tokens)
 
-      const sourceBalancesString = this.joinBalance(balances, sourceIntent.tokens)
-      sources.push({ ...sourceIntent, accountAddress, tokens: sourceBalancesString })
+      const sourceBalancesString = this.joinBalance(balances, IntentSource.tokens)
+      sources.push({ ...IntentSource, accountAddress, tokens: sourceBalancesString })
     }
     sources.reverse()
     return sources

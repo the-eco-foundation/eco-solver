@@ -4,12 +4,12 @@ import { Network } from 'alchemy-sdk'
 import { ValidateIntentService } from './validate-intent.service'
 import { Logger } from '@nestjs/common'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { SourceIntent } from '../eco-configs/eco-config.types'
+import { IntentSource } from '../eco-configs/eco-config.types'
 import { IntentCreatedLog } from '../contracts'
 
 @Controller('intent')
-export class SourceIntentController {
-  private logger = new Logger(SourceIntentController.name)
+export class IntentSourceController {
+  private logger = new Logger(IntentSourceController.name)
   constructor(
     private readonly watchIntentService: WatchIntentService,
     private readonly validateService: ValidateIntentService,
@@ -18,7 +18,7 @@ export class SourceIntentController {
   @Get()
   async fakeIntent() {
     const intent = intentPreprod
-    const si: SourceIntent = {
+    const si: IntentSource = {
       network: intent[0].sourceNetwork as Network,
       chainID: Number(intent[0].sourceChainID),
       sourceAddress: '0x',

@@ -2,10 +2,11 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import * as config from 'config'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
 import { ConfigSource } from './interfaces/config-source.interface'
-import { EcoConfigType, Solver, SourceIntent } from './eco-config.types'
-import { entries, keys } from 'lodash'
+import { EcoConfigType, Solver, IntentSource } from './eco-config.types'
+import { entries } from 'lodash'
 import { getAddress } from 'viem'
 import { addressKeys } from '../common/viem/utils'
+import { getChainConfig } from './utils'
 
 /**
  * Service class for getting configs for the app
@@ -54,23 +55,18 @@ export class EcoConfigService implements OnModuleInit {
 
   // Returns the alchemy configs
   getAlchemy(): EcoConfigType['alchemy'] {
-    const a = this.ecoConfig.get('solvers')
-    keys(a).forEach((k) => {
-      a[k]
-    })
-    return this.ecoConfig.get('alchemy')
+    return this.get('alchemy')
   }
 
   // Returns the source intents config
-  getSourceIntents(): EcoConfigType['sourceIntents'] {
-    const intents = this.ecoConfig.get('sourceIntents').map((intent: SourceIntent) => {
-      intent.tokens = intent.tokens.map((token) => {
+  getIntentSources(): EcoConfigType['intentSources'] {
+    const intents = this.get<IntentSource[]>('intentSources').map((intent: IntentSource) => {
+      intent.tokens = intent.tokens.map((token: string) => {
         return getAddress(token)
       })
-      intent.sourceAddress = getAddress(intent.sourceAddress)
-      intent.provers = intent.provers.map((prover) => {
-        return getAddress(prover)
-      })
+      const config = getChainConfig(intent.chainID)
+      intent.sourceAddress = config.IntentSource
+      intent.provers = [config.Prover, config.HyperProver]
       return intent
     })
     return intents
@@ -78,9 +74,10 @@ export class EcoConfigService implements OnModuleInit {
 
   // Returns the solvers config
   getSolvers(): EcoConfigType['solvers'] {
-    const solvers = this.ecoConfig.get('solvers')
+    const solvers = this.get<Record<number, Solver>>('solvers')
     entries(solvers).forEach(([, solver]: [string, Solver]) => {
-      solver.solverAddress = getAddress(solver.solverAddress)
+      const config = getChainConfig(solver.chainID)
+      solver.solverAddress = config.Inbox
       solver.targets = addressKeys(solver.targets) ?? {}
     })
     return solvers
@@ -94,25 +91,25 @@ export class EcoConfigService implements OnModuleInit {
 
   // Get the launch darkly configs
   getLaunchDarkly(): EcoConfigType['launchDarkly'] {
-    return this.ecoConfig.get('launchDarkly')
+    return this.get('launchDarkly')
   }
 
   getDatabaseConfig(): EcoConfigType['database'] {
-    return this.ecoConfig.get('database')
+    return this.get('database')
   }
 
   // Returns the eth configs
   getEth(): EcoConfigType['eth'] {
-    return this.ecoConfig.get('eth')
+    return this.get('eth')
   }
 
   // Returns the external APIs config
   getExternalAPIs(): EcoConfigType['externalAPIs'] {
-    return this.ecoConfig.get('externalAPIs')
+    return this.get('externalAPIs')
   }
 
   getLoggerConfig(): EcoConfigType['logger'] {
-    return this.ecoConfig.get('logger')
+    return this.get('logger')
   }
 
   getMongooseUri() {
@@ -124,11 +121,11 @@ export class EcoConfigService implements OnModuleInit {
 
   // Returns the redis configs
   getRedis(): EcoConfigType['redis'] {
-    return this.ecoConfig.get('redis')
+    return this.get('redis')
   }
 
   // Returns the server configs
   getServer(): EcoConfigType['server'] {
-    return this.ecoConfig.get('server')
+    return this.get('server')
   }
 }

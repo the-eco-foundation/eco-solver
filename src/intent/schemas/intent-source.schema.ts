@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { SourceIntentEventModel } from './source-intent-event.schema'
-import { SourceIntentDataModel } from './source-intent-data.schema'
+import { IntentSourceEventModel } from './intent-source-event.schema'
+import { IntentSourceDataModel } from './intent-source-data.schema'
 import { GetTransactionReceiptReturnType } from 'viem'
 
-export type SourceIntentStatus =
+export type IntentSourceStatus =
   | 'PENDING'
   | 'SOLVED'
   | 'EXPIRED'
@@ -13,21 +13,21 @@ export type SourceIntentStatus =
   | 'NON-BEND-WALLET'
 
 @Schema({ timestamps: true })
-export class SourceIntentModel {
+export class IntentSourceModel {
   @Prop({ required: true })
-  event: SourceIntentEventModel
+  event: IntentSourceEventModel
 
   @Prop({ required: true })
-  intent: SourceIntentDataModel
+  intent: IntentSourceDataModel
 
   @Prop({ type: Object })
   receipt: GetTransactionReceiptReturnType
 
   @Prop({ required: true })
-  status: SourceIntentStatus
+  status: IntentSourceStatus
 }
 
-export const SourceIntentSchema = SchemaFactory.createForClass(SourceIntentModel)
+export const IntentSourceSchema = SchemaFactory.createForClass(IntentSourceModel)
 
 // Set collation options for case-insensitive search.
-SourceIntentSchema.index({ status: 1 }, { unique: false })
+IntentSourceSchema.index({ status: 1 }, { unique: false })

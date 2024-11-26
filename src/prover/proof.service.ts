@@ -75,7 +75,7 @@ export class ProofService implements OnModuleInit {
    * hex address is the same.
    */
   private async loadProofTypes() {
-    const proofPromises = this.ecoConfigService.getSourceIntents().map(async (source) => {
+    const proofPromises = this.ecoConfigService.getIntentSources().map(async (source) => {
       return await this.getProofTypes(source.chainID, source.provers)
     })
 

@@ -1,15 +1,16 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { SourceIntentModel } from '../intent/schemas/source-intent.schema'
+import { IntentSourceModel } from '../intent/schemas/intent-source.schema'
 import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { EcoLogMessage } from '../common/logging/eco-log-message'
-import { SourceIntent } from '../eco-configs/eco-config.types'
-import { IntentCreatedLog, IntentSourceAbi } from '../contracts'
+import { IntentSource } from '../eco-configs/eco-config.types'
+import { IntentCreatedLog } from '../contracts'
 import { entries } from 'lodash'
 import { BlockTag } from 'viem'
 import { WatchIntentService } from '../intent/watch-intent.service'
 import { KernelAccountClientService } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
+import { IntentSourceAbi } from '@eco-foundation/routes'
 
 /**
  * Service class for syncing any missing transactions for all the source intent contracts.
@@ -22,7 +23,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
   private logger = new Logger(ChainSyncService.name)
 
   constructor(
-    @InjectModel(SourceIntentModel.name) private intentModel: Model<SourceIntentModel>,
+    @InjectModel(IntentSourceModel.name) private intentModel: Model<IntentSourceModel>,
     private readonly kernelAccountClientService: KernelAccountClientService,
     private readonly watchIntentService: WatchIntentService,
     private ecoConfigService: EcoConfigService,
@@ -41,7 +42,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
    * Syncs all the missing transactions for all the source intent contracts.
    */
   async syncTxs() {
-    const missingTxsTasks = this.ecoConfigService.getSourceIntents().map((source) => {
+    const missingTxsTasks = this.ecoConfigService.getIntentSources().map((source) => {
       return this.syncTxsPerSource(source)
     })
 
@@ -54,7 +55,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
    * @param source the source intent to get the missing transactions for
    * @returns
    */
-  async syncTxsPerSource(source: SourceIntent) {
+  async syncTxsPerSource(source: IntentSource) {
     const createIntentLogs = await this.getMissingTxs(source)
     if (createIntentLogs.length === 0) {
       return
@@ -71,7 +72,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
    * @param source the source intent to get missing transactions for
    * @returns
    */
-  async getMissingTxs(source: SourceIntent): Promise<IntentCreatedLog[]> {
+  async getMissingTxs(source: IntentSource): Promise<IntentCreatedLog[]> {
     const client = await this.kernelAccountClientService.getClient(source.chainID)
     const solverSupportedChains = entries(this.ecoConfigService.getSolvers()).map(([chainID]) =>
       BigInt(chainID),
@@ -125,7 +126,7 @@ export class ChainSyncService implements OnApplicationBootstrap {
    * @param source the source intent to get the last recorded transaction for
    * @returns
    */
-  async getLastRecordedTx(source: SourceIntent): Promise<SourceIntentModel[]> {
+  async getLastRecordedTx(source: IntentSource): Promise<IntentSourceModel[]> {
     return await this.intentModel
       .find({ 'event.sourceChainID': source.chainID })
       .sort({ 'event.blockNumber': -1 })

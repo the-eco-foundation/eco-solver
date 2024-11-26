@@ -3,7 +3,7 @@ import { createMock, DeepMocked } from '@golevelup/ts-jest'
 import { EcoConfigService } from '../../eco-configs/eco-config.service'
 import { Test, TestingModule } from '@nestjs/testing'
 import { getModelToken } from '@nestjs/mongoose'
-import { SourceIntentModel } from '../../intent/schemas/source-intent.schema'
+import { IntentSourceModel } from '../schemas/intent-source.schema'
 import { Model } from 'mongoose'
 import { ValidateIntentService } from '../validate-intent.service'
 import { ProofService } from '../../prover/proof.service'
@@ -41,8 +41,8 @@ describe('ValidateIntentService', () => {
         { provide: ProofService, useValue: createMock<ProofService>() },
         { provide: EcoConfigService, useValue: createMock<EcoConfigService>() },
         {
-          provide: getModelToken(SourceIntentModel.name),
-          useValue: createMock<Model<SourceIntentModel>>(),
+          provide: getModelToken(IntentSourceModel.name),
+          useValue: createMock<Model<IntentSourceModel>>(),
         },
       ],
       imports: [
@@ -126,13 +126,13 @@ describe('ValidateIntentService', () => {
       const unsupportedProver = '0x26D2C47c5659aC8a1c4A29A052Fa7B2ccD45Ca43'
       it('should fail if no source intent exists with the models source chain id', async () => {
         const model = { event: { sourceChainID } } as any
-        ecoConfigService.getSourceIntents.mockReturnValueOnce([])
+        ecoConfigService.getIntentSources.mockReturnValueOnce([])
         expect(validateIntentService['supportedProver'](model)).toBe(false)
       })
 
       it('should fail if no source supports the prover', async () => {
         const model = { event: { sourceChainID }, intent: { prover } } as any
-        ecoConfigService.getSourceIntents.mockReturnValueOnce([
+        ecoConfigService.getIntentSources.mockReturnValueOnce([
           { provers: [unsupportedProver], chainID } as any,
         ])
         expect(validateIntentService['supportedProver'](model)).toBe(false)
@@ -140,7 +140,7 @@ describe('ValidateIntentService', () => {
 
       it('should fail if no source supports the prover on the required chain', async () => {
         const model = { event: { sourceChainID }, intent: { prover } } as any
-        ecoConfigService.getSourceIntents.mockReturnValueOnce([
+        ecoConfigService.getIntentSources.mockReturnValueOnce([
           { provers: [prover], chainID: unsupportedChain } as any,
         ])
         expect(validateIntentService['supportedProver'](model)).toBe(false)
@@ -148,7 +148,7 @@ describe('ValidateIntentService', () => {
 
       it('should succeed if a single source supports the prover', async () => {
         const model = { event: { sourceChainID }, intent: { prover } } as any
-        ecoConfigService.getSourceIntents.mockReturnValueOnce([
+        ecoConfigService.getIntentSources.mockReturnValueOnce([
           { provers: [unsupportedProver], chainID } as any,
           { provers: [prover], chainID } as any,
         ])
@@ -157,7 +157,7 @@ describe('ValidateIntentService', () => {
 
       it('should succeed if multiple sources supports the prover', async () => {
         const model = { event: { sourceChainID }, intent: { prover } } as any
-        ecoConfigService.getSourceIntents.mockReturnValueOnce([
+        ecoConfigService.getIntentSources.mockReturnValueOnce([
           { provers: [prover], chainID } as any,
           { provers: [prover], chainID } as any,
         ])
