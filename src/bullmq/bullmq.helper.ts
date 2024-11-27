@@ -12,9 +12,23 @@ import { QueueMetadata } from '@/common/redis/constants'
 export function initBullMQ(queueInterface: QueueMetadata): DynamicModule {
   return BullModule.registerQueueAsync({
     name: queueInterface.queue,
-    useFactory: async (configService: EcoConfigService) => {
+    useFactory: (configService: EcoConfigService) => {
       return RedisConnectionUtils.getQueueOptions(queueInterface, configService.getRedis())
     },
+    inject: [EcoConfigService],
+  })
+}
+
+/**
+ * Initialize the BullMQ flow with the given name and eco configs
+ * @param {QueueMetadata} queueInterface queue interface
+ * @returns
+ */
+export function initFlowBullMQ(queueInterface: QueueMetadata): DynamicModule {
+  return BullModule.registerFlowProducerAsync({
+    name: queueInterface.queue,
+    useFactory: (configService: EcoConfigService) =>
+      RedisConnectionUtils.getQueueOptions(queueInterface, configService.getRedis()),
     inject: [EcoConfigService],
   })
 }

@@ -29,7 +29,7 @@ export abstract class BaseProcessor<
     id?: string,
   ) => LiquidityManagerJob,
 > extends WorkerHost {
-  protected readonly logger: Logger
+  public readonly logger: Logger
 
   /**
    * Constructs a new BaseProcessor.

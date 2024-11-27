@@ -1,5 +1,5 @@
 import { Queue } from 'bullmq'
-import { initBullMQ } from '@/bullmq/bullmq.helper'
+import { initBullMQ, initFlowBullMQ } from '@/bullmq/bullmq.helper'
 import { CheckBalancesCronJob } from '@/liquidity-manager/jobs/check-balances-cron.job'
 
 export enum LiquidityManagerJobName {
@@ -8,18 +8,27 @@ export enum LiquidityManagerJobName {
 
 export type LiquidityManagerQueueDataType = { network: string; [k: string]: unknown }
 
-export class LiquidityManagerQueue extends Queue<
+export type LiquidityManagerQueueType = Queue<
   LiquidityManagerQueueDataType,
   unknown,
   LiquidityManagerJobName
-> {
+>
+
+export class LiquidityManagerQueue {
   public static readonly queueName = LiquidityManagerQueue.name
+  public static readonly flowName = `flow-liquidity-manager`
+
+  constructor(private readonly queue: LiquidityManagerQueueType) {}
 
   static init() {
     return initBullMQ({ queue: this.queueName, prefix: '{liquidity-manager}' })
   }
 
+  static initFlow() {
+    return initFlowBullMQ({ queue: this.flowName, prefix: '{flow-liquidity-manager}' })
+  }
+
   startCronJobs() {
-    CheckBalancesCronJob.start(this)
+    return CheckBalancesCronJob.start(this.queue)
   }
 }

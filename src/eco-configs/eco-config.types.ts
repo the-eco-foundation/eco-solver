@@ -131,6 +131,7 @@ export interface TargetContract {
   contractType: TargetContractType
   selectors: string[]
   minBalance: number
+  targetBalance: number
 }
 
 /**

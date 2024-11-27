@@ -11,7 +11,7 @@ import { EcoLogMessage } from '@/common/logging/eco-log-message'
 export abstract class GroupedJobsProcessor<
   Job extends LiquidityManagerJob,
 > extends BaseProcessor<Job> {
-  protected readonly logger: Logger
+  public readonly logger: Logger
   protected abstract readonly queue: Queue
 
   protected readonly activeGroups = new Set<string>()

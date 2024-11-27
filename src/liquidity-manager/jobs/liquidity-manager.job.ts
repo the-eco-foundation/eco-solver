@@ -31,7 +31,7 @@ export abstract class LiquidityManagerJob<
    * @param job - The job to process.
    * @param processor - The processor handling the job.
    */
-  static async onComplete(job: LiquidityManagerJob, processor: unknown): Promise<void> {
+  static onComplete(job: LiquidityManagerJob, processor: unknown): void {
     // Placeholder method implementation
   }
 
@@ -40,7 +40,7 @@ export abstract class LiquidityManagerJob<
    * @param job - The job to process.
    * @param processor - The processor handling the job.
    */
-  static async onFailed(job: LiquidityManagerJob, processor: unknown): Promise<void> {
+  static onFailed(job: LiquidityManagerJob, processor: unknown, error: unknown): void {
     // Placeholder method implementation
   }
 }
