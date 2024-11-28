@@ -15,6 +15,7 @@ import {
   LiquidityManagerQueueType,
 } from '@/liquidity-manager/queues/liquidity-manager.queue'
 import { parseUnits } from 'viem'
+import { RebalanceJob } from '@/liquidity-manager/jobs/rebalance.job'
 
 @Injectable()
 export class LiquidityManagerService implements OnApplicationBootstrap {
@@ -22,14 +23,13 @@ export class LiquidityManagerService implements OnApplicationBootstrap {
   private readonly PERCENTAGE_DOWN = 0.2
   // The maximum slippage around target balance for a token
   private readonly TARGET_SLIPPAGE = 0.02
-
   private readonly liquidityManagerQueue: LiquidityManagerQueue
 
   constructor(
     @InjectQueue(LiquidityManagerQueue.queueName)
     queue: LiquidityManagerQueueType,
     @InjectFlowProducer(LiquidityManagerQueue.flowName)
-    liquidityManagerFlowProducer: FlowProducer,
+    protected liquidityManagerFlowProducer: FlowProducer,
     public readonly balanceService: BalanceService,
   ) {
     this.liquidityManagerQueue = new LiquidityManagerQueue(queue)
@@ -75,6 +75,17 @@ export class LiquidityManagerService implements OnApplicationBootstrap {
   ) {
     const swapQuotes = await this.getSwapQuotes(deficitToken, surplusTokens)
     return swapQuotes ?? (await this.getRebalancingQuotes(deficitToken, surplusTokens))
+  }
+
+  startRebalancing(rebalances: LiquidityManager.RebalanceRequest[]) {
+    const jobs = rebalances.map((rebalance) =>
+      RebalanceJob.createJob(rebalance, this.liquidityManagerQueue.name),
+    )
+    return this.liquidityManagerFlowProducer.add({
+      name: 'rebalance-batch',
+      queueName: this.liquidityManagerQueue.name,
+      children: jobs,
+    })
   }
 
   /**

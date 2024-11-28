@@ -3,6 +3,7 @@ import { initBullMQ, initFlowBullMQ } from '@/bullmq/bullmq.helper'
 import { CheckBalancesCronJob } from '@/liquidity-manager/jobs/check-balances-cron.job'
 
 export enum LiquidityManagerJobName {
+  REBALANCE = 'REBALANCE',
   CHECK_BALANCES = 'CHECK_BALANCES',
 }
 
@@ -15,17 +16,30 @@ export type LiquidityManagerQueueType = Queue<
 >
 
 export class LiquidityManagerQueue {
+  public static readonly prefix = '{liquidity-manager}'
   public static readonly queueName = LiquidityManagerQueue.name
   public static readonly flowName = `flow-liquidity-manager`
 
   constructor(private readonly queue: LiquidityManagerQueueType) {}
 
+  get name() {
+    return this.queue.name
+  }
+
   static init() {
-    return initBullMQ({ queue: this.queueName, prefix: '{liquidity-manager}' })
+    return initBullMQ(
+      { queue: this.queueName, prefix: LiquidityManagerQueue.prefix },
+      {
+        defaultJobOptions: {
+          removeOnFail: true,
+          removeOnComplete: true,
+        },
+      },
+    )
   }
 
   static initFlow() {
-    return initFlowBullMQ({ queue: this.flowName, prefix: '{flow-liquidity-manager}' })
+    return initFlowBullMQ({ queue: this.flowName, prefix: LiquidityManagerQueue.prefix })
   }
 
   startCronJobs() {

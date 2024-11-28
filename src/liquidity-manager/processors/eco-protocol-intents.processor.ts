@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectQueue, Processor } from '@nestjs/bullmq'
 import { LiquidityManagerJob } from '@/liquidity-manager/jobs/liquidity-manager.job'
 import { CheckBalancesCronJob } from '@/liquidity-manager/jobs/check-balances-cron.job'
+import { RebalanceJob } from '@/liquidity-manager/jobs/rebalance.job'
 import { GroupedJobsProcessor } from '@/liquidity-manager/processors/grouped-jobs.processor'
 import {
   LiquidityManagerQueue,
@@ -14,7 +15,7 @@ import { LiquidityManagerService } from '@/liquidity-manager/services/liquidity-
  * Extends the GroupedJobsProcessor to ensure jobs in the same group are not processed concurrently.
  */
 @Injectable()
-@Processor(LiquidityManagerQueue.queueName)
+@Processor(LiquidityManagerQueue.queueName, { concurrency: 5 })
 export class LiquidityManagerProcessor extends GroupedJobsProcessor<LiquidityManagerJob> {
   /**
    * Constructs a new LiquidityManagerProcessor.
@@ -26,6 +27,6 @@ export class LiquidityManagerProcessor extends GroupedJobsProcessor<LiquidityMan
     protected readonly queue: LiquidityManagerQueueType,
     public readonly liquidityManagerService: LiquidityManagerService,
   ) {
-    super('network', LiquidityManagerProcessor.name, [CheckBalancesCronJob])
+    super('network', LiquidityManagerProcessor.name, [CheckBalancesCronJob, RebalanceJob])
   }
 }

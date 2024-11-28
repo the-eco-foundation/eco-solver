@@ -94,6 +94,8 @@ export class CheckBalancesCronJob extends LiquidityManagerJob {
     }
 
     processor.logger.log('\n' + this.displayRebalancingTable(rebalances))
+
+    await processor.liquidityManagerService.startRebalancing(rebalances)
   }
 
   /**
