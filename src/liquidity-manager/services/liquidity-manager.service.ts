@@ -14,8 +14,8 @@ import {
   LiquidityManagerQueue,
   LiquidityManagerQueueType,
 } from '@/liquidity-manager/queues/liquidity-manager.queue'
-import { parseUnits } from 'viem'
 import { RebalanceJob } from '@/liquidity-manager/jobs/rebalance.job'
+import { LiquidityProviderManagerService } from '@/liquidity-manager/services/liquidity-provider-manager.service'
 
 @Injectable()
 export class LiquidityManagerService implements OnApplicationBootstrap {
@@ -31,6 +31,7 @@ export class LiquidityManagerService implements OnApplicationBootstrap {
     @InjectFlowProducer(LiquidityManagerQueue.flowName)
     protected liquidityManagerFlowProducer: FlowProducer,
     public readonly balanceService: BalanceService,
+    public readonly liquidityProviderManager: LiquidityProviderManagerService,
   ) {
     this.liquidityManagerQueue = new LiquidityManagerQueue(queue)
   }
@@ -130,7 +131,11 @@ export class LiquidityManagerService implements OnApplicationBootstrap {
       // Calculate the amount to swap
       const swapAmount = Math.min(deficitToken.analysis.diff, surplusToken.analysis.diff)
 
-      const quote = await this.getQuote(surplusToken, deficitToken, swapAmount)
+      const quote = await this.liquidityProviderManager.getQuote(
+        surplusToken,
+        deficitToken,
+        swapAmount,
+      )
 
       quotes.push(quote)
       currentBalance += quote.amountOut
@@ -139,21 +144,5 @@ export class LiquidityManagerService implements OnApplicationBootstrap {
     }
 
     return quotes
-  }
-
-  private async getQuote(
-    tokenIn: LiquidityManager.TokenData,
-    tokenOut: LiquidityManager.TokenData,
-    swapAmount: number,
-  ): Promise<LiquidityManager.Quote> {
-    return {
-      amountIn: parseUnits(swapAmount.toString(), tokenIn.balance.decimals),
-      amountOut: parseUnits(swapAmount.toString(), tokenIn.balance.decimals),
-      slippage: this.TARGET_SLIPPAGE,
-      tokenIn: tokenIn,
-      tokenOut: tokenOut,
-      strategy: 'LiFi',
-      context: undefined,
-    }
   }
 }

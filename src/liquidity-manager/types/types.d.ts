@@ -1,5 +1,6 @@
 declare namespace LiquidityManager {
   import { TokenBalance, TokenConfig } from '@/balance/types'
+  import * as LiFi from '@lifi/sdk'
 
   type TokenState = 'DEFICIT' | 'SURPLUS' | 'IN_RANGE'
 
@@ -29,7 +30,7 @@ declare namespace LiquidityManager {
 
   // Strategy context
 
-  type LiFiStrategyContext = void
+  type LiFiStrategyContext = LiFi.Route
 
   type Strategy = 'LiFi'
   type StrategyContext<S extends Strategy> = S extends 'LiFi' ? LiFiStrategyContext : never

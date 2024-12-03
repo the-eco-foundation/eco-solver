@@ -147,6 +147,7 @@ export class CheckBalancesCronJob extends LiquidityManagerJob {
    */
   private static displayRebalancingTable(items: LiquidityManager.RebalanceRequest[]) {
     const formatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format
+    const slippageFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format
     const format = (value: bigint, decimals: number) =>
       formatter(parseFloat(formatUnits(value, decimals)))
 
@@ -170,12 +171,12 @@ export class CheckBalancesCronJob extends LiquidityManagerJob {
           quote.tokenOut.config.chainId,
           quote.tokenIn.config.address,
           quote.tokenIn.config.chainId,
-          format(quote.tokenIn.balance.balance, quote.tokenIn.balance.decimals),
-          quote.tokenIn.config.targetBalance,
+          format(quote.tokenOut.balance.balance, quote.tokenOut.balance.decimals),
+          quote.tokenOut.config.targetBalance,
           quote.strategy,
           format(quote.amountIn, quote.tokenIn.balance.decimals),
           format(quote.amountOut, quote.tokenOut.balance.decimals),
-          quote.slippage,
+          slippageFormatter(quote.slippage * 100) + '%',
         ]
       })
 
