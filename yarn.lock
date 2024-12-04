@@ -1123,6 +1123,11 @@
     "@smithy/types" "^3.7.0"
     tslib "^2.6.2"
 
+"@axelar-network/axelar-gmp-sdk-solidity@^6.0.4":
+  version "6.0.4"
+  resolved "https://registry.yarnpkg.com/@axelar-network/axelar-gmp-sdk-solidity/-/axelar-gmp-sdk-solidity-6.0.4.tgz#593d0aef12218ecb294fcdef0dfd0a99b0381975"
+  integrity sha512-o8pv+krIAlEwzid0Ac8qwykDsavc+1DRPvyFQ3V0R0zTQFtYLJIIXXXt7FRb8b+LJDAuX+E0bB3N2X+hlcxk/g==
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.16.7", "@babel/code-frame@^7.24.7":
   version "7.24.7"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.24.7.tgz#882fd9e09e8ee324e496bd040401c6f046ef4465"
@@ -1570,11 +1575,12 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@eco-foundation/routes@^0.0.424-beta":
-  version "0.0.424-beta"
-  resolved "https://registry.yarnpkg.com/@eco-foundation/routes/-/routes-0.0.424-beta.tgz#3f0e329ca3cd2797ff89cc8659e0990a1eb9dc19"
-  integrity sha512-1Rx5PP9ZKGbCiJ16cX1g0pe08pLeEol6LL+LoYNXxRftYSfAgohF2C0VHiFaWbyudzsG3oIh5ukghri2t9Jdzg==
+"@eco-foundation/routes@^0.0.508-beta":
+  version "0.0.508-beta"
+  resolved "https://registry.yarnpkg.com/@eco-foundation/routes/-/routes-0.0.508-beta.tgz#60801b65ca925bc660549c9dfb64a6e66a1e90e1"
+  integrity sha512-d6GzX+UZz3WxH4MFI0gO2TsYxPKdXxY6nQA9Z+7QLVpmmu439lRDtIDanIJ/t+vY9Ul+6A4ln/mNmQn5tP4sYQ==
   dependencies:
+    "@axelar-network/axelar-gmp-sdk-solidity" "^6.0.4"
     "@hyperlane-xyz/registry" "^4.2.0"
     "@hyperlane-xyz/sdk" "^5.1.0"
     "@openzeppelin/contracts" "^5.0.2"
