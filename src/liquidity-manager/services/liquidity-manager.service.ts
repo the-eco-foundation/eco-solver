@@ -14,8 +14,9 @@ import {
   LiquidityManagerQueue,
   LiquidityManagerQueueType,
 } from '@/liquidity-manager/queues/liquidity-manager.queue'
-import { RebalanceJob } from '@/liquidity-manager/jobs/rebalance.job'
+import { RebalanceJob, RebalanceJobData } from '@/liquidity-manager/jobs/rebalance.job'
 import { LiquidityProviderManagerService } from '@/liquidity-manager/services/liquidity-provider-manager.service'
+import { deserialize } from '@/liquidity-manager/utils/serialize'
 
 @Injectable()
 export class LiquidityManagerService implements OnApplicationBootstrap {
@@ -41,8 +42,8 @@ export class LiquidityManagerService implements OnApplicationBootstrap {
   }
 
   async analyzeTokens() {
-    const balances: LiquidityManager.TokenData[] = await this.balanceService.getAllTokenBalances()
-    const analysis: LiquidityManager.TokenDataAnalyzed[] = balances.map((item) => ({
+    const tokens: LiquidityManager.TokenData[] = await this.balanceService.getAllTokenData()
+    const analysis: LiquidityManager.TokenDataAnalyzed[] = tokens.map((item) => ({
       ...item,
       analysis: this.analyzeToken(item),
     }))
@@ -144,5 +145,11 @@ export class LiquidityManagerService implements OnApplicationBootstrap {
     }
 
     return quotes
+  }
+
+  async executeRebalancing(rebalanceData: RebalanceJobData) {
+    for (const quote of rebalanceData.rebalance.quotes) {
+      await this.liquidityProviderManager.execute(deserialize(quote))
+    }
   }
 }

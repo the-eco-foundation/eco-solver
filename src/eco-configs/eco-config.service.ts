@@ -1,11 +1,13 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import * as _ from 'lodash'
 import * as config from 'config'
-import { EcoLogMessage } from '../common/logging/eco-log-message'
+import { EcoLogMessage } from '@/common/logging/eco-log-message'
 import { ConfigSource } from './interfaces/config-source.interface'
-import { EcoConfigType, Solver, IntentSource } from './eco-config.types'
+import { EcoConfigType, IntentSource, Solver } from './eco-config.types'
 import { entries } from 'lodash'
 import { getAddress } from 'viem'
-import { addressKeys } from '../common/viem/utils'
+import { addressKeys, getRpcUrl } from '@/common/viem/utils'
+import { ChainsSupported } from '@/common/chains/supported'
 import { getChainConfig } from './utils'
 
 /**
@@ -127,5 +129,16 @@ export class EcoConfigService implements OnModuleInit {
   // Returns the server configs
   getServer(): EcoConfigType['server'] {
     return this.get('server')
+  }
+
+  getChainRPCs() {
+    const { apiKey, networks } = this.getAlchemy()
+    const supportedAlchemyChainIds = _.map(networks, 'id')
+
+    const entries = ChainsSupported.map((chain) => {
+      const rpcApiKey = supportedAlchemyChainIds.includes(chain.id) ? apiKey : undefined
+      return [chain.id, getRpcUrl(chain, rpcApiKey).url]
+    })
+    return Object.fromEntries(entries) as Record<number, string>
   }
 }

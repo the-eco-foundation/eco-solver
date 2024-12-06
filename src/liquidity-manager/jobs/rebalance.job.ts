@@ -3,9 +3,9 @@ import { EcoLogMessage } from '@/common/logging/eco-log-message'
 import { LiquidityManagerJob } from '@/liquidity-manager/jobs/liquidity-manager.job'
 import { LiquidityManagerJobName } from '@/liquidity-manager/queues/liquidity-manager.queue'
 import { LiquidityManagerProcessor } from '@/liquidity-manager/processors/eco-protocol-intents.processor'
-import { JSONBigInt, Serialize } from '@/liquidity-manager/utils/serialize'
+import { serialize, Serialize } from '@/liquidity-manager/utils/serialize'
 
-type RebalanceJobData = {
+export type RebalanceJobData = {
   network: string
   rebalance: Serialize<LiquidityManager.RebalanceRequest>
 }
@@ -26,7 +26,7 @@ export class RebalanceJob extends LiquidityManagerJob<
   static createJob(rebalance: LiquidityManager.RebalanceRequest, queueName: string): FlowChildJob {
     const data: RebalanceJobData = {
       network: rebalance.token.config.chainId.toString(),
-      rebalance: JSONBigInt.serialize(rebalance),
+      rebalance: serialize(rebalance),
     }
     return {
       queueName,
@@ -36,9 +36,7 @@ export class RebalanceJob extends LiquidityManagerJob<
   }
 
   static async process(job: RebalanceJob, processor: LiquidityManagerProcessor): Promise<void> {
-    console.log(`Processing rebalance job ${job.id}, waiting 3s...`, job.data)
-    await new Promise((res) => setTimeout(res, 3_000))
-    console.log(`Done processing rebalance job ${job.id}!`)
+    return processor.liquidityManagerService.executeRebalancing(job.data)
   }
 
   /**
@@ -47,9 +45,12 @@ export class RebalanceJob extends LiquidityManagerJob<
    * @param processor - The processor handling the job.
    * @param error - The error that occurred.
    */
-  static onFailed(job: LiquidityManagerJob, processor: LiquidityManagerProcessor, error: unknown) {
+  static onFailed(job: LiquidityManagerJob, processor: LiquidityManagerProcessor, error: Error) {
     processor.logger.error(
-      EcoLogMessage.fromDefault({ message: `RebalanceJob: Failed`, properties: { error } }),
+      EcoLogMessage.fromDefault({
+        message: `RebalanceJob: Failed`,
+        properties: { error: error.message },
+      }),
     )
   }
 }

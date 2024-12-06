@@ -69,6 +69,15 @@ export abstract class BaseProcessor<
    */
   @OnWorkerEvent('completed')
   onCompleted(job: Job) {
+    this.logger.debug(
+      EcoLogMessage.fromDefault({
+        message: `${this.name}.onComplete()`,
+        properties: {
+          jobName: job.name,
+        },
+      }),
+    )
+
     return this.execute(job, 'onComplete')
   }
 
@@ -80,6 +89,15 @@ export abstract class BaseProcessor<
    */
   @OnWorkerEvent('failed')
   onFailed(job: Job, error: Error) {
+    this.logger.debug(
+      EcoLogMessage.fromDefault({
+        message: `${this.name}.onFailed()`,
+        properties: {
+          jobName: job.name,
+        },
+      }),
+    )
+
     return this.execute(job, 'onFailed', error)
   }
 

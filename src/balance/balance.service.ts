@@ -131,7 +131,7 @@ export class BalanceService implements OnApplicationBootstrap {
     return result[tokenAddress]
   }
 
-  async getAllTokenBalances() {
+  async getAllTokenData() {
     const tokens = this.getTokens()
     const tokensByChainId = groupBy(tokens, 'chainId')
     const chainIds = Object.keys(tokensByChainId)

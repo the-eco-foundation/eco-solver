@@ -1,10 +1,11 @@
 import { Queue } from 'bullmq'
+import { formatUnits } from 'viem'
+import { table } from 'table'
+import { EcoLogMessage } from '@/common/logging/eco-log-message'
 import { LiquidityManagerJob } from '@/liquidity-manager/jobs/liquidity-manager.job'
 import { LiquidityManagerJobName } from '@/liquidity-manager/queues/liquidity-manager.queue'
 import { LiquidityManagerProcessor } from '@/liquidity-manager/processors/eco-protocol-intents.processor'
-import { EcoLogMessage } from '@/common/logging/eco-log-message'
-import { table } from 'table'
-import { formatUnits } from 'viem'
+import { shortAddr } from '@/liquidity-manager/utils/address'
 import { removeRepeatableJobs } from '@/liquidity-manager/utils/queue'
 
 /**
@@ -167,9 +168,9 @@ export class CheckBalancesCronJob extends LiquidityManagerJob {
       .flatMap((item) => item.quotes)
       .map((quote) => {
         return [
-          quote.tokenOut.config.address,
+          shortAddr(quote.tokenOut.config.address),
           quote.tokenOut.config.chainId,
-          quote.tokenIn.config.address,
+          shortAddr(quote.tokenIn.config.address),
           quote.tokenIn.config.chainId,
           format(quote.tokenOut.balance.balance, quote.tokenOut.balance.decimals),
           quote.tokenOut.config.targetBalance,

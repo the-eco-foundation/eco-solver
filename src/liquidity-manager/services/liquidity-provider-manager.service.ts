@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { LiFiProviderService } from '@/liquidity-manager/services/liquidity-providers/lifi-provider.service'
+import { LiFiProviderService } from '@/liquidity-manager/services/liquidity-providers/LiFi/lifi-provider.service'
 
 @Injectable()
 export class LiquidityProviderManagerService {
@@ -11,5 +11,14 @@ export class LiquidityProviderManagerService {
     swapAmount: number,
   ): Promise<LiquidityManager.Quote> {
     return this.liFiProvider.getQuote(tokenIn, tokenOut, swapAmount)
+  }
+
+  async execute(quote: LiquidityManager.Quote) {
+    switch (quote.strategy) {
+      case 'LiFi':
+        return this.liFiProvider.execute(quote)
+      default:
+        throw new Error(`Strategy not supported: ${quote.strategy}`)
+    }
   }
 }
