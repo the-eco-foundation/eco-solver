@@ -32,7 +32,7 @@ export class CheckBalancesCronJob extends LiquidityManagerJob {
       jobId: LiquidityManagerJobName.CHECK_BALANCES,
       removeOnComplete: true,
       repeat: {
-        every: 30_000, // every 5 minutes
+        every: 300_000, // every 5 minutes
       },
     })
   }
