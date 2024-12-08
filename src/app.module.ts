@@ -14,6 +14,7 @@ import { HealthModule } from './health/health.module'
 import { ProcessorModule } from './bullmq/processors/processor.module'
 import { SolverModule } from './solver/solver.module'
 import { FlagsModule } from './flags/flags.module'
+import { LiquidityManagerModule } from '@/liquidity-manager/liquidity-manager.module'
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { FlagsModule } from './flags/flags.module'
     }),
     ProverModule,
     SolverModule,
+    LiquidityManagerModule,
     ...getPino(),
   ],
   controllers: [],
