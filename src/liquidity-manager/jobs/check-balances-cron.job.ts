@@ -109,9 +109,7 @@ export class CheckBalancesCronJob extends LiquidityManagerJob {
     processor.logger.error(
       EcoLogMessage.fromDefault({
         message: `CheckBalancesCronJob: Failed`,
-        properties: {
-          error,
-        },
+        properties: { error: (error as any)?.message ?? error },
       }),
     )
   }
@@ -147,6 +145,9 @@ export class CheckBalancesCronJob extends LiquidityManagerJob {
    * @returns A formatted table as a string.
    */
   private static displayRebalancingTable(items: LiquidityManager.RebalanceRequest[]) {
+    // Skip if no rebalancing quotes are found.
+    if (!items.length) return
+
     const formatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format
     const slippageFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format
     const format = (value: bigint, decimals: number) =>
@@ -181,17 +182,7 @@ export class CheckBalancesCronJob extends LiquidityManagerJob {
         ]
       })
 
-    const spanningCells = items.flatMap((item, index) => {
-      const row = items.slice(0, index + 1).reduce((acc, item) => acc + item.quotes.length, 0)
-      return [
-        { col: 0, row, colSpan: item.quotes.length },
-        { col: 1, row, colSpan: item.quotes.length },
-      ]
-    })
-
-    const columns = [{ width: 48 }]
-
-    return table([header, ...cells], { spanningCells, columns })
+    return table([header, ...cells], { columns: [{ width: 48 }] })
   }
 
   /**
