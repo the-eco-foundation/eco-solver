@@ -116,7 +116,7 @@ export abstract class BaseProcessor<
       }
     }
 
-    this.logger.warn(
+    this.logger.debug(
       EcoLogMessage.fromDefault({
         message: `${this.name}: Unknown job type`,
         properties: {

@@ -78,7 +78,7 @@ export class CheckBalancesCronJob extends LiquidityManagerJob {
       )
 
       if (!rebalancingQuotes) {
-        processor.logger.warn(
+        processor.logger.debug(
           EcoLogMessage.fromDefault({
             message: 'CheckBalancesCronJob: No rebalancing quotes found',
             properties: {

@@ -192,7 +192,7 @@ export class UtilsIntentService {
     const targetsSupported = exist && difference(modelTargets, solverTargets).length == 0
 
     if (!targetsSupported) {
-      this.logger.warn(
+      this.logger.debug(
         EcoLogMessage.fromDefault({
           message: `Targets not supported for intent ${model.intent.hash}`,
           properties: {
