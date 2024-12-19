@@ -11,7 +11,7 @@ import { IntentCreatedLog } from '../contracts'
 import { PublicClient, WatchContractEventReturnType, zeroHash } from 'viem'
 import { convertBigIntsToStrings } from '../common/viem/utils'
 import { entries } from 'lodash'
-import { IntentSourceAbi } from '@eco-foundation/routes'
+import { IntentSourceAbi } from '@eco-foundation/routes-ts'
 
 /**
  * This service subscribes to IntentSource contracts for IntentCreated events. It subscribes on all
