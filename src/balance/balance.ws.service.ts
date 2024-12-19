@@ -24,7 +24,7 @@ export class BalanceWebsocketService implements OnApplicationBootstrap, OnModule
   ) {}
 
   async onApplicationBootstrap() {
-    // await this.subscribeWS()
+    await this.subscribeWS()
   }
 
   async onModuleDestroy() {

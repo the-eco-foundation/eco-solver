@@ -1,10 +1,10 @@
 const mockEncodeFunctionData = jest.fn()
 
 import { Test, TestingModule } from '@nestjs/testing'
-import { Hex } from 'viem'
+import { Hex, zeroAddress } from 'viem'
 import { getModelToken } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { InboxAbi } from '@eco-foundation/routes'
+import { InboxAbi } from '@eco-foundation/routes-ts'
 import { createMock, DeepMocked } from '@golevelup/ts-jest'
 import { EcoConfigService } from '@/eco-configs/eco-config.service'
 import { EcoError } from '@/common/errors/eco-error'
@@ -456,6 +456,8 @@ describe('FulfillIntentService', () => {
       proofService.isStorageProver = mockStorage
       proofService.isHyperlaneProver = mockHyperlane
       defaultArgs.push(model.intent.prover)
+      defaultArgs.push('0x0')
+      defaultArgs.push(zeroAddress)
       await fulfillIntentService['getFulfillIntentTx'](solver.solverAddress, model as any)
       expect(proofService.isStorageProver).toHaveBeenCalledTimes(1)
       expect(proofService.isStorageProver).toHaveBeenCalledWith(model.intent.prover)
@@ -464,7 +466,7 @@ describe('FulfillIntentService', () => {
       expect(mockEncodeFunctionData).toHaveBeenCalledTimes(1)
       expect(mockEncodeFunctionData).toHaveBeenCalledWith({
         abi: InboxAbi,
-        functionName: 'fulfillHyperInstant',
+        functionName: 'fulfillHyperInstantWithRelayer',
         args: defaultArgs,
       })
     })

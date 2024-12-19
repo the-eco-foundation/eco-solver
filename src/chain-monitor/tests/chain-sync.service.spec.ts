@@ -9,7 +9,7 @@ import { Model } from 'mongoose'
 import { Solver, IntentSource } from '../../eco-configs/eco-config.types'
 import { entries } from 'lodash'
 import { KernelAccountClientService } from '../../transaction/smart-wallets/kernel/kernel-account-client.service'
-import { IntentSourceAbi } from '@eco-foundation/routes'
+import { IntentSourceAbi } from '@eco-foundation/routes-ts'
 
 describe('ChainSyncService', () => {
   let chainSyncService: ChainSyncService

@@ -1,7 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
-import { encodeAbiParameters, encodeFunctionData, erc20Abi, Hex, pad } from 'viem'
+import {
+  ContractFunctionArgs,
+  ContractFunctionName,
+  encodeAbiParameters,
+  encodeFunctionData,
+  erc20Abi,
+  Hex,
+  pad,
+  zeroAddress,
+} from 'viem'
 import {
   IntentProcessData,
   TransactionTargetData,
@@ -16,7 +25,7 @@ import { EcoConfigService } from '../eco-configs/eco-config.service'
 import { ProofService } from '../prover/proof.service'
 import { ExecuteSmartWalletArg } from '../transaction/smart-wallets/smart-wallet.types'
 import { KernelAccountClientService } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
-import { InboxAbi } from '@eco-foundation/routes'
+import { InboxAbi } from '@eco-foundation/routes-ts'
 
 /**
  * This class fulfills an intent by creating the transactions for the intent targets and the fulfill intent transaction.
@@ -191,7 +200,7 @@ export class FulfillIntentService {
 
   /**
    * Returns the fulfill intent data
-   * @param walletAddr
+   * @param solverAddress
    * @param model
    * @private
    */
@@ -199,23 +208,27 @@ export class FulfillIntentService {
     solverAddress: Hex,
     model: IntentSourceModel,
   ): Promise<ExecuteSmartWalletArg> {
-    const walletAddr = this.ecoConfigService.getEth().claimant
+    const claimant = this.ecoConfigService.getEth().claimant
     const isHyperlane = this.proofService.isHyperlaneProver(model.intent.prover)
-    const functionName = this.proofService.isStorageProver(model.intent.prover)
+    const functionName: ContractFunctionName<typeof InboxAbi> = this.proofService.isStorageProver(
+      model.intent.prover,
+    )
       ? 'fulfillStorage'
-      : 'fulfillHyperInstant'
-    const encodeProverAddress = isHyperlane ? model.intent.prover : undefined
+      : 'fulfillHyperInstantWithRelayer'
+
     const args = [
       model.event.sourceChainID,
       model.intent.targets,
       model.intent.data,
       model.intent.expiryTime,
       model.intent.nonce,
-      walletAddr,
+      claimant,
       model.intent.hash,
     ]
-    if (encodeProverAddress) {
-      args.push(encodeProverAddress)
+    if (isHyperlane) {
+      args.push(model.intent.prover)
+      args.push('0x0')
+      args.push(zeroAddress)
     }
 
     let fee = 0n
@@ -254,16 +267,17 @@ export class FulfillIntentService {
       [{ type: 'bytes[]' }, { type: 'address[]' }],
       [[model.intent.hash], [this.ecoConfigService.getEth().claimant]],
     )
-
-    const args = [
+    const functionName = 'fetchFee'
+    const args: ContractFunctionArgs<typeof InboxAbi, 'view', typeof functionName> = [
       model.event.sourceChainID, //_sourceChainID
-      encodedMessageBody, //_messageBody
       pad(model.intent.prover), //_prover
+      encodedMessageBody, //_messageBody
+      '0x0', //_metadata
+      zeroAddress, //_postDispatchHook
     ]
     const callData = encodeFunctionData({
       abi: InboxAbi,
-      functionName: 'fetchFee',
-      // @ts-expect-error we dynamically set the args
+      functionName,
       args,
     })
     const proverData = await client.call({
