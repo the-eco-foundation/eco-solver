@@ -69,7 +69,7 @@ export class EcoConfigService implements OnModuleInit {
       const config = getChainConfig(intent.chainID)
       intent.sourceAddress = config.IntentSource
       intent.provers = [config.HyperProver]
-      if(config.Prover) {
+      if (config.Prover) {
         intent.provers.push(config.Prover)
       }
       return intent

@@ -1,5 +1,5 @@
-import { Hex } from 'viem'
 import { TargetContractType } from '@/eco-configs/eco-config.types'
+import { Hex } from 'viem'
 
 export type TokenConfig = {
   address: Hex
