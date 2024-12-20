@@ -39,7 +39,8 @@ export type EcoConfigType = {
       update_interval_ms: number
     }
     pollingInterval: number
-  }
+  },
+  fulfill: FulfillType
   aws: AwsCredential[]
   database: {
     auth: MongoAuthType
@@ -65,6 +66,13 @@ export type EcoConfigKeys = keyof EcoConfigType
 export type LaunchDarklyConfig = {
   apiKey: string
   options?: LDOptions
+}
+
+/**
+ * The configs for the fulfillment params
+ */
+export type FulfillType ={
+  fulfillment: 'batch' | 'single'
 }
 
 /**
