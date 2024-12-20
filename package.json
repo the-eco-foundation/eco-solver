@@ -1,10 +1,26 @@
 {
   "name": "eco-solver",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "version": "0.1.0",
+  "description": "An implementation filler/solver for the Eco Routes protocol",
+  "homepage": "https://github.com/eco/eco-solver#readme",
+  "bugs": {
+    "url": "https://github.com/eco/eco-solver/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eco/eco-solver.git"
+  },
+  "author": "Eco Engineering <eng@eco.com>",
+  "license": "MIT",
+  "keywords": [
+    "solver",
+    "filler",
+    "rollup",
+    "eco routes",
+    "routes",
+    "bend",
+    "protocol"
+  ],
   "scripts": {
     "build": "nest build",
     "start": "nest start",
