@@ -494,6 +494,5 @@ describe('FulfillIntentService', () => {
         })
       })
     })
-
   })
 })

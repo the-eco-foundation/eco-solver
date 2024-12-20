@@ -42,7 +42,7 @@ export class FulfillIntentService {
     private readonly proofService: ProofService,
     private readonly utilsIntentService: UtilsIntentService,
     private readonly ecoConfigService: EcoConfigService,
-  ) { }
+  ) {}
 
   /**
    * Executes the fulfill intent process for an intent. It creates the transaction for fulfillment, and posts it
@@ -212,9 +212,7 @@ export class FulfillIntentService {
   ): Promise<ExecuteSmartWalletArg> {
     const claimant = this.ecoConfigService.getEth().claimant
     const isHyperlane = this.proofService.isHyperlaneProver(model.intent.prover)
-    const functionName: FulfillmentMethod = this.proofService.isStorageProver(
-      model.intent.prover,
-    )
+    const functionName: FulfillmentMethod = this.proofService.isStorageProver(model.intent.prover)
       ? 'fulfillStorage'
       : this.getFulfillment()
 
