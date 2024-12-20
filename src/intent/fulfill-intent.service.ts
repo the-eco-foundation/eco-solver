@@ -27,6 +27,8 @@ import { ExecuteSmartWalletArg } from '../transaction/smart-wallets/smart-wallet
 import { KernelAccountClientService } from '../transaction/smart-wallets/kernel/kernel-account-client.service'
 import { InboxAbi } from '@eco-foundation/routes-ts'
 
+type FulfillmentMethod = ContractFunctionName<typeof InboxAbi>
+
 /**
  * This class fulfills an intent by creating the transactions for the intent targets and the fulfill intent transaction.
  */
@@ -210,11 +212,9 @@ export class FulfillIntentService {
   ): Promise<ExecuteSmartWalletArg> {
     const claimant = this.ecoConfigService.getEth().claimant
     const isHyperlane = this.proofService.isHyperlaneProver(model.intent.prover)
-    const functionName: ContractFunctionName<typeof InboxAbi> = this.proofService.isStorageProver(
-      model.intent.prover,
-    )
+    const functionName: FulfillmentMethod = this.proofService.isStorageProver(model.intent.prover)
       ? 'fulfillStorage'
-      : 'fulfillHyperInstantWithRelayer'
+      : this.getFulfillment()
 
     const args = [
       model.event.sourceChainID,
@@ -227,8 +227,10 @@ export class FulfillIntentService {
     ]
     if (isHyperlane) {
       args.push(model.intent.prover)
-      args.push('0x0')
-      args.push(zeroAddress)
+      if (functionName === 'fulfillHyperInstantWithRelayer') {
+        args.push('0x0')
+        args.push(zeroAddress)
+      }
     }
 
     let fee = 0n
@@ -285,5 +287,18 @@ export class FulfillIntentService {
       data: callData,
     })
     return proverData.data
+  }
+
+  /**
+   * @returns the fulfillment method
+   */
+  private getFulfillment(): FulfillmentMethod {
+    switch (this.ecoConfigService.getFulfill().run) {
+      case 'batch':
+        return 'fulfillHyperBatched'
+      case 'single':
+      default:
+        return 'fulfillHyperInstantWithRelayer'
+    }
   }
 }

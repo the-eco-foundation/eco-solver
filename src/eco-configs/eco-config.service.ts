@@ -60,6 +60,11 @@ export class EcoConfigService implements OnModuleInit {
     return this.get('alchemy')
   }
 
+  // Returns the fulfill configs
+  getFulfill(): EcoConfigType['fulfill'] {
+    return this.get('fulfillment')
+  }
+
   // Returns the source intents config
   getIntentSources(): EcoConfigType['intentSources'] {
     const intents = this.get<IntentSource[]>('intentSources').map((intent: IntentSource) => {
