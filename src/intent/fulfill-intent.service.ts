@@ -293,7 +293,7 @@ export class FulfillIntentService {
    * @returns the fulfillment method
    */
   private getFulfillment(): FulfillmentMethod {
-    switch (this.ecoConfigService.getFulfill().fulfillment) {
+    switch (this.ecoConfigService.getFulfill().run) {
       case 'batch':
         return 'fulfillHyperBatched'
       case 'single':

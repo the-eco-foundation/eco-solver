@@ -72,7 +72,7 @@ export type LaunchDarklyConfig = {
  * The configs for the fulfillment params
  */
 export type FulfillType = {
-  fulfillment: 'batch' | 'single'
+  run: 'batch' | 'single'
 }
 
 /**
