@@ -60,6 +60,7 @@ describe('WatchIntentService', () => {
   describe('on lifecycle', () => {
     describe('on startup', () => {
       it('should subscribe to nothing if no source intents', async () => {
+        ecoConfigService.getSolvers.mockReturnValue(sources)
         const mock = jest.spyOn(watchIntentService, 'subscribe')
         await watchIntentService.onApplicationBootstrap()
         expect(mock).toHaveBeenCalledTimes(1)

@@ -40,6 +40,7 @@ export type EcoConfigType = {
     }
     pollingInterval: number
   }
+  fulfill: FulfillType
   aws: AwsCredential[]
   database: {
     auth: MongoAuthType
@@ -65,6 +66,13 @@ export type EcoConfigKeys = keyof EcoConfigType
 export type LaunchDarklyConfig = {
   apiKey: string
   options?: LDOptions
+}
+
+/**
+ * The configs for the fulfillment params
+ */
+export type FulfillType = {
+  run: 'batch' | 'single'
 }
 
 /**
@@ -131,6 +139,7 @@ export interface TargetContract {
   contractType: TargetContractType
   selectors: string[]
   minBalance: number
+  targetBalance: number
 }
 
 /**

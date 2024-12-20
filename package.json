@@ -41,9 +41,10 @@
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.592.0",
-    "@eco-foundation/routes": "^0.0.508-beta",
+    "@eco-foundation/routes-ts": "^0.1.10-beta",
     "@launchdarkly/node-server-sdk": "^9.7.1",
     "@liaoliaots/nestjs-redis-health": "^9.0.4",
+    "@lifi/sdk": "^3.4.1",
     "@nestjs/bullmq": "^10.1.1",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
@@ -64,6 +65,7 @@
     "redlock": "^5.0.0-beta.2",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "table": "^6.8.2",
     "viem": "^2.21.32"
   },
   "devDependencies": {
